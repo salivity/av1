@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta-QP Signaling per Superblock in AV1 - av1</title>
+    <meta name="description" content="This article provides an overview of delta quantization parameters (delta-QP) in the AV1 video codec and examines how these values are signaled at the superblock level. It covers the role of delta-QP in adaptive quantization, the frame-level configuratio">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/delta-qp-signaling-per-superblock-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Delta-QP Signaling per Superblock in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/delta-qp-signaling-per-superblock-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of delta quantization parameters (delta-QP) in the AV1 video codec and examines how these values are signaled at the superblock level. It covers the role of delta-QP in adaptive quantization, the frame-level configuratio" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="delta-qp-signaling-per-superblock-in-av1">Delta-QP Signaling per
+Superblock in AV1</h1>
+<p>This article provides an overview of delta quantization parameters
+(delta-QP) in the AV1 video codec and examines how these values are
+signaled at the superblock level. It covers the role of delta-QP in
+adaptive quantization, the frame-level configuration required to enable
+the feature, and the syntax mechanisms used to transmit local
+quantization adjustments to individual superblocks.</p>
+<h3 id="what-is-delta-qp">What is Delta-QP?</h3>
+<p>In digital video compression, the Quantization Parameter (QP)
+controls the trade-off between visual fidelity and bitrate. While a
+video frame is assigned a base QP (<code>base_q_idx</code> in AV1),
+visual content within that frame often varies significantly in
+complexity and perceptual sensitivity.</p>
+<p>Delta-QP refers to a local offset added to or subtracted from the
+baseline frame QP. By varying quantization across different regions, an
+encoder can apply finer quantization (lower QP) to perceptually
+sensitive areas, such as human faces or detailed textures, and coarser
+quantization (higher QP) to complex motion or background regions. This
+local adaptation is critical for psycho-visual optimizations, Region of
+Interest (ROI) coding, and fine-grained rate control.</p>
+<h3 id="frame-level-prerequisites-in-av1">Frame-Level Prerequisites in
+AV1</h3>
+<p>Before delta-QP values can be signaled for individual superblocks,
+the encoder must configure the delta-QP mechanism within the frame
+header:</p>
+<ol type="1">
+<li><strong><code>delta_q_present_flag</code></strong>: A 1-bit syntax
+element in the frame header indicating whether delta-QP signaling is
+active for the current frame. If set to <code>0</code>, all superblocks
+strictly inherit the frame's <code>base_q_idx</code>.</li>
+<li><strong><code>delta_q_res</code></strong>: Specifies the step size
+or resolution of the delta values. It dictates the bit-shift applied to
+the decoded delta value, defining the granularity at which QP offsets
+are adjusted.</li>
+</ol>
+<h3 id="signaling-delta-qp-per-superblock">Signaling Delta-QP per
+Superblock</h3>
+<p>AV1 operates on superblock units of either 128×128 or 64×64 pixels.
+When <code>delta_q_present_flag</code> is enabled, the encoder can
+transmit delta-QP syntax elements to modify the quantization index
+dynamically throughout the frame.</p>
+<h4 id="1-predictive-coding-scheme">1. Predictive Coding Scheme</h4>
+<p>AV1 does not transmit an absolute QP index for every superblock.
+Instead, it uses a predictive mechanism where the signaled delta
+represents the difference relative to the previous superblock's active
+QP value. At the start of a tile, the active QP initializes to the
+frame's <code>base_q_idx</code>. Each signaled delta updates a running
+state variable (<code>current_q_index</code>), which carries over to
+subsequent blocks until another delta is signaled.</p>
+<h4 id="2-triggering-conditions">2. Triggering Conditions</h4>
+<p>To conserve bits, delta-QP is not transmitted unconditionally in
+every superblock. A delta-QP value is only signaled at the first
+transform block within a superblock that contains non-zero transform
+coefficients (coded residual data). If an entire superblock is skipped
+or contains only non-coded blocks, the transmission of delta-QP is
+deferred, and the superblock retains the current running QP value.</p>
+<h4 id="3-syntax-elements">3. Syntax Elements</h4>
+<p>When the conditions to transmit delta-QP are met, AV1 reads two
+primary syntax elements:</p>
+<ul>
+<li><strong><code>delta_q_abs</code></strong>: Encoded using a
+combination of unary and fixed-length entropy coding to represent the
+absolute magnitude of the offset.</li>
+<li><strong><code>delta_q_sign_bit</code></strong>: Transmitted only if
+<code>delta_q_abs &gt; 0</code> to indicate whether the offset is
+positive or negative.</li>
+</ul>
+<h4 id="4-qp-reconstruction-formula">4. QP Reconstruction Formula</h4>
+<p>Once decoded, the final quantization parameter index for the
+superblock is computed:</p>
+<pre class="text"><code>delta_q = delta_q_sign_bit ? -delta_q_abs : delta_q_abs
+current_q_index = Clip3(0, 255, current_q_index + (delta_q &lt;&lt; delta_q_res))</code></pre>
+<p>The resulting <code>current_q_index</code> is clamped to the valid
+range of 0 to 255. This value serves as the actual QP index used to
+derive the AC and DC quantization steps for luma components in the
+current superblock and establishes the reference baseline for subsequent
+delta updates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

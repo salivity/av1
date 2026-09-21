@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Palette Mode Coding for Computer Graphics - av1</title>
+    <meta name="description" content="This article provides an overview of how the AV1 video codec implements palette mode coding to optimize the compression of computer-generated graphics and screen content. Traditional video coding tools rely on transforms like DCT, which are designed for">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-palette-mode-coding-for-computer-graphics">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Palette Mode Coding for Computer Graphics - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-palette-mode-coding-for-computer-graphics" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AV1 video codec implements palette mode coding to optimize the compression of computer-generated graphics and screen content. Traditional video coding tools rely on transforms like DCT, which are designed for" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-palette-mode-coding-for-computer-graphics">AV1 Palette Mode
+Coding for Computer Graphics</h1>
+<p>This article provides an overview of how the AV1 video codec
+implements palette mode coding to optimize the compression of
+computer-generated graphics and screen content. Traditional video coding
+tools rely on transforms like DCT, which are designed for
+continuous-tone photographic imagery and cause severe ringing artifacts
+when applied to sharp, flat-color computer graphics. AV1 circumvents
+this by treating blocks with limited color variations as indexed images,
+storing a small set of representative colors in a local palette and
+encoding pixels as an index map. Below is a detailed look at how AV1
+detects, structures, and encodes palette mode blocks to deliver high
+fidelity and low bitrates for synthetic imagery.</p>
+<h3 id="the-challenge-of-computer-generated-graphics">The Challenge of
+Computer-Generated Graphics</h3>
+<p>Synthetic content—such as desktop screen shares, slide presentations,
+video game user interfaces, and 2D animations—features unique
+characteristics compared to natural video:</p>
+<ul>
+<li>High-contrast, single-pixel edges (e.g., text, vector lines).</li>
+<li>Expansive regions of completely flat, uniform color.</li>
+<li>A low number of unique colors within localized regions.</li>
+</ul>
+<p>When a conventional intra-prediction and frequency-transform pipeline
+processes these sharp transitions, high-frequency coefficients are
+heavily quantized, introducing noticeable blur, edge distortion, and
+"mosquito noise."</p>
+<h3 id="palette-mode-activation-and-palette-sizing">Palette Mode
+Activation and Palette Sizing</h3>
+<p>AV1 includes palette mode as a specialized intra-coding tool. An
+encoder evaluates whether a block contains a small enough set of unique
+colors to justify a palette representation over standard directional
+intra-prediction.</p>
+<ul>
+<li><strong>Palette Size:</strong> An AV1 block can define a palette
+containing between 2 and 8 unique colors.</li>
+<li><strong>Color Channels:</strong> Palettes can be generated for the
+luma (<span class="math inline">\(Y\)</span>) channel and chroma (<span
+class="math inline">\(U, V\)</span>) channels independently, or
+evaluated jointly depending on the color format (such as YUV 4:2:0 or
+YUV 4:4:4).</li>
+<li><strong>Block Dimensions:</strong> Palette mode is available across
+standard square and rectangular block partitions, typically from <span
+class="math inline">\(8 \times 8\)</span> up to <span
+class="math inline">\(64 \times 64\)</span>.</li>
+</ul>
+<h3 id="palette-color-signaling">Palette Color Signaling</h3>
+<p>Once the encoder establishes the palette colors for a block, it must
+transmit those color values to the decoder with minimal overhead:</p>
+<ol type="1">
+<li><strong>Palette Predictor Cache:</strong> AV1 maintains a running
+cache of recently used palette colors from previously decoded
+neighboring blocks.</li>
+<li><strong>Bitstream Flags:</strong> The bitstream uses binary flags to
+signal whether a color from the cache is reused in the current block's
+palette.</li>
+<li><strong>Direct Transmission:</strong> Any colors not present in the
+cache are explicitly transmitted with delta encoding relative to
+previous entries, taking advantage of monotonic ordering to minimize bit
+consumption.</li>
+</ol>
+<h3 id="index-map-encoding">Index Map Encoding</h3>
+<p>After defining the palette table, the block’s pixels are converted
+into an index map where each pixel corresponds to a palette index (0
+through 7). AV1 encodes this 2D grid using an advanced context-adaptive
+entropy coding process rather than simple raw indices:</p>
+<ul>
+<li><strong>Neighborhood Context:</strong> Because adjacent pixels in
+synthetic graphics frequently share the exact same color, AV1 predicts
+the current pixel's index based on its top and left neighbors.</li>
+<li><strong>Run-Length Modeling:</strong> Consecutive identical indices
+are represented as runs, drastically reducing data size across flat
+geometric shapes or background fills.</li>
+<li><strong>Entropy Coding:</strong> The indices and run lengths are
+encoded through AV1's Multi-Symbol Arithmetic Coder using dynamically
+updated Cumulative Distribution Functions (CDFs).</li>
+</ul>
+<h3 id="impact-on-compression-and-visual-quality">Impact on Compression
+and Visual Quality</h3>
+<p>By bypassing the transform and quantization stages, palette mode
+provides two primary advantages for computer graphics:</p>
+<ul>
+<li><strong>Mathematical Precision:</strong> Flat regions and sharp
+boundaries are reconstructed perfectly or near-perfectly without
+rounding errors.</li>
+<li><strong>Bitrate Reductions:</strong> Storing a small table of colors
+and a run-length encoded index map requires significantly fewer bits
+than coding dense high-frequency transform coefficients.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

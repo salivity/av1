@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Relationship Between AV1 and AV2 Codecs - av1</title>
+    <meta name="description" content="The development of AV2 is directly tied to the technical foundation, ecosystem footprint, and institutional knowledge established by AV1. Developed by the Alliance for Open Media (AOMedia), AV1 set the benchmark for an open-source, royalty-free video sta">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/development-relationship-between-av-1-and-av-2-codecs">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Development Relationship Between AV1 and AV2 Codecs - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/development-relationship-between-av-1-and-av-2-codecs" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The development of AV2 is directly tied to the technical foundation, ecosystem footprint, and institutional knowledge established by AV1. Developed by the Alliance for Open Media (AOMedia), AV1 set the benchmark for an open-source, royalty-free video sta" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="development-relationship-between-av1-and-av2-codecs">Development
+Relationship Between AV1 and AV2 Codecs</h1>
+<p>The development of AV2 is directly tied to the technical foundation,
+ecosystem footprint, and institutional knowledge established by AV1.
+Developed by the Alliance for Open Media (AOMedia), AV1 set the
+benchmark for an open-source, royalty-free video standard capable of
+challenging proprietary formats. As AV1 transitions from rapid adoption
+to broad hardware maturity, AV2 represents its direct iterative
+successor, utilizing AV1's baseline architecture to target a 30% to 50%
+improvement in compression efficiency while maintaining the consortium’s
+open-standards ethos.</p>
+<h3 id="architectural-continuity-and-codebase-evolution">Architectural
+Continuity and Codebase Evolution</h3>
+<p>The development relationship between AV1 and AV2 is evolutionary
+rather than disruptive. AV2's experimental research started directly
+within the AOMedia repository as a branch of the AV1 reference software
+(<code>libaom</code>). Instead of designing an entirely new architecture
+from scratch, the working groups began by testing advanced coding tools
+on top of the established AV1 framework.</p>
+<p>Key compression pipelines established in AV1—such as directional
+intra-prediction, multi-symbol arithmetic coding, advanced compound
+inter-prediction, and restoration filters—serve as the testbed for AV2.
+Research teams analyze the computational bottlenecks and compression
+ceilings of these tools, either expanding their flexibility or replacing
+them with higher-order mathematical and machine-learning models to
+achieve deeper data compression.</p>
+<h3 id="the-staggered-lifecycle-strategy">The Staggered Lifecycle
+Strategy</h3>
+<p>AOMedia uses a staggered development roadmap to manage the
+relationship between AV1 and AV2 without fracturing the market:</p>
+<ul>
+<li><strong>AV1 Deployment Phase:</strong> Currently, AV1 is in its mass
+deployment phase. Modern mobile chipsets, graphics processors, web
+browsers, and smart TVs have integrated dedicated AV1 hardware decoders.
+This hardware adoption is critical because software decoding is
+computationally intensive on battery-constrained devices.</li>
+<li><strong>AV2 Research Phase:</strong> AV2 development runs
+concurrently with AV1 deployment, but on a timeline that prevents
+standard fatigue. By standardizing AV2 only after AV1 achieves broad
+silicon adoption, AOMedia ensures hardware manufacturers and content
+delivery networks (CDNs) have sufficient time to recoup their
+investments before transitioning to the next standard.</li>
+</ul>
+<h3 id="addressing-lessons-learned-from-av1">Addressing Lessons Learned
+from AV1</h3>
+<p>AV1 faced criticism during its initial rollout for high encoding
+complexity and prolonged encoding times compared to older standards like
+HEVC (H.265) and AVC (H.264). The working relationship between the two
+standards directly addresses this issue in AV2’s design philosophy:</p>
+<ul>
+<li><strong>Encoder Complexity Budget:</strong> Research for AV2 places
+stricter thresholds on the computational cost of new tools. An
+experimental tool offering marginal bitrate gains at the cost of
+exponential encoding complexity is often discarded.</li>
+<li><strong>Hardware-First Considerations:</strong> Hardware design
+cycles take several years. Silicon manufacturers participating in
+AOMedia are actively shaping AV2’s toolset to ensure that hardware
+decode implementations will not encounter excessive thermal or
+silicon-area penalties upon release.</li>
+<li><strong>Refined Film Grain Synthesis:</strong> AV1 introduced film
+grain synthesis to save bitrate on noisy content. AV2 expands on this
+parametric approach, evaluating more robust methods to separate visual
+details from procedural noise.</li>
+</ul>
+<h3 id="long-term-synergy">Long-Term Synergy</h3>
+<p>AV1 and AV2 are designed to coexist across different tiers of the
+media delivery chain. As AV2 approaches formal standardization, AV1 will
+serve as the broad-reach fallback standard across legacy devices,
+replacing H.264 in that role. Meanwhile, AV2 will gradually step in to
+handle bandwidth-critical applications, such as 8K streaming,
+high-frame-rate cloud gaming, and immersive virtual reality
+environments, fulfilling the progressive roadmap set by AOMedia.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

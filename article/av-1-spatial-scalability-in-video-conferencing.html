@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Spatial Scalability in Video Conferencing - av1</title>
+    <meta name="description" content="This article explores how the AV1 video codec implements spatial Scalable Video Coding (SVC) to optimize multi-party video conferencing. By generating a single bitstream that contains multiple resolution layers, AV1 enables real-time communication system">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-spatial-scalability-in-video-conferencing">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Spatial Scalability in Video Conferencing - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-spatial-scalability-in-video-conferencing" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the AV1 video codec implements spatial Scalable Video Coding (SVC) to optimize multi-party video conferencing. By generating a single bitstream that contains multiple resolution layers, AV1 enables real-time communication system" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-spatial-scalability-in-video-conferencing">AV1 Spatial
+Scalability in Video Conferencing</h1>
+<p>This article explores how the AV1 video codec implements spatial
+Scalable Video Coding (SVC) to optimize multi-party video conferencing.
+By generating a single bitstream that contains multiple resolution
+layers, AV1 enables real-time communication systems to dynamically serve
+participants with differing screen sizes and network conditions without
+placing heavy computational burdens on client encoders or conference
+servers.</p>
+<h3 id="native-bitstream-support-for-scalability">Native Bitstream
+Support for Scalability</h3>
+<p>Unlike legacy standards such as H.264, which required a complex and
+poorly adopted extension (SVC) to achieve layered coding, AV1
+incorporates scalable video coding directly into its core specification.
+AV1 achieves this through Open Bitstream Units (OBUs) and defined
+"Operating Points."</p>
+<p>An AV1 encoder includes scalability structure metadata within
+sequence headers. This metadata explicitly defines the spatial layers
+(e.g., 720p, 360p, and 180p) packaged within the stream. Decoders and
+media servers can parse this metadata to understand layer dependencies
+without needing to decode the underlying video frames.</p>
+<h3 id="inter-layer-reference-and-coding-efficiency">Inter-Layer
+Reference and Coding Efficiency</h3>
+<p>AV1 spatial scalability uses inter-layer prediction to maximize
+compression efficiency across different resolutions. In standard
+simulcast, a client encodes multiple independent video streams,
+duplicating motion estimation and picture details across every
+resolution.</p>
+<p>With AV1 spatial SVC, the encoder uses its flexible reference frame
+buffer—which allows tracking up to eight reference frames
+simultaneously—to share data between layers:</p>
+<ul>
+<li><strong>Base Layer:</strong> The lowest spatial resolution (e.g.,
+180p or 360p) is encoded independently using standard temporal
+references.</li>
+<li><strong>Enhancement Layers:</strong> Higher-resolution layers (e.g.,
+720p or 1080p) can reference both their own previous temporal frames and
+the upscaled reconstructed frames of the base layer within the same time
+instance.</li>
+</ul>
+<p>This inter-layer prediction significantly reduces the bitrate
+overhead compared to simulcasting multiple discrete video feeds.</p>
+<h3 id="selective-forwarding-unit-sfu-routing">Selective Forwarding Unit
+(SFU) Routing</h3>
+<p>In multi-party conference calls, media servers typically operate as
+Selective Forwarding Units (SFUs). An SFU does not decode or transcode
+incoming video; instead, it selectively routes video packets to
+participants based on their downstream network conditions and layout
+requirements.</p>
+<p>AV1 spatial scalability integrates directly into this
+architecture:</p>
+<ol type="1">
+<li><strong>Layer Dropping:</strong> If a participant experiences packet
+loss or bandwidth constraints, the SFU can strip away the
+higher-resolution enhancement layer packets and forward only the
+lower-resolution base layer.</li>
+<li><strong>Dynamic Resolution Switching:</strong> When a conference
+participant changes layout—such as switching a speaker from a small
+thumbnail to a full-screen view—the SFU immediately begins forwarding
+higher enhancement layers to that participant without requesting an IDR
+keyframe from the sender.</li>
+<li><strong>Low Latency:</strong> Because switching occurs by simply
+filtering packets at the network layer, there is zero transcoding delay
+introduced by the server.</li>
+</ol>
+<h3 id="client-side-resource-optimization">Client-Side Resource
+Optimization</h3>
+<p>Spatial SVC in AV1 reduces local device workload compared to
+simulcast. Instead of running two or three separate hardware encoder
+pipelines simultaneously, the device runs a single scalable encoder
+pipeline. This lowers memory bandwidth usage, reduces power consumption
+on mobile and laptop hardware, and maintains stable framerates during
+intensive multi-party calls.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

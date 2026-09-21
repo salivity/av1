@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Optimization Flags for Compiling AV1 libaom - av1</title>
+    <meta name="description" content="Compiling the AV1 Reference Encoder (libaom) with targeted CPU optimization flags dramatically accelerates video encoding speeds by taking full advantage of modern processor instruction sets and compiler-level enhancements. This guide outlines the essent">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/cpu-optimization-flags-for-compiling-av-1-libaom">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CPU Optimization Flags for Compiling AV1 libaom - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/cpu-optimization-flags-for-compiling-av-1-libaom" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Compiling the AV1 Reference Encoder (libaom) with targeted CPU optimization flags dramatically accelerates video encoding speeds by taking full advantage of modern processor instruction sets and compiler-level enhancements. This guide outlines the essent" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="cpu-optimization-flags-for-compiling-av1-libaom">CPU
+Optimization Flags for Compiling AV1 libaom</h1>
+<p>Compiling the AV1 Reference Encoder (<code>libaom</code>) with
+targeted CPU optimization flags dramatically accelerates video encoding
+speeds by taking full advantage of modern processor instruction sets and
+compiler-level enhancements. This guide outlines the essential CMake
+variables, SIMD instruction set toggles, and native C/C++ compiler flags
+necessary to maximize CPU performance during the <code>libaom</code>
+build process.</p>
+<h3 id="target-architecture-and-native-tuning">Target Architecture and
+Native Tuning</h3>
+<p>The most direct way to optimize <code>libaom</code> for your specific
+processor is through compiler architecture flags. When configuring the
+build with CMake, passing <code>-march=native</code> enables all
+instruction sets supported by the host machine.</p>
+<ul>
+<li><strong><code>-DCMAKE_C_FLAGS="-march=native -O3"</code></strong>:
+Instructs the compiler to generate code optimized specifically for the
+host CPU architecture and applies aggressive general optimizations.</li>
+<li><strong><code>-DCMAKE_CXX_FLAGS="-march=native -O3"</code></strong>:
+Applies the same native architecture and optimization profile to any C++
+components in the build.</li>
+<li><strong><code>-DCMAKE_BUILD_TYPE=Release</code></strong>: Ensures
+debugging symbols and assertions are stripped, enabling default
+high-level compiler optimizations.</li>
+</ul>
+<h3 id="simd-instruction-set-flags-in-cmake">SIMD Instruction Set Flags
+in CMake</h3>
+<p>The <code>libaom</code> build system provides direct toggles for
+processor-specific Single Instruction, Multiple Data (SIMD) extensions.
+While most modern compilers enable these automatically when
+<code>-march=native</code> is present, explicitly verifying or enabling
+them in CMake ensures optimal code paths are utilized.</p>
+<h4 id="x86_64-optimizations">x86_64 Optimizations</h4>
+<ul>
+<li><strong><code>-DENABLE_AVX2=ON</code></strong>: Activates Advanced
+Vector Extensions 2. This is the single most critical flag for modern
+x86_64 consumer CPUs (Intel Haswell or AMD Excavator and newer),
+providing massive performance uplifts during motion estimation and
+transform stages.</li>
+<li><strong><code>-DENABLE_AVX512=ON</code></strong>: Enables AVX-512
+extensions. Useful for supported Intel Xeon, Intel 11th Gen Core, or AMD
+Zen 4 and newer architectures. Note that some older processors may
+experience clock frequency downthrottling under heavy AVX-512 loads;
+verify performance gains on your specific hardware.</li>
+<li><strong><code>-DENABLE_SSE4_1=ON</code> /
+<code>-DENABLE_SSE4_2=ON</code></strong>: Activates legacy Streaming
+SIMD Extensions. These should remain enabled as fallbacks for routines
+that do not feature AVX implementations.</li>
+</ul>
+<h4 id="arm--aarch64-optimizations">ARM / AArch64 Optimizations</h4>
+<ul>
+<li><strong><code>-DENABLE_NEON=ON</code></strong>: Enables ARM NEON
+SIMD vector extensions. This flag is critical when compiling for ARM64
+platforms such as Apple Silicon or AWS Graviton processors to prevent
+the encoder from falling back to generic C implementations.</li>
+</ul>
+<h3 id="link-time-optimization-lto">Link-Time Optimization (LTO)</h3>
+<p>Link-Time Optimization allows the compiler to perform optimizations
+across different translation units rather than evaluating source files
+in isolation.</p>
+<ul>
+<li><strong><code>-DENABLE_LTO=ON</code></strong>: Enables
+interprocedural optimization across the entire library binary. This
+eliminates dead code, improves inlining across modules, and can deliver
+a 5% to 10% encoding speed improvement with the tradeoff of longer build
+times.</li>
+</ul>
+<h3 id="profile-guided-optimization-pgo">Profile-Guided Optimization
+(PGO)</h3>
+<p>For extreme performance, Profile-Guided Optimization involves
+compiling a binary with instrumentation, running a representative
+encoding workload, and recompiling using the generated execution
+profile.</p>
+<ol type="1">
+<li><strong>Instrumentation Phase</strong>: Build with
+<code>-DCMAKE_C_FLAGS="-fprofile-generate" -DCMAKE_CXX_FLAGS="-fprofile-generate"</code>.</li>
+<li><strong>Profile Generation</strong>: Run an encode on typical video
+footage using standard target settings (e.g., standard 1080p source at
+CPU used 4–6).</li>
+<li><strong>Optimized Build</strong>: Reconfigure and recompile the
+project using
+<code>-DCMAKE_C_FLAGS="-fprofile-use" -DCMAKE_CXX_FLAGS="-fprofile-use"</code>.</li>
+</ol>
+<p>PGO allows the compiler to better predict branch decisions, cache
+layouts, and function inlining tailored specifically to the AV1 encoding
+algorithm.</p>
+<h3 id="multi-threading-and-concurrency">Multi-Threading and
+Concurrency</h3>
+<p>While not strictly an instruction-level flag, multithreading
+configuration is essential for maximizing multi-core CPU
+utilization.</p>
+<ul>
+<li><strong><code>-DCONFIG_MULTITHREAD=1</code></strong>: Enables
+built-in multithreading support (enabled by default). It ensures the
+compiled library can utilize row-based multithreading
+(<code>--row-mt=1</code>) and tile-based multithreading during encoding
+jobs.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Role of the Sequence Header OBU in AV1 - av1</title>
+    <meta name="description" content="This article provides an overview of the Sequence Header Open Bitstream Unit (OBU) in the AV1 video codec, explaining its critical function as the foundational configuration block of the bitstream. It details how the Sequence Header establishes essential">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/the-role-of-the-sequence-header-obu-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Role of the Sequence Header OBU in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/the-role-of-the-sequence-header-obu-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the Sequence Header Open Bitstream Unit (OBU) in the AV1 video codec, explaining its critical function as the foundational configuration block of the bitstream. It details how the Sequence Header establishes essential" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="the-role-of-the-sequence-header-obu-in-av1">The Role of the
+Sequence Header OBU in AV1</h1>
+<p>This article provides an overview of the Sequence Header Open
+Bitstream Unit (OBU) in the AV1 video codec, explaining its critical
+function as the foundational configuration block of the bitstream. It
+details how the Sequence Header establishes essential decoding
+parameters—including profile levels, image dimensions, color
+characteristics, and buffer timing—and examines why it is vital for
+stream initialization, random access, and seamless playback.</p>
+<h3 id="defining-the-av1-bitstream-architecture">Defining the AV1
+Bitstream Architecture</h3>
+<p>The AV1 specification packages all video data into modular containers
+called Open Bitstream Units (OBUs). Each OBU carries a specific payload,
+such as frame data, tile groups, metadata, or header structures. Among
+these, the Sequence Header OBU (<code>OBU_SEQUENCE_HEADER</code>) serves
+as the primary configuration structure for an entire coded video
+sequence (CVS). A decoder cannot interpret any subsequent frame or tile
+data without first receiving and parsing a Sequence Header OBU.</p>
+<h3 id="core-functions-of-the-sequence-header-obu">Core Functions of the
+Sequence Header OBU</h3>
+<p>The Sequence Header OBU communicates static, stream-wide properties
+that govern how a decoder allocates resources and processes incoming
+frames. Its key roles include:</p>
+<ul>
+<li><strong>Profile, Tier, and Level Signaling:</strong> It specifies
+the AV1 profile (Main, High, or Professional), tier, and operational
+level. This signals the required decoding capabilities, including
+maximum bitrate, buffer capacity, and processing limits necessary to
+decode the content.</li>
+<li><strong>Maximum Canvas Dimensions:</strong> It declares the maximum
+width and height that any frame in the sequence can reach. By setting
+these upper bounds, the decoder can pre-allocate memory buffers,
+enabling dynamic resolution switching without requiring a complete
+re-initialization of the decoder context.</li>
+<li><strong>Color Format and Bit Depth Configuration:</strong> It
+dictates the color depth (8-bit, 10-bit, or 12-bit), chroma subsampling
+format (e.g., 4:2:0, 4:2:2, or 4:4:4), color primaries, transfer
+characteristics (such as HDR10, HLG, or SDR), and color matrix
+coefficients.</li>
+<li><strong>Feature Availability:</strong> It enables or disables
+sequence-wide tools, such as film grain synthesis, screen content tools,
+intra-edge filtering, and whether frame order hints are used.</li>
+<li><strong>Timing and Synchronization:</strong> When present, the
+timing information syntax inside the sequence header provides the time
+scale, tick rate, and decoder buffer model parameters. This ensures
+synchronized delivery and helps prevent buffer underflow or
+overflow.</li>
+</ul>
+<h3 id="random-access-and-streaming-robustness">Random Access and
+Streaming Robustness</h3>
+<p>In streaming architectures and video broadcasting, consumers
+frequently tune into live feeds mid-transmission or seek across
+timelines. Because all dependent frames rely on the parameters
+established by the sequence header, the Sequence Header OBU is
+repeatedly inserted throughout the bitstream, typically preceding
+keyframes (IDR frames). This repetition allows decoders to rapidly
+synchronize and begin rendering video from any designated random-access
+point without waiting for the stream to restart from the beginning.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

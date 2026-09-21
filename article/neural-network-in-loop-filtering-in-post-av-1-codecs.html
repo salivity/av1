@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network In-Loop Filtering in Post-AV1 Codecs - av1</title>
+    <meta name="description" content="As the Alliance for Open Media (AOMedia) advances research into next-generation video compression beyond AV1—commonly referred to within the AOM Video Model (AVM) research codebase—neural-network-based in-loop filtering has emerged as a cornerstone t">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/neural-network-in-loop-filtering-in-post-av-1-codecs">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Neural Network In-Loop Filtering in Post-AV1 Codecs - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/neural-network-in-loop-filtering-in-post-av-1-codecs" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="As the Alliance for Open Media (AOMedia) advances research into next-generation video compression beyond AV1—commonly referred to within the AOM Video Model (AVM) research codebase—neural-network-based in-loop filtering has emerged as a cornerstone t" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="neural-network-in-loop-filtering-in-post-av1-codecs">Neural
+Network In-Loop Filtering in Post-AV1 Codecs</h1>
+<p>As the Alliance for Open Media (AOMedia) advances research into
+next-generation video compression beyond AV1—commonly referred to within
+the AOM Video Model (AVM) research codebase—neural-network-based in-loop
+filtering has emerged as a cornerstone technology. This article examines
+the critical function of neural network in-loop filters (NNLF) in
+post-AV1 development, detailing how deep learning replaces or enhances
+traditional filtering stages, the mechanisms behind its compression
+efficiency, and the computational hurdles standard-setting bodies must
+overcome before commercial deployment.</p>
+<h3 id="the-function-of-in-loop-filters-in-video-codecs">The Function of
+In-Loop Filters in Video Codecs</h3>
+<p>In-loop filters are processing stages applied inside the
+reconstruction loop of a video encoder and decoder. Because they are
+"in-loop," the filtered frames serve as reference pictures for
+subsequent inter-frame prediction, directly influencing the accuracy and
+visual fidelity of future frames.</p>
+<p>AV1 utilizes three primary heuristic and model-based in-loop
+filters:</p>
+<ol type="1">
+<li><strong>Deblocking Filter (DF):</strong> Smooths boundaries caused
+by block-based transform and quantization partitions.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+Identifies directional edge patterns to reduce ringing artifacts without
+blurring critical borders.</li>
+<li><strong>Loop Restoration (LR):</strong> Employs Wiener filtering or
+Self-Guided restoration to recover lost edge details based on
+frame-level Wiener coefficients.</li>
+</ol>
+<p>While effective, these filters rely on hand-crafted mathematical
+algorithms that operate within narrow, localized spatial contexts and
+struggle to generalize across diverse, complex compression
+artifacts.</p>
+<h3 id="the-neural-network-paradigm-shift-in-post-av1-research">The
+Neural-Network Paradigm Shift in Post-AV1 Research</h3>
+<p>In post-AV1 exploration, deep convolutional neural networks (CNNs)
+and lightweight attention mechanisms are deployed to augment or replace
+the traditional DF, CDEF, and LR pipelines. Instead of calculating
+static edge vectors or applying basic cross-shaped Wiener kernels, an
+NNLF takes reconstructed frames along with auxiliary
+side-information—such as partition trees, prediction modes, and
+quantization parameters (QP)—to predict and reconstruct a cleaned
+version of the frame.</p>
+<p>Because neural networks model non-linear image degradation more
+accurately than classical algorithms, they achieve substantial gains in
+coding efficiency. In ongoing AVM evaluations, NNLF configurations
+typically deliver Bjøntegaard-Delta rate (BD-rate) savings between 5%
+and 15% across common test conditions. This means post-AV1 codecs can
+deliver the same perceived video quality as AV1 while using
+significantly less network bandwidth.</p>
+<h3 id="improving-motion-compensation-and-prediction">Improving Motion
+Compensation and Prediction</h3>
+<p>Beyond improving individual frame quality, the defining advantage of
+an <em>in-loop</em> neural filter is its compounding effect across
+temporal sequences. When reference frames stored in the Decoded Picture
+Buffer (DPB) have fewer artifacts and sharper edge structures,
+subsequent motion estimation and compensation algorithms yield smaller
+residual errors. Consequently, fewer transform coefficients must be
+transmitted for future inter-frames, compounding compression gains
+across long Groups of Pictures (GOPs).</p>
+<h3 id="technical-challenges-and-standardization-hurdles">Technical
+Challenges and Standardization Hurdles</h3>
+<p>Despite clear compression benefits, integrating neural networks into
+a global open standard introduces several engineering constraints:</p>
+<ul>
+<li><strong>Computational Complexity:</strong> Deep neural networks
+demand orders of magnitude more arithmetic operations (MACs) than
+classical filters. Real-time decoding on consumer hardware requires
+extremely compact architectures.</li>
+<li><strong>Deterministic Inference and Drift:</strong> Standardized
+video codecs require that every conforming decoder produces
+bit-identical output. Variations in floating-point calculations across
+different GPUs, NPUs, and CPUs can cause reference-frame drift, leading
+to severe visual corruption over time. Post-AV1 research actively
+focuses on strictly constrained integer arithmetic (such as 8-bit or
+16-bit fixed-point quantization) to ensure deterministic results.</li>
+<li><strong>Memory Bandwidth:</strong> Accessing multi-scale feature
+maps in deep networks consumes substantial memory bandwidth, which is
+often the primary bottleneck in mobile System-on-Chip (SoC)
+architectures.</li>
+</ul>
+<h3 id="future-outlook">Future Outlook</h3>
+<p>Neural-network in-loop filtering represents the transition from
+purely mathematical signal processing to hybrid deep-learning video
+coding. As research on post-AV1 formats matures, standardization efforts
+focus heavily on structural pruning, parameter-sharing, and
+hardware-conscious network topologies to ensure that the substantial
+coding gains of neural filters can be realized in practical,
+energy-efficient silicon.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

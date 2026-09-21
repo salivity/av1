@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Keyframe Placement for Adaptive Bitrate Streaming - av1</title>
+    <meta name="description" content="This article provides an overview of keyframe placement strategies used in AV1 encoding for adaptive bitrate (ABR) streaming workflows. It explores the technical necessity of aligning keyframes across bitrate ladders, evaluates fixed versus dynamic GOP s">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-keyframe-placement-for-adaptive-bitrate-streaming">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Keyframe Placement for Adaptive Bitrate Streaming - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-keyframe-placement-for-adaptive-bitrate-streaming" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of keyframe placement strategies used in AV1 encoding for adaptive bitrate (ABR) streaming workflows. It explores the technical necessity of aligning keyframes across bitrate ladders, evaluates fixed versus dynamic GOP s" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-keyframe-placement-for-adaptive-bitrate-streaming">AV1
+Keyframe Placement for Adaptive Bitrate Streaming</h1>
+<p>This article provides an overview of keyframe placement strategies
+used in AV1 encoding for adaptive bitrate (ABR) streaming workflows. It
+explores the technical necessity of aligning keyframes across bitrate
+ladders, evaluates fixed versus dynamic GOP structures, and examines
+AV1-specific features—such as Switch Frames (S-frames)—that optimize
+bandwidth efficiency without sacrificing smooth playback during network
+fluctuations.</p>
+<h2 id="the-role-of-keyframes-in-adaptive-bitrate-streaming">The Role of
+Keyframes in Adaptive Bitrate Streaming</h2>
+<p>In adaptive bitrate streaming protocols like HLS and DASH, video
+streams are split into multi-second segments (typically between 2 to 6
+seconds). A client device dynamically switches between high- and
+low-bandwidth renditions based on changing network conditions.</p>
+<p>For seamless switching, every stream rendition in an encoding ladder
+must contain a keyframe (intra-frame) at the exact same presentation
+timestamp (PTS). If keyframes are misaligned, switching between bitrates
+causes playback artifacts, buffering, or decoder crashes because the
+decoder cannot find the required reference frames.</p>
+<h2 id="fixed-interval-closed-gops">Fixed-Interval Closed GOPs</h2>
+<p>The standard approach for ABR streaming is the fixed-interval Closed
+Group of Pictures (GOP). In this strategy, keyframes are inserted at
+absolute, non-negotiable intervals matching the streaming segment
+length.</p>
+<ul>
+<li><strong>Closed GOP Enforcement:</strong> Inter-frame prediction
+(P-frames or B-frames) is strictly prohibited from referencing frames
+prior to the keyframe. This ensures each segment is completely
+self-contained and decodable independently.</li>
+<li><strong>Strict Cadence:</strong> In encoders like SVT-AV1 or libaom,
+the minimum and maximum keyframe intervals (<code>--min-keyint</code>
+and <code>--keyint</code>) are set to the identical value (e.g., at 60
+fps with 2-second segments, both are set to 120).</li>
+<li><strong>Trade-offs:</strong> While this approach guarantees
+predictable segment boundaries and smooth bitrate switching, it
+sacrifices compression efficiency if a keyframe is forced immediately
+after a natural scene change.</li>
+</ul>
+<h2 id="scene-aware-dynamic-keyframe-insertion">Scene-Aware Dynamic
+Keyframe Insertion</h2>
+<p>Enforcing keyframes only at fixed intervals can degrade visual
+quality when high-motion scene changes occur between segment boundaries.
+A dynamic keyframe strategy incorporates scene-cut detection alongside
+fixed boundaries.</p>
+<ul>
+<li><strong>Primary Boundaries:</strong> Keyframes are locked to segment
+intervals (e.g., every 2 seconds) across all renditions.</li>
+<li><strong>Secondary Intra-Frames:</strong> The encoder's lookahead
+module identifies abrupt scene changes within a segment and inserts an
+intra-frame. Because intra-frames are computationally heavy, encoders
+must constrain the minimum distance between them to prevent sudden
+bitrate spikes.</li>
+<li><strong>Ladder Consistency:</strong> If dynamic scene-cut keyframes
+are utilized, the scene-cut decisions must be applied globally across
+every rendition in the ABR ladder, typically by using a master pass or
+shared segmentation map.</li>
+</ul>
+<h2 id="av1-switch-frames-s-frames">AV1 Switch Frames (S-Frames)</h2>
+<p>AV1 introduces a specialized frame type designed specifically to
+solve the inefficiencies of traditional ABR keyframe placement: the
+Switch Frame (S-frame).</p>
+<p>In traditional codecs, changing bitrates requires an IDR
+(Instantaneous Decoder Refresh) frame, which is an intra-coded frame
+that resets the reference buffer. Intra-frames require significantly
+more bits than inter-coded frames, causing periodic bitrate spikes at
+segment boundaries.</p>
+<p>AV1 S-frames allow a video stream to switch to a different rendition
+without requiring a full intra-coded frame.</p>
+<ul>
+<li>An S-frame is predicted from reference frames of the <em>same</em>
+presentation time within a different bitrate track of the same ladder,
+provided the tracks are synchronized.</li>
+<li>By allowing inter-frame prediction across tracks at predefined
+switch points, S-frames reduce the bitrate overhead of segment
+boundaries by up to 20–30% compared to traditional IDR-based fixed
+GOPs.</li>
+<li>This mechanism maintains strict decodability for ABR clients while
+preserving coding efficiency.</li>
+</ul>
+<h2 id="open-gop-configurations-in-abr">Open GOP Configurations in
+ABR</h2>
+<p>While Closed GOPs are standard for strict ABR segmentation, Open GOPs
+allow frames following a keyframe to reference frames that preceded
+it.</p>
+<ul>
+<li><strong>Compression Advantage:</strong> Open GOPs provide better
+compression efficiency because the frames immediately following a
+keyframe can reference high-quality data from the previous GOP.</li>
+<li><strong>ABR Constraint:</strong> Open GOPs cannot be used at
+arbitrary segment boundaries if the client switches tracks, as the
+reference frames from the previous rendition will not match.</li>
+<li><strong>Implementation:</strong> When used in ABR, encoders place
+Open GOP keyframes internally within segments, reserving Closed GOP
+keyframes (or S-frames) strictly for the segment division points where
+track-switching occurs.</li>
+</ul>
+<h2 id="best-practices-for-av1-abr-encoders">Best Practices for AV1 ABR
+Encoders</h2>
+<p>To maximize streaming stability and bandwidth efficiency in
+production AV1 workflows:</p>
+<ol type="1">
+<li><strong>Synchronize Segment Lengths:</strong> Match
+<code>--keyint</code> directly to the segment duration (e.g.,
+<code>--keyint 48</code> for 2-second segments at 24 fps).</li>
+<li><strong>Standardize Decisions:</strong> If using two-pass encoding
+with dynamic scene detection, generate a first-pass analysis file and
+apply it uniformly across all renditions in the ladder to prevent
+boundary mismatches.</li>
+<li><strong>Leverage S-Frames:</strong> When supported by the downstream
+packager and target client decoders, configure the AV1 encoder to use
+S-frames at segment switch points instead of full intra-only
+keyframes.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

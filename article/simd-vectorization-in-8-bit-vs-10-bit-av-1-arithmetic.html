@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMD Vectorization in 8-Bit vs 10-Bit AV1 Arithmetic - av1</title>
+    <meta name="description" content="Single Instruction, Multiple Data (SIMD) vectorization is the backbone of real-time AV1 encoding and decoding performance, allowing modern processors to manipulate multiple pixel values simultaneously. This article explores how SIMD vectorization acceler">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/simd-vectorization-in-8-bit-vs-10-bit-av-1-arithmetic">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SIMD Vectorization in 8-Bit vs 10-Bit AV1 Arithmetic - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/simd-vectorization-in-8-bit-vs-10-bit-av-1-arithmetic" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Single Instruction, Multiple Data (SIMD) vectorization is the backbone of real-time AV1 encoding and decoding performance, allowing modern processors to manipulate multiple pixel values simultaneously. This article explores how SIMD vectorization acceler" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="simd-vectorization-in-8-bit-vs-10-bit-av1-arithmetic">SIMD
+Vectorization in 8-Bit vs 10-Bit AV1 Arithmetic</h1>
+<p>Single Instruction, Multiple Data (SIMD) vectorization is the
+backbone of real-time AV1 encoding and decoding performance, allowing
+modern processors to manipulate multiple pixel values simultaneously.
+This article explores how SIMD vectorization accelerates AV1 arithmetic
+operations across 8-bit and 10-bit color depths. It covers register lane
+utilization, arithmetic expansion and overflow management, memory
+bandwidth constraints, and why 8-bit pipelines consistently achieve
+significantly higher mathematical throughput compared to their 10-bit
+counterparts.</p>
+<h2 id="register-packing-and-lane-utilization">Register Packing and Lane
+Utilization</h2>
+<p>The primary performance difference between 8-bit and 10-bit AV1
+arithmetic in SIMD stems from data alignment within vector registers.
+Standard CPU architectures (such as x86 using AVX2/AVX-512 or ARM using
+NEON/SVE) feature vector registers sized at 128, 256, or 512 bits. These
+architectures provide native operations for 8-bit bytes, 16-bit
+half-words, 32-bit words, and 64-bit double-words, but they lack native
+support for 10-bit integers.</p>
+<p>Because hardware registers do not support arbitrary 10-bit lanes,
+10-bit AV1 pixel data must be stored within 16-bit containers. This
+introduces a structural throughput divide:</p>
+<ul>
+<li><strong>8-bit Pipelines:</strong> A 256-bit vector register (e.g.,
+AVX2) holds 32 packed 8-bit samples. A 512-bit register (AVX-512)
+processes 64 samples in a single operation.</li>
+<li><strong>10-bit Pipelines:</strong> Storing 10-bit samples in 16-bit
+lanes means a 256-bit register holds only 16 samples, and a 512-bit
+register holds 32 samples.</li>
+</ul>
+<p>Even without considering mathematical complexity, 8-bit processing
+processes twice as many raw samples per cycle as 10-bit processing for
+purely element-wise operations like clipping, addition, and
+blending.</p>
+<h2 id="arithmetic-promotion-and-overflow-headroom">Arithmetic Promotion
+and Overflow Headroom</h2>
+<p>AV1 workloads—including the discrete cosine transform (DCT),
+asymmetric discrete sine transform (ADST), intra-prediction, and loop
+filters (such as CDEF and the loop restoration filter)—involve
+continuous accumulation and matrix multiplications. These arithmetic
+operations quickly exceed the original bit-depth of the input pixels,
+forcing algorithms to promote data types into larger intermediate
+containers to prevent numeric overflow.</p>
+<p>In an 8-bit pipeline, intermediate products can frequently be
+accumulated in 16-bit registers. Instructions such as
+<code>pmaddubsw</code> (Multiply and Add Packed Unsigned and Signed
+Bytes) multiply pairs of 8-bit values and accumulate them into 16-bit
+signed integers in a single clock cycle. This allows 8-bit AV1
+algorithms to maintain high vector density even during stages with
+intermediate expansion.</p>
+<p>In a 10-bit pipeline, multiplying two values already requires
+intermediate headroom beyond 16 bits (up to 20 bits or more during
+accumulation). Consequently, the data must be unpacked and promoted from
+16-bit containers into 32-bit integers. Promoting to 32-bit lanes cuts
+vector capacity in half again: a 256-bit register processes only 8 lanes
+at a time. The result is a substantial drop in arithmetic throughput, as
+operations require twice as many instructions and registers to compute
+the same number of pixel values.</p>
+<h2
+id="instruction-set-efficiency-across-transforms-and-filters">Instruction
+Set Efficiency Across Transforms and Filters</h2>
+<p>The arithmetic efficiency gap is particularly visible in AV1's core
+computational modules:</p>
+<h3 id="1-directional-intra-prediction">1. Directional Intra
+Prediction</h3>
+<p>Intra-prediction involves linear interpolation between reference
+pixels. In 8-bit mode, fractional weighting operations can be handled
+using byte-level shifts and multiplies, often completing an entire 4x4
+or 8x8 block prediction in a few instructions. In 10-bit mode, reference
+pixels must be loaded as 16-bit words, multiplied, shifted, and clamped,
+requiring roughly double the number of vector instructions to evaluate
+the same spatial area.</p>
+<h3 id="2-constrained-directional-enhancement-filter-cdef">2.
+Constrained Directional Enhancement Filter (CDEF)</h3>
+<p>CDEF relies heavily on determining the primary direction of edges and
+applying non-linear filtering along that direction. The filter uses
+conditional thresholding and absolute difference operations. Because
+8-bit values can use saturated arithmetic (<code>paddusb</code>,
+<code>psubusb</code>) natively across 32 or 64 lanes simultaneously,
+edge detection runs at near-peak hardware throughput. The 10-bit CDEF
+algorithm requires 16-bit arithmetic, increasing latency per vector
+execution block.</p>
+<h3 id="3-loop-restoration-filter-wiener-and-self-guided">3. Loop
+Restoration Filter (Wiener and Self-Guided)</h3>
+<p>The Wiener filter requires separable symmetric convolutions across
+horizontal and vertical axes. Accumulating products over a 7-tap filter
+pushes mathematical values far beyond 8-bit boundaries. For 8-bit AV1,
+these taps fit neatly into 16-bit accumulation pathways. For 10-bit AV1,
+the intermediate sums often require 32-bit integer arithmetic to retain
+precision before final normalization, creating significant register
+pressure and spill-over into memory caches.</p>
+<h2 id="memory-bandwidth-and-cache-footprint">Memory Bandwidth and Cache
+Footprint</h2>
+<p>SIMD arithmetic units can only perform as fast as load and store
+instructions feed them. Because 10-bit data is padded into 16-bit words
+in memory to enable efficient SIMD vector alignment, a 10-bit frame uses
+100% more memory bandwidth and CPU cache space than an unpadded 8-bit
+frame, despite carrying only 25% more dynamic range information.</p>
+<p>This increased memory footprint reduces the efficiency of L1 and L2
+data caches. An L1 data cache line (typically 64 bytes) stores 64
+samples of 8-bit data, but only 32 samples of padded 10-bit data. The
+lower data density leads to higher cache miss rates during memory-bound
+operations like motion estimation, reference frame fetching, and motion
+compensation, causing the SIMD execution units to stall more frequently
+while waiting for memory operands.</p>
+<h2 id="summary-of-throughput-differences">Summary of Throughput
+Differences</h2>
+<p>SIMD vectorization accelerates both 8-bit and 10-bit AV1 pipelines,
+but architectural constraints favor 8-bit operations. By avoiding
+container waste and maintaining smaller intermediate footprints during
+arithmetic expansion, 8-bit AV1 pipelines achieve up to a 2x to 4x
+mathematical throughput advantage over 10-bit pipelines on equivalent
+SIMD hardware widths.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

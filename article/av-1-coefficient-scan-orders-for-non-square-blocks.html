@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Coefficient Scan Orders for Non-Square Blocks - av1</title>
+    <meta name="description" content="In the AV1 video codec, coefficient scan orders for non-square transform blocks map two-dimensional quantized transform coefficients into a one-dimensional array for entropy coding. Rather than relying solely on traditional diagonal zigzag scanning, AV1">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-coefficient-scan-orders-for-non-square-blocks">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Coefficient Scan Orders for Non-Square Blocks - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-coefficient-scan-orders-for-non-square-blocks" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the AV1 video codec, coefficient scan orders for non-square transform blocks map two-dimensional quantized transform coefficients into a one-dimensional array for entropy coding. Rather than relying solely on traditional diagonal zigzag scanning, AV1" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-coefficient-scan-orders-for-non-square-blocks">AV1
+Coefficient Scan Orders for Non-Square Blocks</h1>
+<p>In the AV1 video codec, coefficient scan orders for non-square
+transform blocks map two-dimensional quantized transform coefficients
+into a one-dimensional array for entropy coding. Rather than relying
+solely on traditional diagonal zigzag scanning, AV1 determines scan
+paths using pre-computed lookup tables optimized for specific aspect
+ratios, transform types, and sub-block groupings. This article explains
+how AV1 structures non-square transform sizes, organizes hierarchical
+sub-blocks, and applies pre-calculated scan tables to maximize
+compression efficiency.</p>
+<h3 id="non-square-block-dimensions-in-av1">Non-Square Block Dimensions
+in AV1</h3>
+<p>AV1 expands on previous standards by supporting extended non-square
+partition shapes and transform sizes. Non-square blocks exist in both
+2:1 / 1:2 ratios (e.g., 4x8, 8x4, 8x16, 16x8, 16x32, 32x16, 32x64,
+64x32) and 4:1 / 1:4 ratios (e.g., 4x16, 16x4, 8x32, 32x8, 16x64,
+64x16).</p>
+<p>Because non-square blocks exhibit asymmetric spatial correlations,
+residual energy is distributed unevenly between the horizontal and
+vertical frequency axes. High spatial frequency along the shorter
+dimension tends to have lower correlation, requiring specialized scan
+orders to group high-energy low-frequency coefficients together at the
+beginning of the entropy coding stage.</p>
+<h3 id="sub-block-hierarchical-scanning">Sub-Block Hierarchical
+Scanning</h3>
+<p>To maintain hardware parsing throughput and minimize memory access
+overhead, AV1 processes transform blocks using a hierarchical sub-block
+scanning structure.</p>
+<ol type="1">
+<li><strong>Sub-Unit Grouping:</strong> Blocks are divided into small,
+fixed-size coefficient clusters—predominantly 4x4 sub-blocks (or 2x2 and
+4x2/2x4 groupings for blocks containing 2- or 4-pixel dimensions).</li>
+<li><strong>Inter-Sub-Block Scanning:</strong> The codec traverses
+across the sub-blocks in a defined sequence based on the dominant
+dimension of the block. For example, a wide horizontal block (such as
+16x4) traverses sub-blocks along the horizontal axis differently than a
+tall vertical block (such as 4x16).</li>
+<li><strong>Intra-Sub-Block Scanning:</strong> Within each 4x4
+sub-block, individual frequency bins are scanned using a localized
+pattern that mirrors the local energy concentration.</li>
+</ol>
+<h3 id="role-of-transform-type-combinations">Role of Transform Type
+Combinations</h3>
+<p>Scan orders are coupled with the two-dimensional separable transform
+types applied to the block. AV1 pairs independent 1D horizontal and
+vertical transforms, which include:</p>
+<ul>
+<li>Discrete Cosine Transform (DCT)</li>
+<li>Asymmetric Discrete Sine Transform (ADST)</li>
+<li>Flipped ADST (FLIPADST)</li>
+<li>Identity Transform (IDTX)</li>
+</ul>
+<p>The specific combination of horizontal and vertical transforms
+influences where the energy resides. For instance, pairing a 1D DCT
+horizontally with an Identity transform vertically creates strong
+directional clustering along the vertical axis. The scan order adapts to
+ensure that coefficients with the highest probability of non-zero values
+are evaluated first.</p>
+<h3 id="static-pre-computed-tables">Static Pre-Computed Tables</h3>
+<p>Unlike codecs that dynamically derive scan orders at runtime through
+complex heuristics, AV1 uses static scan tables defined directly in the
+codec specification.</p>
+<ul>
+<li><strong>Look-up Parameters:</strong> The scan table is indexed using
+two primary parameters: the transform block size (<code>TxSize</code>)
+and the transform kernel combination (<code>TxType</code>).</li>
+<li><strong>Statistical Derivation:</strong> During the development of
+the AV1 format, these tables were derived offline using empirical
+training data. The probabilities of non-zero coefficients across
+millions of sample video frames were sorted by descending likelihood to
+establish an optimal traversal sequence for every supported non-square
+size and transform combination.</li>
+</ul>
+<h3 id="reverse-direction-processing">Reverse Direction Processing</h3>
+<p>Entropy coding in AV1 operates in reverse order. After identifying
+the End of Block (<code>EOB</code>) position—the index of the
+highest-frequency non-zero coefficient—the parser processes coefficients
+from the <code>EOB</code> backward toward the DC coefficient located at
+<code>(0, 0)</code>. The predetermined scan order provides the exact
+coordinates for this reverse traversal, allowing the context modeling
+engine to efficiently track non-zero coefficient counts and zero-run
+lengths.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

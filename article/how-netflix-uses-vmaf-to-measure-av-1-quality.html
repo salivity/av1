@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Netflix Uses VMAF to Measure AV1 Quality - av1</title>
+    <meta name="description" content="Netflix evaluates the streaming efficiency and visual performance of the AV1 video codec by pairing extensive encoding tests with Video Multi-Method Assessment Fusion (VMAF), its open-source perceptual video quality metric. Instead of relying solely on t">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-netflix-uses-vmaf-to-measure-av-1-quality">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Netflix Uses VMAF to Measure AV1 Quality - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-netflix-uses-vmaf-to-measure-av-1-quality" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Netflix evaluates the streaming efficiency and visual performance of the AV1 video codec by pairing extensive encoding tests with Video Multi-Method Assessment Fusion (VMAF), its open-source perceptual video quality metric. Instead of relying solely on t" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-netflix-uses-vmaf-to-measure-av1-quality">How Netflix Uses
+VMAF to Measure AV1 Quality</h1>
+<p>Netflix evaluates the streaming efficiency and visual performance of
+the AV1 video codec by pairing extensive encoding tests with Video
+Multi-Method Assessment Fusion (VMAF), its open-source perceptual video
+quality metric. Instead of relying solely on traditional mathematical
+indicators like Peak Signal-to-Noise Ratio (PSNR), Netflix uses VMAF to
+simulate human perception and accurately quantify how much visual
+quality improves—or how much bandwidth is saved—when upgrading to AV1
+from older standards like AVC (H.264), HEVC (H.265), and VP9.</p>
+<h3 id="the-role-of-vmaf-in-perceptual-testing">The Role of VMAF in
+Perceptual Testing</h3>
+<p>Traditional objective metrics like PSNR and Structural Similarity
+Index (SSIM) calculate pixel-to-pixel differences, often penalizing
+advanced compression techniques that look visually identical to the
+human eye. AV1 introduces complex encoding tools such as directional
+intra-prediction, advanced transform block sizes, and film grain
+synthesis.</p>
+<p>Because these tools alter pixels deliberately to optimize bandwidth,
+traditional metrics can report misleading quality drops. VMAF solves
+this by combining multiple quality metrics (such as Visual Information
+Fidelity and Detail Loss Metric) with a machine-learning model trained
+on subjective viewing scores. The result is a single metric, scaled from
+0 to 100, that strongly correlates with human visual perception.</p>
+<h3 id="the-dynamic-optimizer-and-convex-hull-analysis">The Dynamic
+Optimizer and Convex Hull Analysis</h3>
+<p>To measure AV1's performance, Netflix integrates VMAF into its
+Dynamic Optimizer encoding framework. This process evaluates quality
+through the following steps:</p>
+<ol type="1">
+<li><strong>Shot-Based Segmentation:</strong> Full-length content is
+split into individual video shots rather than fixed-length chunks. This
+accounts for distinct motion, grain, and lighting characteristics per
+scene.</li>
+<li><strong>Exhaustive Parameter Sweeps:</strong> Each shot is encoded
+across dozens of configurations, varying resolutions (from 360p up to
+4K), quantization parameters, and AV1 encoder presets.</li>
+<li><strong>Convex Hull Generation:</strong> Netflix calculates the VMAF
+score for every encode. By plotting bitrate against VMAF, the system
+identifies the "convex hull"—the Pareto-optimal curve of operating
+points that yield the highest possible VMAF score at any targeted
+bitrate.</li>
+</ol>
+<h3 id="quantifying-gains-with-bjøntegaard-delta-bd-metrics">Quantifying
+Gains with Bjøntegaard Delta (BD) Metrics</h3>
+<p>To compare AV1 directly against existing codecs, Netflix utilizes the
+Bjøntegaard Delta Rate (BD-Rate) metric, calculated using VMAF as the
+quality axis rather than PSNR:</p>
+<ul>
+<li><strong>BD-Rate (VMAF):</strong> Measures the average percentage of
+bandwidth saved when achieving the exact same VMAF score across
+comparison codecs.</li>
+<li><strong>BD-VMAF:</strong> Measures the average gain in VMAF points
+when holding the streaming bitrate constant.</li>
+</ul>
+<p>Using this methodology, Netflix demonstrated that AV1 delivers
+equivalent or superior VMAF scores with significant bandwidth reductions
+compared to previous generation codecs—consistently outperforming VP9 by
+20% or more and AVC by up to 30–40%, particularly in
+bandwidth-constrained environments.</p>
+<h3 id="evaluating-specific-av1-features">Evaluating Specific AV1
+Features</h3>
+<p>VMAF enables Netflix to validate specific features built into the AV1
+specification:</p>
+<ul>
+<li><strong>Film Grain Synthesis:</strong> High film grain typically
+consumes massive bandwidth to encode cleanly. AV1 analyzes the grain,
+strips it out before compression, and transmits synthesis parameters so
+the decoder can recreate it locally. Netflix uses specialized VMAF
+variants to confirm that synthetically restored grain delivers the
+expected visual texture without scoring artifacts.</li>
+<li><strong>Low-Bitrate Scaling:</strong> In mobile streaming
+conditions, AV1 avoids the heavy blocking and banding artifacts common
+in older codecs. VMAF curves verify that mobile streams maintain
+acceptable subjective quality thresholds (typically a VMAF score of 80
+or above) at significantly lower bitrates.</li>
+</ul>
+<p>By integrating VMAF directly into offline benchmarking pipelines,
+Netflix quantitatively confirms that the compute-intensive process of
+encoding in AV1 directly translates into higher visual fidelity and
+fewer playback interruptions for the end viewer.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Parse AV1 OBU Size with Bitwise Operations - av1</title>
+    <meta name="description" content="In the AV1 video codec specification, Open Bitstream Units (OBUs) utilize a variable-length integer encoding called LEB128 (Little Endian Base 128) to indicate their payload size when the header's obuhassizefield flag is set. Parsing this field requires">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-to-parse-av-1-obu-size-with-bitwise-operations">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How to Parse AV1 OBU Size with Bitwise Operations - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-to-parse-av-1-obu-size-with-bitwise-operations" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the AV1 video codec specification, Open Bitstream Units (OBUs) utilize a variable-length integer encoding called LEB128 (Little Endian Base 128) to indicate their payload size when the header's obuhassizefield flag is set. Parsing this field requires" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-to-parse-av1-obu-size-with-bitwise-operations">How to Parse
+AV1 OBU Size with Bitwise Operations</h1>
+<p>In the AV1 video codec specification, Open Bitstream Units (OBUs)
+utilize a variable-length integer encoding called LEB128 (Little Endian
+Base 128) to indicate their payload size when the header's
+<code>obu_has_size_field</code> flag is set. Parsing this field requires
+a sequence of specific bit-level operations—primarily bitwise AND,
+bitwise left shift, and bitwise OR—to reconstruct the integer from a
+stream of bytes. This article explains how these bitwise operations
+function together to extract the final size value from an AV1
+bitstream.</p>
+<h3 id="leb128-byte-structure-in-av1">LEB128 Byte Structure in AV1</h3>
+<p>Each byte in an AV1 LEB128 sequence is split into two distinct
+parts:</p>
+<ul>
+<li><strong>Bit 7 (MSB):</strong> The continuation flag. If set to
+<code>1</code>, another byte follows. If set to <code>0</code>, this is
+the final byte of the size indicator.</li>
+<li><strong>Bits 0–6:</strong> The 7-bit data payload carrying the
+actual numerical value.</li>
+</ul>
+<p>According to the AV1 specification, an OBU size indicator can span up
+to 8 bytes, producing an integer up to 56 bits wide (though practically
+bounded by standard integer limits).</p>
+<h3 id="key-bit-level-operations-used-in-parsing">Key Bit-Level
+Operations Used in Parsing</h3>
+<p>Decoding the variable-length size requires four core bitwise
+operations applied in a loop across the input bytes.</p>
+<h4 id="1-bitwise-and-for-continuation-detection--0x80">1. Bitwise AND
+for Continuation Detection (<code>&amp; 0x80</code>)</h4>
+<p>To check whether more bytes must be read, the parser tests the Most
+Significant Bit (bit 7) using a bitwise AND with the hexadecimal mask
+<code>0x80</code> (<code>10000000</code> in binary):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> has_next_byte <span class="op">=</span> <span class="op">(</span>current_byte <span class="op">&amp;</span> <span class="bn">0x80</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">;</span></span></code></pre></div>
+<p>If the result is zero, the loop terminates after processing the
+current byte's payload.</p>
+<h4 id="2-bitwise-and-for-payload-extraction--0x7f">2. Bitwise AND for
+Payload Extraction (<code>&amp; 0x7F</code>)</h4>
+<p>To isolate the lower 7 bits containing the numerical value, the
+parser uses a bitwise AND with the mask <code>0x7F</code>
+(<code>01111111</code> in binary):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">uint64_t</span> payload <span class="op">=</span> current_byte <span class="op">&amp;</span> <span class="bn">0x7F</span><span class="op">;</span></span></code></pre></div>
+<p>This clears the continuation bit, preventing it from corrupting the
+accumulated size value.</p>
+<h4 id="3-bitwise-left-shift-for-alignment-">3. Bitwise Left Shift for
+Alignment (<code>&lt;&lt;</code>)</h4>
+<p>Because LEB128 stores data in little-endian order, the first byte
+represents the least significant 7 bits, the second byte represents bits
+7 to 13, and so on. The parser aligns the extracted 7-bit payload to its
+correct power-of-two position using a left shift by <code>(i * 7)</code>
+bits, where <code>i</code> is the zero-based index of the current
+byte:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">uint64_t</span> shifted_payload <span class="op">=</span> payload <span class="op">&lt;&lt;</span> <span class="op">(</span>i <span class="op">*</span> <span class="dv">7</span><span class="op">);</span></span></code></pre></div>
+<h4 id="4-bitwise-or-for-accumulation--or-">4. Bitwise OR for
+Accumulation (<code>|</code> or <code>|=</code>)</h4>
+<p>To merge the shifted 7-bit segment into the total accumulated
+integer, the parser performs a bitwise OR operation against the target
+variable:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>obu_size <span class="op">|=</span> shifted_payload<span class="op">;</span></span></code></pre></div>
+<h3 id="complete-implementation-example">Complete Implementation
+Example</h3>
+<p>Combining these bit-level operations yields the standard AV1
+<code>leb128()</code> parsing routine:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">uint64_t</span> obu_size <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">8</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> byte <span class="op">=</span> read_byte<span class="op">();</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Extract lower 7 bits and shift into place, then accumulate</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    obu_size <span class="op">|=</span> <span class="op">((</span><span class="dt">uint64_t</span><span class="op">)(</span>byte <span class="op">&amp;</span> <span class="bn">0x7F</span><span class="op">))</span> <span class="op">&lt;&lt;</span> <span class="op">(</span>i <span class="op">*</span> <span class="dv">7</span><span class="op">);</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Check continuation bit</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">((</span>byte <span class="op">&amp;</span> <span class="bn">0x80</span><span class="op">)</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="constraints-and-validation">Constraints and Validation</h3>
+<p>During parsing, implementations must enforce two AV1-specific
+bitstream constraints:</p>
+<ol type="1">
+<li><strong>Length Limit:</strong> If the continuation bit is still
+<code>1</code> after reading 8 bytes, the bitstream is malformed and
+must trigger a decode error.</li>
+<li><strong>Value Padding:</strong> Bitstreams can pad small integers
+across multiple bytes by leaving unused bits as <code>0</code> while
+setting the continuation bit. However, the resulting shifted value must
+not exceed <code>(1ULL &lt;&lt; 32) - 1</code> if the decoder enforces
+32-bit maximum OBU sizes.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

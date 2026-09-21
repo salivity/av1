@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Timecode and Synchronization Structures Explained - av1</title>
+    <meta name="description" content="This article explores how the AOMedia Video 1 (AV1) format handles timing, synchronization, and frame scheduling across both its elementary bitstream and standard container formats like ISOBMFF (MP4) and Matroska (MKV/WebM). While the AV1 bitstream provi">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-timecode-and-synchronization-structures-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Timecode and Synchronization Structures Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-timecode-and-synchronization-structures-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the AOMedia Video 1 (AV1) format handles timing, synchronization, and frame scheduling across both its elementary bitstream and standard container formats like ISOBMFF (MP4) and Matroska (MKV/WebM). While the AV1 bitstream provi" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-timecode-and-synchronization-structures-explained">AV1
+Timecode and Synchronization Structures Explained</h1>
+<p>This article explores how the AOMedia Video 1 (AV1) format handles
+timing, synchronization, and frame scheduling across both its elementary
+bitstream and standard container formats like ISOBMFF (MP4) and Matroska
+(MKV/WebM). While the AV1 bitstream provides foundational timing
+information and SMPTE timecode metadata, enclosing container formats
+manage presentation timestamps, decode timestamps, sample dependencies,
+and cross-track synchronization to ensure accurate media playback.</p>
+<h2 id="bitstream-level-timing-in-av1">Bitstream-Level Timing in
+AV1</h2>
+<p>AV1 decouples internal display timing from the transport layer, but
+it embeds specific structures within Open Bitstream Units (OBUs) to
+define intrinsic frame rates and real-world timecodes.</p>
+<h3 id="1-sequence-header-timing-information">1. Sequence Header Timing
+Information</h3>
+<p>Within the Sequence Header OBU, AV1 provides optional native timing
+mechanisms via the <code>timing_info</code> structure:</p>
+<ul>
+<li><strong><code>timing_info_present_flag</code></strong>: Indicates
+whether bitstream timing parameters are signaled.</li>
+<li><strong><code>num_units_in_display_tick</code> and
+<code>time_scale</code></strong>: Define the tick frequency (similar to
+a clock rate), establishing the time interval between display
+ticks.</li>
+<li><strong><code>equal_picture_interval</code></strong>: Signaled to
+indicate whether every frame is displayed for an identical duration
+(constant frame rate).</li>
+</ul>
+<h3 id="2-metadata-obu-timecode">2. Metadata OBU (Timecode)</h3>
+<p>AV1 defines a dedicated <code>Metadata OBU</code> with a type set to
+<code>METADATA_TYPE_TIMECODE</code>. This structure embeds traditional
+broadcast-style timecodes directly into the video stream:</p>
+<ul>
+<li>Adheres to SMPTE 12-1 / ISO/IEC 15444-1 conventions.</li>
+<li>Fields include <code>hours</code>, <code>minutes</code>,
+<code>seconds</code>, <code>frames</code>, and flags such as
+<code>drop_frame_flag</code>.</li>
+<li>Useful for linear video editing, broadcast environments, and
+frame-accurate archival where container timestamps might be stripped or
+rewritten.</li>
+</ul>
+<hr />
+<h2
+id="synchronization-structures-in-isobmff-mp4-containers">Synchronization
+Structures in ISOBMFF (MP4) Containers</h2>
+<p>The ISO Base Media File Format (defined for AV1 under the Alliance
+for Open Media AV1-ISOBMFF specification) is the standard container for
+web streaming (DASH, HLS) and offline MP4 playback. It manages timecodes
+and frame ordering through sample table boxes.</p>
+<h3 id="presentation-and-decode-timestamps">Presentation and Decode
+Timestamps</h3>
+<p>AV1 frames support out-of-order decoding (display ordering differs
+from decode ordering due to inter-frame dependencies).</p>
+<ul>
+<li><strong><code>stts</code> (Time-to-Sample Box)</strong>: Stores
+Decode Timestamps (DTS), mapping each sample to its decode
+interval.</li>
+<li><strong><code>ctts</code> (Composition Time-to-Sample Box)</strong>:
+Provides the composition offset needed to calculate the Presentation
+Timestamp (PTS) from the DTS:<br />
+<span class="math display">\[\text{PTS} = \text{DTS} + \text{Composition
+Offset}\]</span></li>
+<li><strong><code>tfdt</code> (Track Fragment Base Media Decode Time
+Box)</strong>: In fragmented MP4 (fMP4) streams, this box encodes
+absolute decode timestamps for the first sample of a media fragment,
+ensuring continuous synchronization across live streaming
+boundaries.</li>
+</ul>
+<h3 id="keyframe-and-random-access-structures">Keyframe and Random
+Access Structures</h3>
+<ul>
+<li><strong><code>stss</code> (Sync Sample Box)</strong>: Catalogs
+random access points (Key Frames / Intra Frames). An AV1 Key Frame or a
+Key Frame with delayed random access (Switch Frames or Intra-only Frames
+preceded by an S-Frame) is flagged here.</li>
+<li><strong><code>sdtp</code> (Sample Dependency Table Box)</strong>:
+Explicitly signals whether a sample depends on others, if other samples
+depend on it, or if it can be safely discarded without breaking the
+decoding chain.</li>
+</ul>
+<h3 id="cross-track-audiovideo-synchronization">Cross-Track Audio/Video
+Synchronization</h3>
+<ul>
+<li><strong><code>elst</code> (Edit List Box)</strong>: Maps
+presentation times on the media timeline to the master movie timeline.
+Edit lists resolve track offsets, delay video starts, and handle
+non-zero initial presentation times to keep audio and video tracks
+aligned.</li>
+</ul>
+<hr />
+<h2
+id="synchronization-structures-in-matroska-mkv-and-webm-containers">Synchronization
+Structures in Matroska (MKV) and WebM Containers</h2>
+<p>Matroska and WebM encapsulate AV1 OBUs within hierarchical binary
+elements (EBML). Timing and synchronization operate at the Block level
+rather than through centralized offset tables.</p>
+<h3 id="timestamp-tracking">Timestamp Tracking</h3>
+<ul>
+<li><strong><code>TimestampScale</code></strong>: A segment-level header
+element defining the duration multiplier (default is 1,000,000
+nanoseconds, or 1 millisecond).</li>
+<li><strong><code>Timestamp</code></strong>: Embedded within each
+<code>Cluster</code> header, establishing the base presentation time for
+that cluster.</li>
+<li><strong><code>Block</code> / <code>SimpleBlock</code>
+Timestamps</strong>: Individual AV1 frames store a signed 16-bit
+relative offset added to the cluster's base <code>Timestamp</code>. In
+WebM and Matroska, timestamps directly represent presentation times
+(PTS).</li>
+</ul>
+<h3 id="decoding-dependencies-and-seeking">Decoding Dependencies and
+Seeking</h3>
+<ul>
+<li><strong><code>SimpleBlock</code> Flags</strong>: Contains a 1-bit
+<code>Keyframe</code> flag signaling if the encapsulated AV1 frame is an
+independent synchronization point.</li>
+<li><strong><code>ReferenceBlock</code></strong>: Used in standard
+<code>BlockGroup</code> structures to explicitly declare the relative
+timestamp of referenced forward or backward anchor frames.</li>
+<li><strong><code>Cues</code> Element</strong>: Contains
+<code>CuePoint</code>, <code>CueTime</code>, and
+<code>CueTrackPositions</code>. This acts as an index for seek
+operations, pointing the demuxer to the exact byte offset of keyframes
+matching a given presentation timecode.</li>
+</ul>
+<hr />
+<h2 id="summary-of-interaction">Summary of Interaction</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Synchronization Role</th>
+<th style="text-align: left;">AV1 Bitstream Layer</th>
+<th style="text-align: left;">ISOBMFF (MP4) Layer</th>
+<th style="text-align: left;">Matroska / WebM Layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Linear Timecode</strong></td>
+<td style="text-align: left;">Metadata OBU (SMPTE)</td>
+<td style="text-align: left;">Not standardized (often ignored)</td>
+<td style="text-align: left;">Tag elements (optional)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Decode Timing (DTS)</strong></td>
+<td style="text-align: left;">Derived from <code>timing_info</code></td>
+<td style="text-align: left;"><code>stts</code> Box</td>
+<td style="text-align: left;">Inferred by demuxer</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Presentation (PTS)</strong></td>
+<td style="text-align: left;"><code>time_scale</code> / display
+tick</td>
+<td style="text-align: left;"><code>stts</code> + <code>ctts</code>
+Boxes</td>
+<td style="text-align: left;">Cluster + Block Timestamps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sync Points (Random
+Access)</strong></td>
+<td style="text-align: left;">Key Frame / Intra-only OBU</td>
+<td style="text-align: left;"><code>stss</code> / <code>sdtp</code>
+Boxes</td>
+<td style="text-align: left;"><code>SimpleBlock</code> Keyframe flag,
+<code>Cues</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Live Fragment Timing</strong></td>
+<td style="text-align: left;">Periodic Sequence Headers</td>
+<td style="text-align: left;"><code>tfdt</code> / <code>trun</code>
+Boxes</td>
+<td style="text-align: left;">Successive <code>Cluster</code>
+Timestamps</td>
+</tr>
+</tbody>
+</table></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

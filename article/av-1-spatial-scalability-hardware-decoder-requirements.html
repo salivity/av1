@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Spatial Scalability Hardware Decoder Requirements - av1</title>
+    <meta name="description" content="AV1 spatial scalability enables a single video bitstream to deliver multiple resolution tiers, optimizing bandwidth for diverse playback environments without needing separate encodes. To successfully decode these multi-layered streams, hardware decoders">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-spatial-scalability-hardware-decoder-requirements">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Spatial Scalability Hardware Decoder Requirements - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-spatial-scalability-hardware-decoder-requirements" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 spatial scalability enables a single video bitstream to deliver multiple resolution tiers, optimizing bandwidth for diverse playback environments without needing separate encodes. To successfully decode these multi-layered streams, hardware decoders" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-spatial-scalability-hardware-decoder-requirements">AV1
+Spatial Scalability Hardware Decoder Requirements</h1>
+<p>AV1 spatial scalability enables a single video bitstream to deliver
+multiple resolution tiers, optimizing bandwidth for diverse playback
+environments without needing separate encodes. To successfully decode
+these multi-layered streams, hardware decoders must move beyond standard
+single-layer processing. This article outlines the specific
+architectural and functional hardware requirements—such as Operating
+Point parsing, Reference Picture Resampling, Decoded Picture Buffer
+allocation, and throughput overhead—necessary to support AV1 spatial
+scalability efficiently.</p>
+<h3 id="operating-point-op-support-and-bitstream-parsing">Operating
+Point (OP) Support and Bitstream Parsing</h3>
+<p>In AV1, scalable layers are organized into Operating Points (OPs). An
+Operating Point defines a specific combination of spatial and temporal
+layers. A compliant hardware decoder must:</p>
+<ul>
+<li><strong>Parse the Sequence Header OBU:</strong> The decoder must
+read scalability metadata within the Sequence Header Open Bitstream Unit
+(OBU), identifying the available spatial layers and their
+dependencies.</li>
+<li><strong>Filter Unselected Layers:</strong> The hardware bitstream
+parser must extract and discard unselected layer OBUs without CPU
+intervention, or process lower-dependency layers when decoding an
+enhancement layer that requires inter-layer prediction.</li>
+</ul>
+<h3 id="reference-picture-resampling-rpr">Reference Picture Resampling
+(RPR)</h3>
+<p>Unlike older codecs that rely on dedicated multi-view or separate
+scalable extensions, AV1 spatial scalability fundamentally relies on
+Reference Picture Resampling (RPR).</p>
+<ul>
+<li><strong>Hardware-Based Resampling Scalers:</strong> When an
+enhancement layer uses a lower-resolution base layer as a reference
+frame, the hardware motion-compensation unit must scale the reference
+frame on the fly. Decoders must incorporate dedicated hardware scaling
+filters (typically 8-tap polyphase filters) directly inside the
+motion-compensation loop.</li>
+<li><strong>Dynamic Resolution Switching:</strong> The hardware must
+switch frame buffers of differing resolutions within the same sequence
+without requiring a decoder re-initialization or pipeline flush.</li>
+</ul>
+<h3 id="decoded-picture-buffer-dpb-management">Decoded Picture Buffer
+(DPB) Management</h3>
+<p>Spatial scalability increases the complexity of reference frame
+tracking:</p>
+<ul>
+<li><strong>Reference Frame Slots:</strong> AV1 defines 8 reference
+picture slots. When decoding enhancement layers that reference
+reconstructed lower-layer frames, the DPB must have sufficient memory
+capacity and addressing logic to store both base-layer and
+enhancement-layer reference frames simultaneously.</li>
+<li><strong>Buffer Sharing and Management:</strong> The hardware memory
+controller must efficiently handle the storage, eviction, and
+referencing of inter-layer frames according to the frame-header update
+rules without corrupting existing temporal reference buffers.</li>
+</ul>
+<h3 id="throughput-and-memory-bandwidth">Throughput and Memory
+Bandwidth</h3>
+<p>Decoding scalable streams can introduce significant performance
+overhead depending on the scalability mode:</p>
+<ul>
+<li><strong>Pixel Processing Rate:</strong> If an enhancement layer
+depends on base-layer reconstruction, the hardware must either decode
+both layers in parallel across separate cores or sequentially within a
+single frame interval. The hardware must have a high enough clock rate
+and macroblock/tile throughput to process the aggregate pixel count of
+all required layers.</li>
+<li><strong>Memory Bandwidth Overhead:</strong> Transferring reference
+frames between the DPB, resampling filters, and the reconstruction
+pipeline requires significantly higher memory bandwidth than decoding a
+native single-layer stream of the same target resolution.</li>
+</ul>
+<h3 id="profile-and-level-compliance">Profile and Level Compliance</h3>
+<ul>
+<li><strong>AV1 Main Profile Compatibility:</strong> The decoder must
+implement the scalability modes defined in the AV1 Main Profile
+(supporting 8-bit and 10-bit color in 4:2:0 chroma subsampling).</li>
+<li><strong>Annex E Conformance:</strong> The hardware must conform to
+the decoding rules specified in Annex E of the AV1 specification,
+adhering to the maximum decoded sample rates and buffer capacities
+defined by the targeted AV1 Level when all active layers are accounted
+for.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

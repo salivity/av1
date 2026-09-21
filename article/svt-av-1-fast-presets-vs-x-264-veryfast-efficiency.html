@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVT-AV1 Fast Presets vs x264 Veryfast Efficiency - av1</title>
+    <meta name="description" content="This article compares the compression efficiency and performance tradeoffs between SVT-AV1’s fast presets (Presets 8 through 11) and x264’s veryfast preset. While x264 veryfast has long served as the baseline for high-speed encoding and live broadcas">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/svt-av-1-fast-presets-vs-x-264-veryfast-efficiency">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SVT-AV1 Fast Presets vs x264 Veryfast Efficiency - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/svt-av-1-fast-presets-vs-x-264-veryfast-efficiency" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article compares the compression efficiency and performance tradeoffs between SVT-AV1’s fast presets (Presets 8 through 11) and x264’s veryfast preset. While x264 veryfast has long served as the baseline for high-speed encoding and live broadcas" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="svt-av1-fast-presets-vs-x264-veryfast-efficiency">SVT-AV1 Fast
+Presets vs x264 Veryfast Efficiency</h1>
+<p>This article compares the compression efficiency and performance
+tradeoffs between SVT-AV1’s fast presets (Presets 8 through 11) and
+x264’s <code>veryfast</code> preset. While x264 <code>veryfast</code>
+has long served as the baseline for high-speed encoding and live
+broadcasting, continuous optimization in SVT-AV1 now allows users to
+achieve significantly smaller file sizes and higher visual quality at
+encoding speeds that rival older H.264 workflows.</p>
+<h3 id="compression-efficiency-and-bitrate-savings">Compression
+Efficiency and Bitrate Savings</h3>
+<p>SVT-AV1 consistently outperforms x264 <code>veryfast</code> in
+compression efficiency, even when pushed to its fastest operational
+tiers.</p>
+<ul>
+<li><strong>Bitrate Reduction:</strong> Across objective metrics such as
+VMAF, SSIM, and PSNR, SVT-AV1 running on Presets 8 through 10 delivers
+roughly 25% to 40% bitrate savings compared to x264
+<code>veryfast</code> at equivalent visual quality.</li>
+<li><strong>Low-Bitrate Retention:</strong> The efficiency gap widens
+significantly at lower bitrates. x264 <code>veryfast</code> tends to
+suffer from severe macroblocking, color banding, and loss of fine detail
+under bandwidth constraints. In contrast, SVT-AV1 retains smooth
+gradients and image coherence due to modern coding tools such as larger
+block sizes (up to 128x128) and advanced intra/inter prediction
+modes.</li>
+</ul>
+<h3 id="speed-and-resource-utilization">Speed and Resource
+Utilization</h3>
+<p>Historically, AV1 was considered too slow for practical,
+high-throughput encoding. However, recent versions of SVT-AV1 have
+focused heavily on speed-path optimizations:</p>
+<ul>
+<li><strong>SVT-AV1 Preset 10 and 11:</strong> These presets are
+designed to compete directly with fast H.264 and HEVC encoders. On
+modern multi-core processors (8 cores or more), Preset 10 approaches
+real-time 1080p and 1440p encoding, while Preset 11 often exceeds
+real-time speeds.</li>
+<li><strong>CPU Scaling:</strong> SVT-AV1 scales more efficiently across
+modern multi-threaded CPUs than x264. While x264 <code>veryfast</code>
+has minimal CPU overhead and can run on virtually any legacy hardware,
+SVT-AV1 utilizes modern AVX2 and AVX-512 instruction sets to maximize
+throughput without bottlenecking on core thread synchronization.</li>
+<li><strong>The Speed-to-Quality Ratio:</strong> At roughly equal
+encoding speeds (such as SVT-AV1 Preset 10 versus x264
+<code>veryfast</code> on modern hardware), SVT-AV1 yields visibly
+superior clarity, making it a strictly more efficient use of available
+bandwidth.</li>
+</ul>
+<h3 id="visual-presentation-and-artifacting">Visual Presentation and
+Artifacting</h3>
+<p>The type of degradation differs between both encoders:</p>
+<ul>
+<li><strong>x264 <code>veryfast</code>:</strong> Skips expensive
+motion-search algorithms and psycho-visual optimizations. This results
+in pronounced blocking artifacts around high-motion areas, sharp edge
+ringing, and heavy noise elimination that leaves scenes looking
+pixelated.</li>
+<li><strong>SVT-AV1 (Fast Presets):</strong> Relies on more
+sophisticated transform skips and directional intra-prediction. Instead
+of harsh block boundaries, fast SVT-AV1 degrades gracefully toward soft,
+slight blurring at extreme constraints, which is generally preferred by
+viewers over harsh pixel blocks.</li>
+</ul>
+<h3 id="system-and-playback-tradeoffs">System and Playback
+Tradeoffs</h3>
+<p>Despite SVT-AV1's superior compression efficiency, two key factors
+separate its real-world implementation from x264
+<code>veryfast</code>:</p>
+<ul>
+<li><strong>Hardware Requirements for Encoding:</strong> SVT-AV1
+requires a modern CPU to reach acceptable speeds. On older CPUs lacking
+advanced vector extensions, x264 <code>veryfast</code> remains
+significantly faster.</li>
+<li><strong>Client Decode Support:</strong> x264 produces baseline H.264
+video capable of decoding on almost every digital device manufactured in
+the last fifteen years with negligible battery impact. AV1 decoding,
+while widely supported on modern smartphones, GPUs, and browsers, may
+require software decoding on older client hardware, leading to higher
+CPU usage and battery drain.</li>
+</ul>
+<h3 id="conclusion">Conclusion</h3>
+<p>When comparing SVT-AV1 fast presets directly to x264
+<code>veryfast</code>, SVT-AV1 is unambiguously superior in compression
+efficiency. Users with modern hardware looking to reduce bandwidth costs
+or storage footprints can switch from x264 <code>veryfast</code> to
+SVT-AV1 Presets 8, 9, or 10 to obtain substantially higher visual
+fidelity at identical or smaller bitrates. The primary reason to remain
+on x264 <code>veryfast</code> today is universal client-side playback
+compatibility and minimal encoding overhead on aging server
+hardware.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

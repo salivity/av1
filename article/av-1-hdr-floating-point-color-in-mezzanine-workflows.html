@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 HDR Floating-Point Color in Mezzanine Workflows - av1</title>
+    <meta name="description" content="This article examines how the AV1 video codec interfaces with high-dynamic range (HDR) floating-point color spaces within intermediate and mezzanine workflows. Because AV1 natively operates using integer-based bit depths up to 12 bits, utilizing it for h">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-hdr-floating-point-color-in-mezzanine-workflows">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 HDR Floating-Point Color in Mezzanine Workflows - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-hdr-floating-point-color-in-mezzanine-workflows" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how the AV1 video codec interfaces with high-dynamic range (HDR) floating-point color spaces within intermediate and mezzanine workflows. Because AV1 natively operates using integer-based bit depths up to 12 bits, utilizing it for h" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-hdr-floating-point-color-in-mezzanine-workflows">AV1 HDR
+Floating-Point Color in Mezzanine Workflows</h1>
+<p>This article examines how the AV1 video codec interfaces with
+high-dynamic range (HDR) floating-point color spaces within intermediate
+and mezzanine workflows. Because AV1 natively operates using
+integer-based bit depths up to 12 bits, utilizing it for high-end
+production pipelines requires specific transformations. By leveraging
+standard transfer functions, the AV1 Professional Profile, precise
+metadata signaling, and Academy Color Encoding System (ACES) color
+pipeline conversions, production systems effectively map floating-point
+scene data into highly efficient, high-fidelity mezzanine assets.</p>
+<h2 id="the-integer-architecture-of-av1">The Integer Architecture of
+AV1</h2>
+<p>AV1 is fundamentally an integer-based discrete cosine transform (DCT)
+codec. It defines three primary profiles:</p>
+<ul>
+<li><strong>Main Profile:</strong> Supports 8-bit and 10-bit depth with
+4:2:0 chroma subsampling.</li>
+<li><strong>High Profile:</strong> Supports 8-bit and 10-bit depth with
+4:4:4 chroma subsampling.</li>
+<li><strong>Professional Profile:</strong> Supports 8-bit, 10-bit, and
+12-bit depth with 4:0:0, 4:2:0, 4:2:2, and 4:4:4 chroma
+subsampling.</li>
+</ul>
+<p>Because AV1 lacks a native 16-bit or 32-bit IEEE 754 floating-point
+sample representation, it cannot store raw floating-point values
+directly in the bitstream. Instead, mezzanine workflows ingest
+high-dynamic-range floating-point values—such as those found in OpenEXR,
+raw camera formats, or ACEScg—by normalizing and quantizing the
+continuous float data into AV1’s high-precision 10-bit or 12-bit integer
+container space.</p>
+<h2 id="non-linear-mapping-via-transfer-functions">Non-Linear Mapping
+via Transfer Functions</h2>
+<p>To preserve the wide dynamic range and extended color volume of
+floating-point representations without causing visible quantization
+artifacts (banding), the data must pass through a non-linear transfer
+function before encoding:</p>
+<ol type="1">
+<li><strong>Perceptual Quantizer (SMPTE ST 2084 / PQ):</strong> In
+workflows targeting dynamic ranges up to 10,000 nits, linear
+floating-point values are converted to non-linear integer values using
+the PQ curve. When combined with AV1’s 10-bit or 12-bit encoding, this
+non-linear distribution concentrates bits where human visual perception
+is most sensitive.</li>
+<li><strong>Hybrid Log-Gamma (Rec. ITU-R BT.2100 / HLG):</strong> Used
+predominantly in broadcast-adjacent mezzanine workflows, HLG applies a
+logarithmic curve to the upper luminance range while maintaining a
+standard gamma curve for low-light regions.</li>
+<li><strong>Logarithmic Intermediate Spaces (e.g., ACEScct,
+LogC):</strong> In multi-generational post-production workflows,
+scene-linear floating-point data is mapped into a standardized camera
+log curve. AV1’s 12-bit 4:4:4 format offers enough dynamic overhead to
+store these log-encoded representations while preserving critical
+highlight and shadow details for subsequent color grading passes.</li>
+</ol>
+<h2 id="color-metadata-signaling">Color Metadata Signaling</h2>
+<p>AV1 maintains color fidelity across mezzanine stages through
+standardized metadata signaling defined inside Open Bitstream Units
+(OBUs):</p>
+<ul>
+<li><strong>Coding-Independent Code Points (CICP):</strong> The sequence
+header includes CICP values (per ITU-T H.273) that define color
+primaries (such as BT.2020), transfer characteristics (such as ST 2084),
+and matrix coefficients. This ensures that downstream editing and
+mastering software can accurately invert the non-linear transfer
+function back into scene-linear floating-point data.</li>
+<li><strong>Mastering Display and Content Light Level Metadata:</strong>
+Metadata OBUs convey mastering display color volume (SMPTE ST 2086)
+alongside Content Light Level information (MaxCLL and MaxFALL). This
+guarantees that color values mapped from floating-point remain aligned
+with target reference monitors.</li>
+</ul>
+<h2 id="aces-integration-in-av1-workflows">ACES Integration in AV1
+Workflows</h2>
+<p>In modern production environments using the Academy Color Encoding
+System, AV1 acts as a lightweight intermediate format. Scene-referred
+16-bit half-float data (ACES2065-1 or ACEScg) is passed through an
+Output Transform or converted to an integer intermediate representation
+(such as 12-bit integer RGB mapped to ACESproxy or a mastering color
+space).</p>
+<p>When decoded, the integer data is unpacked, un-quantized, and
+restored to 16-bit or 32-bit floating-point space inside the digital
+content creation (DCC) software. Provided that the initial quantization
+utilizes 12-bit 4:4:4 chroma sampling, the perceptual difference between
+the original floating-point source and the AV1-compressed representation
+remains minimal, allowing AV1 to serve as a high-compression mezzanine
+archive or review format.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

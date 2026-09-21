@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Arithmetic Coder Probability Estimation Limits - av1</title>
+    <meta name="description" content="This article provides a technical overview of the probability estimation accuracy limits within the AV1 video codec's multi-symbol arithmetic coder. It examines how cumulative distribution function (CDF) quantization, fixed-point precision bounds, minimu">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-arithmetic-coder-probability-estimation-limits">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Arithmetic Coder Probability Estimation Limits - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-arithmetic-coder-probability-estimation-limits" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a technical overview of the probability estimation accuracy limits within the AV1 video codec's multi-symbol arithmetic coder. It examines how cumulative distribution function (CDF) quantization, fixed-point precision bounds, minimu" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-arithmetic-coder-probability-estimation-limits">AV1
+Arithmetic Coder Probability Estimation Limits</h1>
+<p>This article provides a technical overview of the probability
+estimation accuracy limits within the AV1 video codec's multi-symbol
+arithmetic coder. It examines how cumulative distribution function (CDF)
+quantization, fixed-point precision bounds, minimum probability
+constraints, and dynamic adaptation algorithms collectively dictate the
+coder's statistical modeling resolution and theoretical compression
+ceiling.</p>
+<h3 id="cdf-representation-and-scale-limits">CDF Representation and
+Scale Limits</h3>
+<p>AV1 uses a multi-symbol arithmetic coding engine derived from the
+Daala entropy coder, replacing the binary arithmetic coder (CABAC) used
+in prior standards like VP9 and HEVC. Instead of tracking independent
+binary states, AV1 tracks symbol probabilities using Cumulative
+Distribution Functions (CDFs).</p>
+<p>The precision of these probabilities is bounded by fixed-point
+integer math:</p>
+<ul>
+<li><strong>Total Scale Factor:</strong> The arithmetic coder normalizes
+total probability to a fixed scale of <span
+class="math inline">\(2^{15}\)</span> (32,768). All cumulative
+frequencies must sum to this value.</li>
+<li><strong>Granularity Bound:</strong> The finest discernible
+probability difference between two adjacent symbols is <span
+class="math inline">\(1 / 32,768\)</span> (approximately <span
+class="math inline">\(0.00305\%\)</span>). Probabilities smaller than
+this step cannot be distinguished or updated, setting a hard structural
+ceiling on estimation accuracy.</li>
+</ul>
+<h3 id="minimum-probability-clamping">Minimum Probability Clamping</h3>
+<p>To prevent undefined behavior, symbol expansion overflows, or
+zero-width coding intervals, the arithmetic engine requires that every
+symbol in the alphabet possesses a non-zero probability.</p>
+<ul>
+<li><strong>Strict Monotonicity:</strong> A valid CDF must strictly
+satisfy <span class="math inline">\(CDF[i] &lt; CDF[i+1]\)</span> for
+all active symbols <span class="math inline">\(i\)</span> in an alphabet
+of size <span class="math inline">\(M\)</span>.</li>
+<li><strong>Reserved Mass:</strong> To enforce distinct cumulative
+values, each symbol is allocated a minimum probability mass. In an <span
+class="math inline">\(M\)</span>-ary alphabet, the remaining probability
+space available for estimation dynamic range is <span
+class="math inline">\(32,768 - M\)</span>. For maximum native alphabet
+sizes (up to 16 symbols), this reservation slightly compresses the
+representable probability envelope for highly dominant symbols.</li>
+<li><strong>Coding Penalty:</strong> Rare events that occur with a true
+probability lower than <span class="math inline">\(1 / 32,768\)</span>
+must be encoded as if their probability is at least <span
+class="math inline">\(1 / 32,768\)</span>, imposing a minor, unavoidable
+rate-distortion penalty on extreme outliers.</li>
+</ul>
+<h3 id="adaptation-rate-and-step-precision">Adaptation Rate and Step
+Precision</h3>
+<p>AV1 continuously adapts its CDF models frame-by-frame and
+block-by-block based on observed symbol occurrences. This update process
+introduces secondary accuracy limits tied to the adaptation formula:</p>
+<p><span class="math display">\[CDF_{new}[i] = CDF_{old}[i] +
+\left\lfloor \frac{(Target[i] - CDF_{old}[i])}{L}
+\right\rfloor\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(Target[i]\)</span> represents the ideal
+step function for the observed symbol.</li>
+<li><span class="math inline">\(L\)</span> is a dynamic learning factor
+controlled by the adaptation rate parameter <span
+class="math inline">\(N\)</span>, where <span class="math inline">\(L =
+4 + (Count \gg 4)\)</span> or fixed scaling steps based on symbol
+context, typically bounded between <span
+class="math inline">\(2^4\)</span> (16) and <span
+class="math inline">\(2^5\)</span> (32).</li>
+</ul>
+<p>Because integer division with truncation (<span
+class="math inline">\(\lfloor \dots \rfloor\)</span>) is used to
+maintain bit-exact cross-platform decoding, probability updates incur
+rounding errors. Once the difference <span
+class="math inline">\(|Target[i] - CDF_{old}[i]|\)</span> drops below
+the divisor <span class="math inline">\(L\)</span>, updates freeze,
+creating a dead-zone where small statistical shifts fail to register in
+the CDF table.</p>
+<h3 id="alphabet-size-and-multi-symbol-constraints">Alphabet Size and
+Multi-Symbol Constraints</h3>
+<p>AV1 processes symbols in alphabets ranging from 2 up to 16 symbols
+natively. For distributions requiring larger alphabets, compound coding
+(e.g., prefix codes combined with fixed-precision raw bits) is used.</p>
+<p>For native multi-symbol alphabets:</p>
+<ul>
+<li>The 15-bit precision must be distributed across all <span
+class="math inline">\(M\)</span> symbols simultaneously.</li>
+<li>As alphabet size <span class="math inline">\(M\)</span> approaches
+16, the effective resolution per symbol degrades relative to a pure
+binary arithmetic coder, which only splits probability space between two
+states per decision.</li>
+<li>Correlated contexts must balance adaptation speed against variance:
+smaller update counts adapt quickly to non-stationary statistics but
+exhibit high estimation jitter, while saturated counts provide stable
+probabilities capped by the 15-bit quantization threshold.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mozilla Daala: Perceptual Vector Quantization in AV1 - av1</title>
+    <meta name="description" content="The Daala project, developed by Mozilla and the Xiph.Org Foundation, served as a testing ground for radical, patent-unencumbered video coding techniques, most notably Perceptual Vector Quantization (PVQ). When the Alliance for Open Media (AOMedia) formed">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/mozilla-daala-perceptual-vector-quantization-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mozilla Daala: Perceptual Vector Quantization in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/mozilla-daala-perceptual-vector-quantization-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Daala project, developed by Mozilla and the Xiph.Org Foundation, served as a testing ground for radical, patent-unencumbered video coding techniques, most notably Perceptual Vector Quantization (PVQ). When the Alliance for Open Media (AOMedia) formed" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="mozilla-daala-perceptual-vector-quantization-in-av1">Mozilla
+Daala: Perceptual Vector Quantization in AV1</h1>
+<p>The Daala project, developed by Mozilla and the Xiph.Org Foundation,
+served as a testing ground for radical, patent-unencumbered video coding
+techniques, most notably Perceptual Vector Quantization (PVQ). When the
+Alliance for Open Media (AOMedia) formed to build the AV1 codec, Daala’s
+research on PVQ was evaluated alongside tools from Google’s VP10 and
+Cisco’s Thor. While AV1 ultimately retained a traditional scalar
+quantization framework to manage decoder hardware complexity, Daala’s
+PVQ concepts directly inspired and shaped critical AV1 features,
+including Chroma from Luma (CfL) prediction, gain-shape energy
+preservation, and directional intra-prediction tools.</p>
+<h3 id="the-philosophy-of-perceptual-vector-quantization">The Philosophy
+of Perceptual Vector Quantization</h3>
+<p>Traditional video codecs rely on scalar quantization, which
+independently rounds transform coefficients (like discrete cosine
+transform, or DCT, outputs) to fixed step sizes. At low bitrates, scalar
+quantization frequently zeroes out high-frequency coefficients, causing
+severe blurring and ringing artifacts.</p>
+<p>Engineered primarily by Jean-Marc Valin, PVQ adapted techniques from
+the Opus audio codec (specifically the CELT mode) to video. Instead of
+quantizing individual frequency bins, PVQ treats groups of transform
+coefficients as multidimensional vectors. It decomposes each vector into
+two distinct components:</p>
+<ol type="1">
+<li><strong>Gain:</strong> A scalar value representing the total energy,
+contrast, or magnitude of the block.</li>
+<li><strong>Shape:</strong> A unit-norm vector on a hypersphere that
+represents the pattern or directional structure.</li>
+</ol>
+<p>By isolating gain from shape, the encoder can preserve contrast and
+texture even when bit budget constraints force coarse quantization of
+the shape. Rather than blurring an edge away, PVQ retains the edge's
+contrast while subtly approximating its orientation, matching the human
+visual system's preference for contrast preservation over precise
+spatial alignment.</p>
+<h3 id="why-pvq-was-not-adopted-in-its-entirety">Why PVQ Was Not Adopted
+in Its Entirety</h3>
+<p>During the formation of AV1, the initial codebase used Google's VP9
+as a stable baseline. Mozilla proposed replacing VP9's transform and
+quantization pipeline with Daala's PVQ engine.</p>
+<p>Rigorous hardware and efficiency testing showed that a full PVQ
+deployment carried trade-offs. The spherical coordinate projections,
+normalization steps, and algebraic codebook lookups required non-trivial
+silicon area and higher arithmetic complexity in hardware decoders
+compared to standard scalar dequantization. Furthermore, VP9's existing
+loop filters and entropy coders were heavily optimized for scalar
+quantization. A complete shift to PVQ would have required a ground-up
+redesign of the entire decoding pipeline.</p>
+<p>Consequently, AOMedia chose not to adopt PVQ as the primary
+quantization engine for AV1, but the underlying mathematical framework
+of PVQ was broken down and adapted into several targeted coding
+tools.</p>
+<h3 id="direct-influences-and-inherited-tools-in-av1">Direct Influences
+and Inherited Tools in AV1</h3>
+<h4 id="1-chroma-from-luma-cfl-prediction">1. Chroma from Luma (CfL)
+Prediction</h4>
+<p>One of the most direct derivatives of Daala’s PVQ research in AV1 is
+Chroma from Luma (CfL). In Daala, chroma PVQ used the reconstructed luma
+channel as the reference vector for the shape of the chroma channels,
+assuming that color boundaries align with luminance boundaries.</p>
+<p>AV1 adopted this exact principle: CfL predicts chroma AC coefficients
+as a scaled version of the reconstructed luma AC samples within the same
+block. By estimating a linear model (gain) to match the luma shape to
+chroma, AV1 significantly reduces chroma redundancy without the overhead
+of independent chroma intra-prediction.</p>
+<h4 id="2-directional-intra-prediction-and-frequency-domain-modeling">2.
+Directional Intra-Prediction and Frequency-Domain Modeling</h4>
+<p>Traditional intra-prediction operates purely in the spatial domain by
+copying and filtering boundary pixels across a block. Daala demonstrated
+that directional patterns could be predicted and matched directly in the
+frequency domain through directional vector shifts. While AV1 retained
+spatial intra-prediction, Daala's experiments contributed to expanding
+AV1's directional modes to 56 distinct angles with fine-grained angular
+deltas, allowing the encoder to match directional patterns with the
+precision of gain-shape vector adjustments.</p>
+<h4 id="3-perceptual-rate-distortion-optimization-rdo">3. Perceptual
+Rate-Distortion Optimization (RDO)</h4>
+<p>Daala's PVQ framework treated perceptual masking—the principle that
+human eyes notice noise less in busy, high-contrast textures—as an
+intrinsic part of quantization rather than an afterthought. The
+activity-masking models created for PVQ were integrated into AV1’s
+encoder search logic. This influenced AV1’s perceptual rate-distortion
+optimization (RDO), helping the encoder distribute bits dynamically
+based on local block contrast and visual masking thresholds.</p>
+<h3 id="legacy-of-daalas-pvq">Legacy of Daala's PVQ</h3>
+<p>Mozilla's Daala project proved that video compression could innovate
+outside the design paradigms established by traditional MPEG standards.
+Although AV1 utilized a hybrid approach favoring compatibility and
+hardware throughput, Daala’s perceptual vector quantization provided the
+mathematical blueprint for energy-preserving prediction tools that
+helped make AV1 significantly more efficient than its predecessors.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

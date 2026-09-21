@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 MPEG-TS Multiplexing Jitter Tolerances - av1</title>
+    <meta name="description" content="This article provides an overview of the technical limits and timing specifications governing audio-video multiplexing jitter when transmitting AV1 elementary streams over MPEG Transport Stream (MPEG-TS). It covers the normative limits defined by the ISO">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-mpeg-ts-multiplexing-jitter-tolerances">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 MPEG-TS Multiplexing Jitter Tolerances - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-mpeg-ts-multiplexing-jitter-tolerances" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the technical limits and timing specifications governing audio-video multiplexing jitter when transmitting AV1 elementary streams over MPEG Transport Stream (MPEG-TS). It covers the normative limits defined by the ISO" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-mpeg-ts-multiplexing-jitter-tolerances">AV1 MPEG-TS
+Multiplexing Jitter Tolerances</h1>
+<p>This article provides an overview of the technical limits and timing
+specifications governing audio-video multiplexing jitter when
+transmitting AV1 elementary streams over MPEG Transport Stream
+(MPEG-TS). It covers the normative limits defined by the ISO/IEC 13818-1
+Transport Stream System Target Decoder (T-STD) model, detailing
+allowable Program Clock Reference (PCR) jitter, packet arrival jitter,
+presentation timestamp (PTS) timing offsets, and the standard tolerances
+for end-to-end audio-to-video synchronization (lip-sync).</p>
+<h3 id="the-timing-framework-isoiec-13818-1-t-std">The Timing Framework:
+ISO/IEC 13818-1 T-STD</h3>
+<p>Carrying an AV1 stream inside an MPEG-TS container requires adherence
+to the standard ISO/IEC 13818-1 timing and buffer models (T-STD),
+alongside the specific carriage specifications defined for AV1 (such as
+those established by the Alliance for Open Media and modern digital
+television standards like DVB). Timing relies on a 27 MHz System Time
+Clock (STC) shared between the multiplexer and demultiplexer.</p>
+<p>Because AV1 uses complex frame structures—including show-existing
+frames, temporal units, and large variance between intra-frames and
+inter-frames—strict multiplexing jitter boundaries are necessary to
+prevent decoder buffer overflow and underflow.</p>
+<h3 id="program-clock-reference-pcr-jitter-limits">Program Clock
+Reference (PCR) Jitter Limits</h3>
+<p>The foundational timing mechanism in MPEG-TS is the PCR, which
+synchronizes the receiver's local STC oscillator.</p>
+<ul>
+<li><strong>Maximum PCR Jitter:</strong> The normative standard limits
+PCR jitter to <strong>±500 nanoseconds</strong> relative to an ideal
+linear 27 MHz time base at the output of the multiplexer.</li>
+<li><strong>Repetition Rate:</strong> PCR values must be inserted at
+least once every 100 milliseconds, although broadcast and streaming
+applications typically require an interval of <strong>40 milliseconds or
+less</strong> to maintain clock lock.</li>
+<li><strong>Measurement Standard:</strong> As specified in ETSI TR 101
+290 (First Priority metrics), PCR overall jitter (PCR_OJ) must not
+exceed ±500 ns to avoid phase-locked loop (PLL) tracking issues in
+downstream demultiplexers.</li>
+</ul>
+<h3 id="packet-arrival-jitter-and-buffer-tolerances">Packet Arrival
+Jitter and Buffer Tolerances</h3>
+<p>Network delivery and multiplexing operations inherently introduce
+packet delay variation (PDV).</p>
+<ul>
+<li><strong>Multiplex Packet Jitter:</strong> In a CBR (Constant
+Bitrate) MPEG-TS delivery, packet arrival timing must stay within the
+compliance window of the smoothing buffer (<span
+class="math inline">\(SB_n\)</span>) and elementary stream buffer (<span
+class="math inline">\(EB_n\)</span>). The accepted tolerance for arrival
+deviation on a per-packet basis is typically bounded within <strong>±1
+millisecond</strong> in traditional transmission networks, with IP
+network buffers generally sized to absorb up to <strong>50 ms to 100
+ms</strong> of transit packet jitter before passing to the demux
+layer.</li>
+<li><strong>Buffer Residence Time:</strong> The maximum allowable delay
+between the arrival of an AV1 packet at the input buffer and its
+presentation time (determined by PTS/DTS) must not exceed <strong>1.0
+second</strong>, except under specific extended profile
+definitions.</li>
+</ul>
+<h3 id="audio-video-synchronization-ptsdts-skew">Audio-Video
+Synchronization (PTS/DTS Skew)</h3>
+<p>A/V multiplexing jitter directly impacts the temporal relationship
+between AV1 video and its associated audio tracks (such as AAC, AC-4, or
+Opus). The multiplexer must align Presentation Time Stamps (PTS)
+according to established international broadcasting limits:</p>
+<ul>
+<li><strong>Source Multiplexer Alignment:</strong> At the point of
+multiplexing, the difference between audio PTS and video PTS for the
+corresponding acoustic/visual event must not deviate by more than
+<strong>±5 milliseconds</strong>.</li>
+<li><strong>Permissible Delivery Asymmetry:</strong> Following
+multiplexing and network transport, the operational tolerances defined
+by ITU-R BT.1359 and EBU R37 specify:
+<ul>
+<li><strong>Audio leads Video (Advanced):</strong> Maximum allowable
+jitter/skew is <strong>+15 milliseconds</strong>.</li>
+<li><strong>Audio lags Video (Delayed):</strong> Maximum allowable
+jitter/skew is <strong>-45 milliseconds</strong>.</li>
+</ul></li>
+</ul>
+<p>Any jitter causing the timing stamps to drift beyond these boundaries
+results in perceptible lip-sync errors or buffer underflows, causing
+playback artifacts and decoder pipeline stalls.</p>
+<h3 id="av1-specific-considerations">AV1-Specific Considerations</h3>
+<p>AV1 elementary streams carried over MPEG-TS utilize dedicated
+metadata descriptors and transport packet formatting to map Operating
+Points and Temporal Units into Packetized Elementary Stream (PES)
+packets.</p>
+<p>Due to the bursty nature of AV1 compressed data compared to legacy
+codecs, multiplexers must apply rate-smoothing algorithms to leak AV1
+transport packets into the transport multiplex at a stable leak rate
+(<span class="math inline">\(R_{vbi}\)</span>). Failure to precisely
+schedule these packets causes transient buffer spikes, driving PCR and
+DTS jitter past the normative ±500 ns and ±5 ms bounds.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

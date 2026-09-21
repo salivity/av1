@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Local Warped Motion in Rotating Scenes - av1</title>
+    <meta name="description" content="This article explains how the AV1 video codec utilizes local warped motion compensation to drastically reduce prediction residuals in rotating scenes. Traditional video compression relies heavily on simple translational motion vectors, which struggle to">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-local-warped-motion-in-rotating-scenes">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Local Warped Motion in Rotating Scenes - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-local-warped-motion-in-rotating-scenes" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the AV1 video codec utilizes local warped motion compensation to drastically reduce prediction residuals in rotating scenes. Traditional video compression relies heavily on simple translational motion vectors, which struggle to" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-local-warped-motion-in-rotating-scenes">AV1 Local Warped
+Motion in Rotating Scenes</h1>
+<p>This article explains how the AV1 video codec utilizes local warped
+motion compensation to drastically reduce prediction residuals in
+rotating scenes. Traditional video compression relies heavily on simple
+translational motion vectors, which struggle to represent non-linear
+movements like rotation, zooming, and shearing. By employing affine
+transformation models at the local block level, AV1 accurately maps
+rotational trajectories from reference frames, minimizing prediction
+error and optimizing compression efficiency.</p>
+<h3 id="the-limitations-of-translational-motion-compensation">The
+Limitations of Translational Motion Compensation</h3>
+<p>Standard motion estimation across legacy codecs assumes that pixels
+within a coding block move uniformly in horizontal and vertical
+directions. While this two-dimensional translational vector model works
+well for linear panning, it fails when applied to rotating objects or
+rotating camera angles.</p>
+<p>In a rotating scene, every pixel within a single block follows a
+distinct angular trajectory depending on its distance and angle from the
+rotation center. Forcing a single 2D vector onto a rotating block causes
+severe structural misalignment along object boundaries. This
+misalignment produces high prediction residuals—the difference between
+the original block and the predicted block—requiring a massive number of
+transform coefficients and bits to correct.</p>
+<h3 id="how-local-warped-motion-operates">How Local Warped Motion
+Operates</h3>
+<p>AV1 solves this issue by incorporating warped motion compensation,
+which introduces higher-order affine motion models capable of handling
+rotation, scaling, and shearing. Local warped motion estimates a 2D
+affine transformation matrix that maps coordinates <span
+class="math inline">\((x, y)\)</span> in the current frame to
+transformed coordinates <span class="math inline">\((x&#39;,
+y&#39;)\)</span> in the reference frame:</p>
+<p><span class="math display">\[x&#39; = \alpha x + \beta y +
+\gamma\]</span> <span class="math display">\[y&#39; = \delta x +
+\epsilon y + \zeta\]</span></p>
+<p>Instead of signaling six full affine parameters for each block—which
+would incur significant bitrate overhead—AV1 derives these local
+parameters from the motion vectors of adjacent neighboring blocks. If
+the neighbor vectors indicate a gradient consistent with rotation or
+zooming, AV1 constructs an affine model locally.</p>
+<h3 id="reducing-prediction-residuals">Reducing Prediction
+Residuals</h3>
+<p>Local warped motion reduces prediction residuals in rotating
+sequences through three primary mechanisms:</p>
+<ol type="1">
+<li><strong>Subpixel Grid Transformation:</strong> Rather than
+translating a rigid rectangular block of pixels, the warp model computes
+a continuous geometric transform across the reference frame. The
+reference block is warped to mirror the rotational angle of the target
+block.</li>
+<li><strong>High-Precision Interpolation:</strong> AV1 applies dedicated
+8-tap directional filtering to interpolate pixel values at irregular
+subpixel positions created by rotation. This avoids the blurring and
+stair-stepping artifacts common to coarse approximations.</li>
+<li><strong>Minimization of High-Frequency Energy:</strong> Because the
+transformed reference patch matches the physical rotation of the scene,
+structural edges and textures line up precisely with the target block.
+This eliminates high-frequency edge mismatches, leaving near-zero
+residual energy across the block.</li>
+</ol>
+<p>By accurately reconstructing the geometry of rotating scenes prior to
+residual calculation, AV1 requires far fewer bits to encode the
+remaining prediction error, yielding substantially higher visual quality
+at lower target bitrates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

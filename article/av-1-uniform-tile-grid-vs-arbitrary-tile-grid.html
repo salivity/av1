@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Uniform Tile Grid vs Arbitrary Tile Grid - av1</title>
+    <meta name="description" content="In the AV1 video codec, tiling divides video frames into independent rectangular regions to enable multi-threaded encoding and decoding. The AV1 specification supports two methods for structuring these regions: the uniform tile grid and the arbitrary til">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-uniform-tile-grid-vs-arbitrary-tile-grid">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Uniform Tile Grid vs Arbitrary Tile Grid - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-uniform-tile-grid-vs-arbitrary-tile-grid" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the AV1 video codec, tiling divides video frames into independent rectangular regions to enable multi-threaded encoding and decoding. The AV1 specification supports two methods for structuring these regions: the uniform tile grid and the arbitrary til" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-uniform-tile-grid-vs-arbitrary-tile-grid">AV1 Uniform Tile
+Grid vs Arbitrary Tile Grid</h1>
+<p>In the AV1 video codec, tiling divides video frames into independent
+rectangular regions to enable multi-threaded encoding and decoding. The
+AV1 specification supports two methods for structuring these regions:
+the uniform tile grid and the arbitrary tile grid. While a uniform tile
+grid spaces rows and columns evenly across the frame with minimal
+metadata overhead, an arbitrary tile grid allows encoders to explicitly
+define varying tile sizes to optimize for complex workloads and specific
+region-of-interest processing.</p>
+<h3 id="understanding-tiles-in-av1">Understanding Tiles in AV1</h3>
+<p>Tiles in AV1 are self-contained rectangular blocks of video that can
+be decoded and encoded independently of adjacent tiles within the same
+frame. This partitioning is essential for modern high-resolution video
+(such as 4K and 8K), as it allows multi-core CPUs and parallel GPU
+hardware to distribute the processing workload simultaneously.</p>
+<h3 id="the-uniform-tile-grid">The Uniform Tile Grid</h3>
+<p>A uniform tile grid is the standard, most common method of splitting
+a frame in AV1. In this mode, the encoder sets the
+<code>uniform_tile_spacing_flag</code> to 1.</p>
+<ul>
+<li><strong>Structure:</strong> The frame is divided into regular rows
+and columns where each tile column has approximately the same width, and
+each tile row has approximately the same height. Any remaining pixels
+that do not divide evenly are absorbed into the final boundary
+tiles.</li>
+<li><strong>Signaling:</strong> Tile sizes are signaled using
+logarithmic values (<code>tile_cols_log2</code> and
+<code>tile_rows_log2</code>). Because of this, the bitstream header
+requires very few bits to communicate the frame's grid structure to the
+decoder.</li>
+<li><strong>Ideal Use Case:</strong> General video streaming, on-demand
+playback, and standard multi-threaded encoding where the priority is
+keeping bitstream overhead low while achieving balanced parallel
+processing.</li>
+</ul>
+<h3 id="the-arbitrary-tile-grid">The Arbitrary Tile Grid</h3>
+<p>An arbitrary (or non-uniform) tile grid removes the requirement for
+equal spacing. It is activated when the encoder sets the
+<code>uniform_tile_spacing_flag</code> to 0.</p>
+<ul>
+<li><strong>Structure:</strong> The encoder explicitly dictates the
+width of each individual column and the height of each individual row.
+This allows for tiles of varying dimensions across the same frame.</li>
+<li><strong>Signaling:</strong> Because each column width and row height
+must be individually declared, arbitrary tiling increases the signaling
+overhead in the frame header compared to the uniform approach.</li>
+<li><strong>Ideal Use Case:</strong> Specialized streaming applications,
+such as 360-degree virtual reality (VR) video and viewport-dependent
+streaming. In VR, higher-resolution or custom-sized tiles can be
+allocated to the user's active field of view, while peripheral regions
+use differently sized tiles to save bandwidth and compute
+resources.</li>
+</ul>
+<h3 id="key-differences">Key Differences</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Uniform Tile Grid</th>
+<th style="text-align: left;">Arbitrary Tile Grid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Tile Sizing</strong></td>
+<td style="text-align: left;">Equal dimensions across rows/columns</td>
+<td style="text-align: left;">Custom dimensions per row/column</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Bitstream Overhead</strong></td>
+<td style="text-align: left;">Minimal (signaled via log2 values)</td>
+<td style="text-align: left;">Higher (explicit per-column/row
+signaling)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Implementation
+Complexity</strong></td>
+<td style="text-align: left;">Simple, widely supported</td>
+<td style="text-align: left;">Higher complexity for encoder rate
+control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Primary Advantage</strong></td>
+<td style="text-align: left;">Efficient parallel CPU/GPU scaling</td>
+<td style="text-align: left;">Granular control for specialized video
+delivery</td>
+</tr>
+</tbody>
+</table>
+<p>Choosing between uniform and arbitrary tiling depends on the
+distribution pipeline. Uniform tiling remains the default choice for
+general consumer video, whereas arbitrary tiling serves targeted
+applications that require dynamic, localized resource allocation.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

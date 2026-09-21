@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 vs HEVC: Fast Presets for Live Streams - av1</title>
+    <meta name="description" content="This article examines whether the open-source AV1 video codec can realistically compete with HEVC (H.265) when configured with fast, real-time encoding presets for user-generated live streams. It evaluates how both codecs balance compression efficiency,">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-vs-hevc-fast-presets-for-live-streams">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 vs HEVC: Fast Presets for Live Streams - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-vs-hevc-fast-presets-for-live-streams" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines whether the open-source AV1 video codec can realistically compete with HEVC (H.265) when configured with fast, real-time encoding presets for user-generated live streams. It evaluates how both codecs balance compression efficiency," />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-vs-hevc-fast-presets-for-live-streams">AV1 vs HEVC: Fast
+Presets for Live Streams</h1>
+<p>This article examines whether the open-source AV1 video codec can
+realistically compete with HEVC (H.265) when configured with fast,
+real-time encoding presets for user-generated live streams. It evaluates
+how both codecs balance compression efficiency, visual fidelity,
+hardware acceleration, and CPU resource usage under the strict
+low-latency demands of home-broadcasting setups.</p>
+<h3 id="the-challenge-of-real-time-encoding">The Challenge of Real-Time
+Encoding</h3>
+<p>User-generated live streaming relies on predictable performance under
+strict frame-time constraints. Broadcasters using software like OBS
+Studio must encode 60 frames per second without dropped frames, forcing
+encoders to bypass heavy computation tools in favor of "fast" or
+"ultrafast" presets. Historically, this heavily favored mature standards
+like H.264 and HEVC, as AV1’s advanced toolset was initially too
+computationally expensive for consumer hardware.</p>
+<h3 id="software-encoding-svt-av1-vs-x265">Software Encoding: SVT-AV1
+vs. x265</h3>
+<p>When constrained to CPU-based encoding, HEVC (via x265) has long held
+an advantage in mature optimization over AV1. However, development in
+SVT-AV1 has closed this gap considerably at presets 10 through 13.</p>
+<p>At these ultra-fast software tiers:</p>
+<ul>
+<li><strong>Compression Efficiency:</strong> AV1 retains superior edge
+clarity and texture preservation at typical live-streaming bitrates
+(4,000 to 8,000 kbps), outperforming x265 on veryfast or faster
+presets.</li>
+<li><strong>CPU Overhead:</strong> AV1 still requires more compute
+cycles than HEVC at comparable speeds. To use real-time software AV1
+reliably, creators need high-core-count processors (8 cores or higher),
+whereas x265 can operate on older or mid-range CPUs with less
+overhead.</li>
+</ul>
+<h3 id="dedicated-hardware-acceleration">Dedicated Hardware
+Acceleration</h3>
+<p>The dynamic shifts decisively in favor of AV1 when evaluating modern
+hardware encoders (Nvidia NVENC on RTX 40-series, Intel QuickSync on
+Arc, and AMD AMF on RDNA3).</p>
+<p>Hardware-based AV1 encoders run entirely on dedicated silicon chips
+without consuming CPU or GPU compute cores needed for gaming. In this
+environment:</p>
+<ul>
+<li>Hardware AV1 consistently matches or exceeds the visual quality of
+HEVC while producing smaller file sizes or cleaner visuals at equivalent
+low bitrates.</li>
+<li>Latency metrics for hardware AV1 match HEVC and AVC, easily
+supporting sub-second interaction required for live chat
+environments.</li>
+<li>In hardware implementations, the computational penalty of AV1 is
+rendered irrelevant to the user.</li>
+</ul>
+<h3 id="ecosystem-and-ingestion-support">Ecosystem and Ingestion
+Support</h3>
+<p>Compression quality is meaningless if platforms cannot ingest or
+distribute the feed. HEVC has historically suffered from fragmented
+browser support and licensing complications, making platforms reluctant
+to adopt it for browser-based playback.</p>
+<p>AV1, as a royalty-free standard backed by major tech conglomerates,
+benefits from native browser playback across Chrome, Firefox, and
+Safari. Major platforms like YouTube have rolled out AV1 live ingestion,
+and protocols such as Enhanced RTMP and WebRTC enable straightforward
+AV1 streaming.</p>
+<h3 id="the-verdict">The Verdict</h3>
+<p>AV1 can definitively compete with—and often surpass—HEVC at fast
+real-time presets for user-generated content, provided modern hardware
+encoders are used. While software-based AV1 requires more CPU headroom
+than x265, its visual superiority at low bitrates and widespread browser
+compatibility make it a more viable, future-proof choice for real-time
+streaming workflows.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

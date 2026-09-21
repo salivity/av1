@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 In-Loop Filters vs HEVC SAO Complexity - av1</title>
+    <meta name="description" content="This article examines the computational complexity differences between the in-loop filtering architectures of the AV1 and HEVC (H.265) video codecs. While High Efficiency Video Coding (HEVC) relies on a lightweight two-stage filtering process featuring S">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-in-loop-filters-vs-hevc-sao-complexity">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 In-Loop Filters vs HEVC SAO Complexity - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-in-loop-filters-vs-hevc-sao-complexity" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the computational complexity differences between the in-loop filtering architectures of the AV1 and HEVC (H.265) video codecs. While High Efficiency Video Coding (HEVC) relies on a lightweight two-stage filtering process featuring S" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-in-loop-filters-vs-hevc-sao-complexity">AV1 In-Loop Filters
+vs HEVC SAO Complexity</h1>
+<p>This article examines the computational complexity differences
+between the in-loop filtering architectures of the AV1 and HEVC (H.265)
+video codecs. While High Efficiency Video Coding (HEVC) relies on a
+lightweight two-stage filtering process featuring Sample Adaptive Offset
+(SAO), AV1 uses an advanced multi-stage pipeline that includes
+Constrained Directional Enhancement Filtering (CDEF) and Loop
+Restoration (LR). As a result, AV1 provides superior visual artifact
+removal and compression efficiency, but demands substantially higher
+computational resources, memory bandwidth, and silicon area than HEVC's
+SAO.</p>
+<h3 id="hevc-in-loop-filtering-and-sao-architecture">HEVC In-Loop
+Filtering and SAO Architecture</h3>
+<p>HEVC processes decoded pictures using a sequential two-step in-loop
+filtering pipeline: a traditional Deblocking Filter (DBF) followed by
+the Sample Adaptive Offset (SAO) filter.</p>
+<p>SAO operates conditionally on reconstructed samples after the
+deblocking stage. Its primary purpose is to reduce ringing artifacts and
+reconstruct edge gradients by categorizing pixels and applying simple
+offsets. SAO operates in two basic modes:</p>
+<ul>
+<li><strong>Edge Offset (EO):</strong> Compares a current pixel with two
+neighboring pixels along one of four predetermined directions
+(horizontal, vertical, or two diagonals) to classify it into one of five
+categories (local minimum, local maximum, two edge gradients, or
+flat).</li>
+<li><strong>Band Offset (BO):</strong> Divides the sample amplitude
+range into 32 uniform bands and adds an offset to samples falling within
+four selected consecutive bands.</li>
+</ul>
+<p>From a computational standpoint, SAO is exceptionally lightweight.
+The pixel classification requires basic integer comparisons, conditional
+branching, and simple additions. It requires minimal line buffer storage
+(typically only one line of pixels above the current Processing Tree
+Unit) and introduces very low latency and memory bandwidth consumption
+during both hardware and software decoding.</p>
+<h3 id="av1-in-loop-filtering-pipeline">AV1 In-Loop Filtering
+Pipeline</h3>
+<p>AV1 replaces the simpler post-deblocking approach with a
+sophisticated, four-stage in-loop filtering system:</p>
+<ol type="1">
+<li><strong>Deblocking Filter (DBF):</strong> Removes grid-like boundary
+artifacts using varied filter lengths.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+Applied directly after deblocking, CDEF identifies the primary
+directional orientation of edges within 8x8 blocks. It then applies a
+non-linear low-pass filter along the detected edge direction to
+eliminate ringing artifacts without blurring fine details.</li>
+<li><strong>Super-Resolution:</strong> An optional normative upscaling
+step applied inside the loop.</li>
+<li><strong>Loop Restoration (LR):</strong> Applied after CDEF, LR
+operates at a configurable block level (typically 64x64 to 256x256)
+using one of two mathematical algorithms:
+<ul>
+<li><em>Separable Symmetric Wiener Filter:</em> A 7-tap separable filter
+designed to reverse blur and restore high frequencies.</li>
+<li><em>Dual Self-Guided Filter:</em> Employs two different
+edge-preserving box-filtering passes with adaptive linear regression
+weights to restore image details.</li>
+</ul></li>
+</ol>
+<h3 id="computational-complexity-comparison">Computational Complexity
+Comparison</h3>
+<p>Comparing the computational footprint of AV1’s post-deblock filters
+(CDEF and Loop Restoration) against HEVC's SAO reveals sharp contrasts
+across several dimensions:</p>
+<h4 id="1-arithmetic-and-operational-intensity">1. Arithmetic and
+Operational Intensity</h4>
+<ul>
+<li><strong>HEVC SAO:</strong> Consists primarily of conditional logic
+and small addition operations. The classification process requires only
+two comparisons per sample for Edge Offset, and a bit-shift/mask
+operation for Band Offset.</li>
+<li><strong>AV1 In-Loop Filters:</strong> CDEF requires an initial
+search stage that computes directional variance across eight possible
+angles for every block, followed by non-linear clamping and
+multiply-accumulate operations along the dominant edge. Loop Restoration
+introduces higher complexity: the Wiener filter requires multi-tap 2D
+separable convolutions, while the Self-Guided filter requires integral
+image calculations, variance evaluations, and localized linear
+regressions.</li>
+</ul>
+<h4 id="2-memory-access-and-line-buffering">2. Memory Access and Line
+Buffering</h4>
+<ul>
+<li><strong>HEVC SAO:</strong> Needs access to immediate neighboring
+pixels, requiring only a shallow line buffer (typically 1 line) to cross
+horizontal Processing Tree Unit (CTU) boundaries.</li>
+<li><strong>AV1 In-Loop Filters:</strong> Requires multiple line buffers
+between stages. CDEF requires access to pixel margins around 8x8 blocks,
+and Loop Restoration requires access to up to three reconstructed lines
+above and below boundaries. This substantially increases on-chip SRAM
+requirements in dedicated hardware decoders.</li>
+</ul>
+<h4 id="3-execution-overhead-in-decoders">3. Execution Overhead in
+Decoders</h4>
+<ul>
+<li><strong>HEVC SAO:</strong> Typically accounts for less than 3% to 5%
+of total decoder processing time on general-purpose CPUs.</li>
+<li><strong>AV1 In-Loop Filters:</strong> CDEF and Loop Restoration
+combined routinely consume between 20% and 35% of total software
+decoding time unless aggressively vectorized (via AVX-512, AVX2, or ARM
+NEON).</li>
+</ul>
+<h3 id="summary">Summary</h3>
+<p>The AV1 in-loop filter suite is significantly more computationally
+complex than the HEVC SAO filter. While HEVC prioritized ultra-low
+hardware implementation costs and simple arithmetic for SAO, AV1
+trade-offs processing power and line-buffer memory to achieve higher
+structural fidelity, resulting in an in-loop filtering phase that is an
+order of magnitude heavier than that of HEVC.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Implements HDR Color Signaling - av1</title>
+    <meta name="description" content="This article provides an overview of how the AOMedia Video 1 (AV1) codec standardizes High Dynamic Range (HDR) color signaling. AV1 conveys HDR information directly within its bitstream structure using Sequence Header syntax elements and dedicated Metada">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-implements-hdr-color-signaling">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Implements HDR Color Signaling - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-implements-hdr-color-signaling" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AOMedia Video 1 (AV1) codec standardizes High Dynamic Range (HDR) color signaling. AV1 conveys HDR information directly within its bitstream structure using Sequence Header syntax elements and dedicated Metada" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-implements-hdr-color-signaling">How AV1 Implements HDR
+Color Signaling</h1>
+<p>This article provides an overview of how the AOMedia Video 1 (AV1)
+codec standardizes High Dynamic Range (HDR) color signaling. AV1 conveys
+HDR information directly within its bitstream structure using Sequence
+Header syntax elements and dedicated Metadata Open Bitstream Units
+(OBUs). This framework enables decoders and display pipelines to
+accurately interpret high bit-depth pixel data, wide color gamuts,
+electro-optical transfer functions (EOTFs), and both static and dynamic
+luminance metadata.</p>
+<h2 id="sequence-header-color-configuration">Sequence Header Color
+Configuration</h2>
+<p>AV1 handles fundamental color properties within the
+<code>color_config</code> syntax structure located inside the Sequence
+Header OBU. Because this header governs the entire sequence, it sets the
+baseline color properties for all subsequent video frames until a new
+sequence begins.</p>
+<p>The <code>color_config</code> syntax specifies four critical
+parameters:</p>
+<ul>
+<li><strong>Bit Depth (<code>BitDepth</code>):</strong> HDR requires
+higher bit precision to prevent banding. AV1 signals 8-bit, 10-bit, or
+12-bit pixel depth. Profiles 0 (Main) and 2 (Professional) support
+10-bit, while Profile 2 also supports 12-bit.</li>
+<li><strong>Color Primaries (<code>color_primaries</code>):</strong>
+Identifies the chromaticity coordinates of the source color space. For
+standard HDR delivery, this is typically set to <code>12</code>,
+representing ITU-R BT.2020.</li>
+<li><strong>Transfer Characteristics
+(<code>transfer_characteristics</code>):</strong> Defines the EOTF curve
+used to map code values to linear display light. The primary values used
+for HDR include:
+<ul>
+<li><code>16</code>: SMPTE ST 2084 (Perceptual Quantizer / PQ), the
+standard EOTF for HDR10, Dolby Vision, and HDR10+.</li>
+<li><code>18</code>: ARIB STD-B67 (Hybrid Log-Gamma / HLG), commonly
+used for broadcast applications.</li>
+</ul></li>
+<li><strong>Matrix Coefficients
+(<code>matrix_coefficients</code>):</strong> Specifies the
+transformation matrix used to derive luma and chroma signals from red,
+green, and blue (RGB) primaries. HDR workflows typically set this to
+<code>9</code> (BT.2020 non-constant luminance) or <code>14</code>
+(BT.2100-ICTCP).</li>
+<li><strong>Color Range (<code>color_range</code>):</strong> A single
+bit signaling either Studio Range (narrow/limited, values 64–940 in
+10-bit) or Full Range (0–1023 in 10-bit).</li>
+</ul>
+<p>If these parameters conform to the standard sRGB/BT.709 space, the
+bitstream can set <code>color_description_present_flag</code> to
+<code>0</code>, but for HDR formats, this flag is set to <code>1</code>
+to explicitly declare the parameters.</p>
+<h2 id="chroma-subsampling-and-sample-positioning">Chroma Subsampling
+and Sample Positioning</h2>
+<p>Proper HDR tone mapping requires exact alignment between luma and
+chroma samples. Within the <code>color_config</code> block:</p>
+<ul>
+<li><strong>Subsampling:</strong> AV1 explicitly signals
+<code>subsampling_x</code> and <code>subsampling_y</code> to indicate
+4:2:0, 4:2:2, or 4:4:4 sampling formats.</li>
+<li><strong>Chroma Sample Position:</strong> When 4:2:0 subsampling is
+applied, AV1 uses <code>chroma_sample_position</code> to specify whether
+chroma samples are collocated with luma samples (e.g., vertical
+alignment matching ITU-R BT.2020) or positioned half-way between luma
+samples (center-aligned).</li>
+</ul>
+<h2 id="static-hdr-metadata-signaling">Static HDR Metadata
+Signaling</h2>
+<p>Beyond primary color spaces, AV1 carries static mastering display
+metadata via discrete Open Bitstream Units designated as
+<code>OBU_METADATA</code>. These packets can be injected at keyframe
+intervals or repeated periodically to allow decoders to reconstruct
+target display capabilities.</p>
+<p>AV1 specifies two core static metadata types:</p>
+<h3 id="1-mastering-display-color-volume-mdcv">1. Mastering Display
+Color Volume (MDCV)</h3>
+<p>Signaled via <code>METADATA_TYPE_HDR_MDCV</code> (Type 1), this block
+implements the SMPTE ST 2086 specification. It details the display
+parameters of the monitor used during mastering:</p>
+<ul>
+<li><strong>Display Primaries:</strong> Normalized chromaticity
+coordinates (<span class="math inline">\(x, y\)</span>) for red, green,
+and blue.</li>
+<li><strong>White Point:</strong> Normalized chromaticity coordinates
+(<span class="math inline">\(x, y\)</span>) of the mastering monitor's
+white balance (typically D65).</li>
+<li><strong>Luminance Limits:</strong> The minimum and maximum display
+luminance, measured in candelas per square meter (<span
+class="math inline">\(\text{cd/m}^2\)</span> or nits), expressed in
+fixed-point values.</li>
+</ul>
+<h3 id="2-content-light-level-cll">2. Content Light Level (CLL)</h3>
+<p>Signaled via <code>METADATA_TYPE_HDR_CLL</code> (Type 2), this block
+implements the CTA-861-G standard to describe scene brightness across
+the entire video:</p>
+<ul>
+<li><strong>MaxCLL (Maximum Content Light Level):</strong> The luminance
+value of the brightest single pixel in the entire stream, measured in
+nits.</li>
+<li><strong>MaxFALL (Maximum Frame-Average Light Level):</strong> The
+highest average picture luminance across any single frame in the stream,
+measured in nits.</li>
+</ul>
+<p>Receiving displays use MDCV and CLL data to guide static tone mapping
+algorithms, compressing out-of-gamut values while preserving specular
+highlights according to display hardware capabilities.</p>
+<h2 id="dynamic-metadata-implementation">Dynamic Metadata
+Implementation</h2>
+<p>AV1 supports frame-by-frame and scene-by-scene dynamic tone mapping
+formats using generalized user-data wrappers.</p>
+<p>Rather than relying on proprietary bitstream syntax, AV1 employs
+<code>METADATA_TYPE_ITUT_T35</code> (Type 4). This metadata type
+encapsulates ITU-T Recommendation T.35 payload structures, which
+define:</p>
+<ul>
+<li><strong>Country Code:</strong> Standardized geographic
+indicator.</li>
+<li><strong>Terminal Provider Code:</strong> Specific identifier for the
+standard body or vendor (e.g., SMPTE, Dolby, or HDR10+ Consortium).</li>
+<li><strong>Payload:</strong> Frame-accurate metadata packets containing
+dynamic parametric curves, distribution percentiles (such as 1%, 50%,
+99% light levels), and targeted contrast offsets.</li>
+</ul>
+<p>By transmitting dynamic metadata within ITU-T T.35 OBUs directly
+alongside the relevant frame packets, AV1 allows HDR10+ and Dolby Vision
+metadata to stay synchronized with video frames through transcoding,
+decapsulation, and playback pipelines.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

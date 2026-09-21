@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Monochrome Video Encoding Explained - av1</title>
+    <meta name="description" content="This article explores how the AV1 video codec implements native monochrome video encoding to optimize black-and-white content. By eliminating unnecessary color channels directly at the bitstream level, AV1 reduces file sizes, conserves bandwidth, and low">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-monochrome-video-encoding-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Monochrome Video Encoding Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-monochrome-video-encoding-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the AV1 video codec implements native monochrome video encoding to optimize black-and-white content. By eliminating unnecessary color channels directly at the bitstream level, AV1 reduces file sizes, conserves bandwidth, and low" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-monochrome-video-encoding-explained">AV1 Monochrome Video
+Encoding Explained</h1>
+<p>This article explores how the AV1 video codec implements native
+monochrome video encoding to optimize black-and-white content. By
+eliminating unnecessary color channels directly at the bitstream level,
+AV1 reduces file sizes, conserves bandwidth, and lowers decoding
+overhead. The following sections outline the technical mechanisms,
+bitstream signaling, efficiency advantages, and primary use cases of
+monochrome processing in AV1.</p>
+<h3 id="native-monochrome-signaling">Native Monochrome Signaling</h3>
+<p>Unlike older codecs that often require black-and-white footage to be
+packaged within a standard three-channel YUV color space, AV1 features
+native monochrome support. This is controlled at the sequence level via
+the <code>mono_chrome</code> flag in the sequence header:</p>
+<ul>
+<li><strong>Flag State:</strong> Setting <code>mono_chrome = 1</code>
+informs the decoder that the stream contains only a single luma (<span
+class="math inline">\(Y\)</span>) channel and entirely lacks chroma
+(<span class="math inline">\(Cb\)</span> and <span
+class="math inline">\(Cr\)</span>) components.</li>
+<li><strong>Profile Compatibility:</strong> Monochrome functionality is
+integrated into AV1's Main (Profile 0) and Professional (Profile 2)
+profiles. Profile 0 supports 8-bit and 10-bit monochrome, while Profile
+2 extends monochrome support to 12-bit depth.</li>
+</ul>
+<h3 id="elimination-of-chroma-processing-overhead">Elimination of Chroma
+Processing Overhead</h3>
+<p>When encoding standard video (such as YUV 4:2:0), a video encoder
+must allocate bits and compute data for color difference planes, even if
+those planes contain neutral, flat values. AV1 eliminates this
+redundancy through several structural optimizations:</p>
+<ul>
+<li><strong>Bitstream Syntax:</strong> Coding blocks in a monochrome
+stream only transmit luma transform coefficients, intra-prediction
+modes, and motion vectors. All syntax elements related to chroma
+prediction and transform blocks are bypassed.</li>
+<li><strong>In-Loop Filtering:</strong> AV1's in-loop filters—including
+the deblocking filter, Constrained Directional Enhancement Filter
+(CDEF), and loop restoration—operate exclusively on the luma plane. This
+reduces the computational cycles normally required to filter chroma
+edges and boundaries.</li>
+<li><strong>Transform and Quantization:</strong> The encoder skips
+chroma quantization matrices and frequency transforms entirely,
+dedicating the full computational budget and bit distribution to luma
+fidelity.</li>
+</ul>
+<h3 id="compression-efficiency">Compression Efficiency</h3>
+<p>Encoding grayscale video using standard 4:2:0 subsampling wastes
+approximately 10% to 20% of the overall bitrate on signaling empty or
+near-empty chroma channels. By stripping out chroma overhead, AV1
+achieves:</p>
+<ul>
+<li><strong>Lower Bitrates:</strong> Pure luma allocation yields higher
+perceptual quality at lower bitrates because no bits are spent
+mitigating chroma noise or signaling neutral color components.</li>
+<li><strong>Reduced Memory Footprint:</strong> Decoders allocate frame
+buffers for only one plane instead of three, cutting buffer memory
+consumption by one-third compared to 4:2:0 and by one-half compared to
+4:4:4.</li>
+</ul>
+<h3 id="display-and-output-handling">Display and Output Handling</h3>
+<p>When an AV1 decoder processes a stream where
+<code>mono_chrome = 1</code>, it outputs a single reconstructed plane
+representing luminance. Display pipelines and output interfaces handle
+this through identity mapping:</p>
+<ul>
+<li>The luma value is duplicated across the red, green, and blue
+channels (<span class="math inline">\(R = Y, G = Y, B = Y\)</span>)
+during color space conversion to standard RGB display formats.</li>
+<li>The sequence header can also signal color primaries, transfer
+characteristics, and matrix coefficients, ensuring the grayscale values
+map accurately according to specified gamma or electro-optical transfer
+functions (EOTF), such as standard sRGB or high-dynamic-range (HDR)
+transfer curves.</li>
+</ul>
+<h3 id="practical-applications">Practical Applications</h3>
+<p>AV1's native monochrome support makes it particularly effective for
+specialized industries and specific media types:</p>
+<ul>
+<li><strong>Medical Imaging:</strong> Modalities like X-rays, MRI, and
+CT scans produce high-bit-depth grayscale data where color data is
+absent and accuracy is paramount.</li>
+<li><strong>Document and Screen Archiving:</strong> Microfilm scans,
+digitized manuscripts, and monochromatic text archives compress
+significantly smaller without color artifacts.</li>
+<li><strong>Surveillance:</strong> Security cameras operating in
+night-vision or infrared modes can switch to monochrome encoding
+dynamically to conserve storage and transmission bandwidth.</li>
+<li><strong>Artistic Film:</strong> Native monochrome handles archival
+black-and-white cinema restorations and modern grayscale photography
+without color drift or chroma noise.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

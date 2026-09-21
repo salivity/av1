@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Demuxers Select an Operating Point - av1</title>
+    <meta name="description" content="This article explains how an AV1 demuxer identifies and selects an appropriate operating point by reading sequence metadata and matching it against a client device's display and decoding capabilities. By comparing constraints such as resolution, frame ra">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-demuxers-select-an-operating-point">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Demuxers Select an Operating Point - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-demuxers-select-an-operating-point" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how an AV1 demuxer identifies and selects an appropriate operating point by reading sequence metadata and matching it against a client device's display and decoding capabilities. By comparing constraints such as resolution, frame ra" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-demuxers-select-an-operating-point">How AV1 Demuxers
+Select an Operating Point</h1>
+<p>This article explains how an AV1 demuxer identifies and selects an
+appropriate operating point by reading sequence metadata and matching it
+against a client device's display and decoding capabilities. By
+comparing constraints such as resolution, frame rate, bit depth, and
+color profile against the scalable layers declared in the bitstream, the
+demuxer filters out unsupported or suboptimal layers to feed the decoder
+only the data required for optimal playback.</p>
+<h3 id="what-is-an-av1-operating-point">What is an AV1 Operating
+Point?</h3>
+<p>In the AV1 specification, an operating point represents a specific
+combination of temporal and spatial layers within a scalable bitstream,
+tied to a target decoder profile, level, and tier. A single AV1
+bitstream can contain multiple embedded sub-streams (e.g., a 1080p base
+layer at 30 fps and a 4K enhancement layer at 60 fps). Operating points
+define the exact subsets of data that form valid, decodable outputs
+suited for different viewing conditions and device capabilities.</p>
+<h3 id="parsing-the-sequence-header-obu">Parsing the Sequence Header
+OBU</h3>
+<p>The selection process begins when the demuxer inspects the AV1
+Sequence Header Open Bitstream Unit (OBU). The Sequence Header provides
+the global parameters of the video stream, including:</p>
+<ul>
+<li><strong>Operating Point Count:</strong> Declared via
+<code>operating_points_cnt_minus_1</code>, indicating how many distinct
+operating points exist.</li>
+<li><strong>Operating Point IDC
+(<code>operating_point_idc</code>):</strong> A 12-bit field for each
+operating point that acts as a bitmask identifying which temporal layers
+(<code>temporal_id</code>) and spatial layers (<code>spatial_id</code>)
+belong to that specific point.</li>
+<li><strong>Profile and Level Definitions:</strong> The
+<code>seq_level_idx</code> and <code>seq_tier</code> associated with
+each operating point, defining computational ceilings such as maximum
+sample rates and bitrates.</li>
+<li><strong>Color Configuration:</strong> Details including bit depth
+(8, 10, or 12 bits), subsampling (4:2:0, 4:2:2, 4:4:4), and color
+primaries/transfer characteristics (e.g., HDR10, HLG, or SDR).</li>
+</ul>
+<h3 id="evaluating-client-display-and-decoder-capabilities">Evaluating
+Client Display and Decoder Capabilities</h3>
+<p>Before selecting an operating point, the demuxer queries the client
+environment to establish hardware and display limits. Key parameters
+evaluated include:</p>
+<ol type="1">
+<li><strong>Display Resolution and Refresh Rate:</strong> The physical
+pixel dimensions and maximum refresh rate of the connected panel (e.g.,
+1920x1080 @ 60Hz or 3840x2160 @ 120Hz).</li>
+<li><strong>Color Profile Support:</strong> Whether the display can
+render Wide Color Gamut (WCG) and High Dynamic Range (HDR), as well as
+native panel bit depth support.</li>
+<li><strong>Hardware Decoder Limits:</strong> The highest AV1 profile
+and level the client's decoder can process without dropping frames or
+running out of memory.</li>
+</ol>
+<h3 id="the-selection-algorithm">The Selection Algorithm</h3>
+<p>The demuxer filters and ranks the candidate operating points using a
+sequential matching process:</p>
+<ol type="1">
+<li><strong>Hardware Compliance Filter:</strong> Any operating point
+requiring a profile or level exceeding the decoder’s certified limits is
+immediately discarded.</li>
+<li><strong>Display Bound Matching:</strong> The demuxer checks the
+spatial dimensions of the remaining operating points. If an operating
+point has a resolution higher than the client display, it is typically
+discarded to avoid wasting decoding resources and memory bandwidth on
+downscaling, unless super-resolution modes are explicitly
+requested.</li>
+<li><strong>Temporal Filtering:</strong> Operating points providing
+frame rates higher than the screen's refresh rate or decoder limits are
+eliminated.</li>
+<li><strong>Color Compatibility:</strong> If the client display only
+supports standard dynamic range (SDR) with 8-bit color, operating points
+mapped to 10-bit HDR output are either bypassed or marked for hardware
+tone-mapping if available.</li>
+<li><strong>Selection of the Highest Feasible Point:</strong> From the
+surviving valid candidates, the demuxer selects the operating point with
+the highest quality metrics (highest resolution, frame rate, and
+fidelity) that fits within the display's boundaries.</li>
+</ol>
+<h3 id="bitstream-stripping-and-demuxing">Bitstream Stripping and
+Demuxing</h3>
+<p>Once the target operating point is established, the demuxer enforces
+the selection at the packet level. It reads the <code>temporal_id</code>
+and <code>spatial_id</code> stored in the frame headers or OBU extension
+headers of the incoming bitstream.</p>
+<p>Any OBU with layer identifiers that do not match the bitmask defined
+by the selected <code>operating_point_idc</code> is dropped. The demuxer
+forwards only the relevant layers to the AV1 decoder, ensuring efficient
+resource utilization while delivering the best possible video quality
+for the client's display.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

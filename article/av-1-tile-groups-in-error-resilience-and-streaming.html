@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Tile Groups in Error Resilience and Streaming - av1</title>
+    <meta name="description" content="This article examines how the AV1 video codec leverages tile groups to enhance media delivery across unreliable networks. By breaking down video frames into distinct, independently decodable rectangular units, AV1 tile groups provide robust error resilie">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-tile-groups-in-error-resilience-and-streaming">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Tile Groups in Error Resilience and Streaming - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-tile-groups-in-error-resilience-and-streaming" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how the AV1 video codec leverages tile groups to enhance media delivery across unreliable networks. By breaking down video frames into distinct, independently decodable rectangular units, AV1 tile groups provide robust error resilie" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-tile-groups-in-error-resilience-and-streaming">AV1 Tile
+Groups in Error Resilience and Streaming</h1>
+<p>This article examines how the AV1 video codec leverages tile groups
+to enhance media delivery across unreliable networks. By breaking down
+video frames into distinct, independently decodable rectangular units,
+AV1 tile groups provide robust error resilience to prevent catastrophic
+frame loss and facilitate efficient progressive streaming, dynamic
+viewport switching, and parallelized multi-threaded processing.</p>
+<h3 id="understanding-av1-tile-groups">Understanding AV1 Tile
+Groups</h3>
+<p>In the AV1 video coding format, a single frame can be partitioned
+into a grid of rectangular regions called tiles. A tile group consists
+of one or more of these tiles bundled into a single bitstream unit.
+Crucially, AV1 allows tiles to be decoded independently without relying
+on spatial pixel data from adjacent tiles in the same frame. This
+structural decoupling forms the foundation for both robust error
+management and flexible network streaming.</p>
+<h3 id="enhancing-error-resilience">Enhancing Error Resilience</h3>
+<p>In traditional video coding, dropping a single network packet during
+transmission can corrupt an entire frame and cause artifact propagation
+through successive inter-predicted frames. AV1 tile groups mitigate this
+vulnerability through localized boundaries:</p>
+<ul>
+<li><strong>Fault Isolation:</strong> Because spatial prediction does
+not cross tile boundaries (unless explicitly enabled), bit errors or
+dropped packets within one tile group do not corrupt neighboring tiles.
+The decoder can decode intact tile groups normally, restricting visual
+corruption to a fraction of the frame.</li>
+<li><strong>Effective Error Concealment:</strong> When a tile group is
+missing or corrupted, decoding software can apply spatial or temporal
+error concealment to only that specific rectangular area. Surrounding
+intact tiles provide reliable spatial context, while corresponding areas
+from previous reference frames can fill the missing patch with minimal
+perceptual disruption.</li>
+<li><strong>Targeted Retransmission:</strong> In interactive or
+low-latency streaming scenarios (such as WebRTC), a receiver can request
+retransmission only for the missing tile group rather than demanding an
+entire new keyframe, substantially saving network bandwidth.</li>
+</ul>
+<h3 id="enabling-progressive-and-adaptive-streaming">Enabling
+Progressive and Adaptive Streaming</h3>
+<p>Tile groups also introduce major performance benefits for progressive
+rendering, high-resolution playback, and interactive media:</p>
+<ul>
+<li><strong>Independent Decodability and Viewport Streaming:</strong> In
+applications such as 360-degree video, virtual reality, and gigapixel
+panning, displaying an entire 8K or 16K frame wastes bandwidth. Tile
+groups allow streaming clients to download high-quality tile groups
+exclusively for the user's active field of view, while fetching
+low-bitrate tile groups or ignoring off-screen areas entirely.</li>
+<li><strong>Low-Latency Pipelining:</strong> Tile groups enable encoders
+and decoders to operate in parallel using multi-threaded execution. An
+encoder can compress, package, and transmit the top tile groups of a
+frame across the network while lower tiles are still being processed,
+drastically cutting down glass-to-glass latency.</li>
+<li><strong>Progressive Display:</strong> Streaming engines can
+progressively render available tiles on display hardware as their
+respective data packets arrive, rather than buffering until the entire
+monolithic frame payload is fully received. This reduces jitter and
+helps maintain consistent playback on unstable connections.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

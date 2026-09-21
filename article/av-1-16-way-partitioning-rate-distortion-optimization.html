@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 16-Way Partitioning Rate-Distortion Optimization - av1</title>
+    <meta name="description" content="This article examines how an AV1 video encoder evaluates rate-distortion (RD) curves across its 16-way block partitioning scheme. AV1 expands traditional quad-tree partitioning into a flexible recursive tree supporting square, rectangular, and non-symmet">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-16-way-partitioning-rate-distortion-optimization">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 16-Way Partitioning Rate-Distortion Optimization - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-16-way-partitioning-rate-distortion-optimization" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how an AV1 video encoder evaluates rate-distortion (RD) curves across its 16-way block partitioning scheme. AV1 expands traditional quad-tree partitioning into a flexible recursive tree supporting square, rectangular, and non-symmet" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-16-way-partitioning-rate-distortion-optimization">AV1 16-Way
+Partitioning Rate-Distortion Optimization</h1>
+<p>This article examines how an AV1 video encoder evaluates
+rate-distortion (RD) curves across its 16-way block partitioning scheme.
+AV1 expands traditional quad-tree partitioning into a flexible recursive
+tree supporting square, rectangular, and non-symmetrical 1:4 and 4:1
+aspect ratios. Encoders navigate this immense search space by computing
+Lagrangian cost functions across candidate splits, deploying variance
+and edge-detection heuristics, and using early termination strategies to
+select the optimal partition balance between compression efficiency and
+bit budget.</p>
+<h3 id="the-16-way-partition-topology">The 16-Way Partition
+Topology</h3>
+<p>AV1 extends the superblock architecture (typically 128x128 or 64x64
+pixels) down to 4x4 blocks using 16 distinct partition
+configurations:</p>
+<ul>
+<li><strong>None (<code>PARTITION_NONE</code>):</strong> The block
+remains undivided.</li>
+<li><strong>Horizontal and Vertical Splits (<code>PARTITION_HORZ</code>,
+<code>PARTITION_VERT</code>):</strong> Divides the block into two equal
+2:1 or 1:2 rectangles.</li>
+<li><strong>Quad-Tree (<code>PARTITION_SPLIT</code>):</strong> Divides
+the block into four equal sub-quadrants.</li>
+<li><strong>T-Shapes (<code>HORZ_A</code>, <code>HORZ_B</code>,
+<code>VERT_A</code>, <code>VERT_B</code>):</strong> Asymmetrical splits
+where one half is undivided and the other is split into two smaller
+blocks.</li>
+<li><strong>Extended Aspect Ratios (<code>HORZ_4</code>,
+<code>VERT_4</code>):</strong> Divides the block into four 4:1 or 1:4
+slivers, designed for fine horizontal or vertical textures.</li>
+</ul>
+<p>Each split creates sub-blocks that can often be partitioned
+recursively, producing an exponential number of structural candidates
+for a single superblock.</p>
+<h3 id="the-rate-distortion-optimization-rdo-metric">The Rate-Distortion
+Optimization (RDO) Metric</h3>
+<p>To compare different partition options, the encoder projects
+candidate splits onto an RD curve using the Lagrangian formulation:</p>
+<p><span class="math display">\[J = D + \lambda \cdot R\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(J\)</span> is the calculated RD
+cost.</li>
+<li><span class="math inline">\(D\)</span> represents distortion,
+typically measured as Sum of Squared Errors (SSE) between original and
+reconstructed pixels, or weighted by perceptual metrics.</li>
+<li><span class="math inline">\(R\)</span> represents the total rate,
+counting the bits required to signal partition metadata, prediction
+modes, motion vectors, and quantized transform coefficients.</li>
+<li><span class="math inline">\(\lambda\)</span> is the Lagrange
+multiplier derived from the frame's quantization parameter (QP). Higher
+<span class="math inline">\(\lambda\)</span> values prioritize bit
+savings over fidelity (high-compression regimes), while lower values
+prioritize distortion reduction.</li>
+</ul>
+<h3 id="bottom-up-vs-top-down-rd-evaluation">Bottom-Up vs. Top-Down RD
+Evaluation</h3>
+<p>Encoders evaluate RD curves across partition depths using recursive
+tree searches, typically functioning via a depth-first traversal:</p>
+<ol type="1">
+<li><strong>Leaf Cost Evaluation:</strong> For any given partition
+candidate, the encoder tests candidate intra-prediction or
+inter-prediction modes, computes residual transforms, quantizes
+coefficients, and reconstructs the block to yield precise values for
+<span class="math inline">\(D\)</span> and <span
+class="math inline">\(R\)</span>.</li>
+<li><strong>Aggregated Cost Summation:</strong> The cost of a
+partitioned block equals the sum of the RD costs of all its sub-blocks
+plus the bit cost needed to signal the partition syntax itself: <span
+class="math display">\[J_{\text{split}} = \left( \sum_{i=1}^{N}
+J_{\text{sub\_block}_i} \right) + \lambda \cdot
+R_{\text{partition\_type}}\]</span></li>
+<li><strong>Direct Comparison:</strong> The aggregate cost <span
+class="math inline">\(J_{\text{split}}\)</span> is compared against the
+undivided parent cost <span
+class="math inline">\(J_{\text{none}}\)</span>. If a split configuration
+yields a lower <span class="math inline">\(J\)</span>, the encoder
+adopts the split branch on the RD curve.</li>
+</ol>
+<h3 id="pruning-the-16-way-search-space">Pruning the 16-Way Search
+Space</h3>
+<p>An exhaustive evaluation of all 16 partition types across every depth
+level is computationally prohibitive for real-time and near-real-time
+encoding. Production encoders like SVT-AV1 and libaom implement
+aggressive pruning to evaluate only the most viable points on the RD
+curve:</p>
+<ul>
+<li><strong>Spatial Variance and Edge Direction:</strong> If spatial
+gradient analysis reveals high horizontal variance and low vertical
+variance, the encoder prioritizes horizontal splits (<code>HORZ</code>,
+<code>HORZ_4</code>, <code>HORZ_A/B</code>) and prunes vertical
+candidates before running full transform and quantization
+pipelines.</li>
+<li><strong>Early Termination via Split Cost Tracking:</strong> If the
+RD cost of an undivided block (<code>PARTITION_NONE</code>) falls below
+a dynamic threshold determined by neighboring blocks, the encoder skips
+evaluating deeper 4-way and 16-way splits. Conversely, if
+<code>PARTITION_SPLIT</code> yields an RD cost substantially lower than
+<code>PARTITION_NONE</code>, non-split branches at that depth are
+discarded immediately.</li>
+<li><strong>Machine Learning Classifiers:</strong> Encoders deploy
+lightweight neural networks and decision trees trained on historical
+video datasets. These models predict the probability of 1:4, 4:1, and
+T-split utility based on motion vector consistency and residual energy,
+bypassing full RD loop calculations for low-probability topologies.</li>
+<li><strong>Staged RDO:</strong> Instead of running full entropy coding
+on every partition candidate, encoders use fast estimators (such as
+Hadamard transform domain distortion and estimated bit-rates) in early
+stages. Only the top-ranking candidates proceed to the full,
+computationally expensive RD evaluation stage.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

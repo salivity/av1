@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Dynamic Resolution Switching Dependencies - av1</title>
+    <meta name="description" content="AV1 features native internal resolution switching, also known as dynamic resolution switching or reference frame scaling, allowing the encoder to alter the spatial resolution of a video stream without inserting a keyframe. This mechanism avoids the sever">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-dynamic-resolution-switching-dependencies">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Dynamic Resolution Switching Dependencies - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-dynamic-resolution-switching-dependencies" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 features native internal resolution switching, also known as dynamic resolution switching or reference frame scaling, allowing the encoder to alter the spatial resolution of a video stream without inserting a keyframe. This mechanism avoids the sever" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-dynamic-resolution-switching-dependencies">AV1 Dynamic
+Resolution Switching Dependencies</h1>
+<p>AV1 features native internal resolution switching, also known as
+dynamic resolution switching or reference frame scaling, allowing the
+encoder to alter the spatial resolution of a video stream without
+inserting a keyframe. This mechanism avoids the severe bitrate spikes
+associated with intra-only refresh points during bandwidth fluctuations.
+This article outlines the structural dependencies governing internal
+resolution switching in AV1, detailing how reference buffers, motion
+vectors, spatial resampling, and in-loop filtering interact when frame
+dimensions change.</p>
+<h3 id="reference-frame-buffer-management">Reference Frame Buffer
+Management</h3>
+<p>In traditional codecs, changing the frame resolution typically
+requires an Instantaneous Decoder Refresh (IDR) frame, which clears the
+Decoded Picture Buffer (DPB). AV1 avoids this by establishing
+sequence-level maximum dimensions. The sequence header defines
+<code>max_frame_width_minus_1</code> and
+<code>max_frame_height_minus_1</code>, prompting the decoder to allocate
+memory capable of housing the maximum allowed dimensions across all
+eight reference frame slots.</p>
+<p>When a frame changes resolution, it does not evict existing reference
+frames or invalidate the buffer. An inter-frame can designate any of the
+active reference frames (such as LAST, BWDREF, or ALTREF) as prediction
+sources, regardless of whether their stored dimensions match the current
+frame's dimensions.</p>
+<h3 id="normative-reference-scaling">Normative Reference Scaling</h3>
+<p>When a dependency is established between a current frame and a
+reference frame of a different resolution, AV1 applies a normative
+scaling process:</p>
+<ul>
+<li><strong>Scale Factors:</strong> Horizontal and vertical scale
+factors are calculated based on the ratio between the reference frame’s
+dimensions and the current frame’s dimensions using fixed-point
+arithmetic.</li>
+<li><strong>Pixel Interpolation:</strong> AV1 uses normative 8-tap
+filtering to upscale or downscale reference picture sample blocks during
+motion compensation. The prediction is computed directly from the
+resampled reference samples.</li>
+</ul>
+<p>Because the scaling is normative and integrated into the motion
+compensation pipeline, reference frames remain stored in their original
+decoded resolutions within the DPB rather than being globally resampled
+and re-buffered.</p>
+<h3 id="motion-vector-and-temporal-motion-field-scaling">Motion Vector
+and Temporal Motion Field Scaling</h3>
+<p>Motion vector (MV) prediction relies heavily on spatial and temporal
+correlation. When resolution changes, standard pixel displacements
+between frames are no longer directly compatible, requiring mathematical
+transformation:</p>
+<ul>
+<li><strong>Block Coordinate Mapping:</strong> Spatial coordinates in
+the current frame are mapped to the reference frame coordinate system
+using the scale factors before fetching prediction data.</li>
+<li><strong>Motion Field Motion Vector (MFMV):</strong> AV1 uses
+temporal motion vector prediction, projecting motion vectors from
+previously decoded reference frames onto the current frame. When
+resolution switching occurs, the coordinates of the motion field and the
+vectors themselves are linearly scaled to align with the current frame's
+resolution grid.</li>
+<li><strong>Precision Limits:</strong> Scaling is bounded by minimum and
+maximum scaling ratios (typically between 1/2 to 2x per step in
+standardized profiles) to maintain motion vector accuracy and limit
+interpolation filter degradation.</li>
+</ul>
+<h3
+id="entropy-contexts-and-cumulative-distribution-functions-cdfs">Entropy
+Contexts and Cumulative Distribution Functions (CDFs)</h3>
+<p>Resolution changes alter the block partitioning tree and the number
+of blocks within a frame. However, the probability models used for
+entropy coding—the Cumulative Distribution Functions (CDFs)—do not reset
+across resolution switches.</p>
+<p>The frame header determines whether CDFs are inherited from a
+previous frame. If enabled, the current frame inherits the updated
+probability states from the designated reference frame, allowing the
+entropy engine to maintain compression efficiency despite the spatial
+grid structural shift.</p>
+<h3 id="tile-grids-and-in-loop-filters">Tile Grids and In-Loop
+Filters</h3>
+<p>Unlike reference frame resampling, which bridges two different
+dimensions, in-loop filters function entirely within the current frame's
+spatial domain:</p>
+<ul>
+<li><strong>Tile Partitions:</strong> Tile boundaries and
+uniform/non-uniform grids are defined strictly by the current frame's
+dimensions. A change in resolution recalculates tile widths and
+heights.</li>
+<li><strong>Deblocking and CDEF:</strong> The Deblocking Filter and
+Constrained Directional Enhancement Filter (CDEF) operate on the 8x8 and
+64x64/32x32 block structures of the current frame, completely decoupled
+from the reference frame's past grid.</li>
+<li><strong>Loop Restoration:</strong> The loop restoration grid (Wiener
+or Subspace filters) is laid out according to the current frame size,
+ensuring post-processing filtering operates without structural
+cross-resolution dependencies.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

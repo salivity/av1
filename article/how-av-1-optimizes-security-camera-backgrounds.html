@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Optimizes Security Camera Backgrounds - av1</title>
+    <meta name="description" content="This article examines how the AV1 video codec minimizes bandwidth and storage requirements for security camera feeds by specifically optimizing the compression of stationary background textures. Surveillance video typically features long stretches of sta">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-optimizes-security-camera-backgrounds">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Optimizes Security Camera Backgrounds - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-optimizes-security-camera-backgrounds" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how the AV1 video codec minimizes bandwidth and storage requirements for security camera feeds by specifically optimizing the compression of stationary background textures. Surveillance video typically features long stretches of sta" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-optimizes-security-camera-backgrounds">How AV1 Optimizes
+Security Camera Backgrounds</h1>
+<p>This article examines how the AV1 video codec minimizes bandwidth and
+storage requirements for security camera feeds by specifically
+optimizing the compression of stationary background textures.
+Surveillance video typically features long stretches of static
+scenes—such as walls, pavements, and empty corridors—interrupted only by
+minor sensor noise or moving objects. AV1 leverages architectural
+enhancements such as large superblock partitioning, multi-reference
+frame management, skip modes, and film grain synthesis to represent
+these static areas with minimal data overhead while preserving critical
+scene fidelity.</p>
+<h3 id="128x128-superblocks-and-recursive-partitioning">128x128
+Superblocks and Recursive Partitioning</h3>
+<p>Traditional surveillance codecs rely on 16x16 macroblocks (H.264) or
+64x64 coding tree units (HEVC). AV1 introduces 128x128 superblocks with
+a 10-way recursive partition tree, supporting square, 2:1, 1:2, 4:1, and
+1:4 rectangular splits. For uniform or repetitive background textures,
+such as asphalt parking lots or warehouse floors, AV1 can cover large
+spatial areas with a single large block. This drastically reduces
+signaling overhead because the encoder sends only one set of prediction
+parameters for a massive visual area rather than dozens of separate
+motion vectors and block headers.</p>
+<h3 id="advanced-skip-modes-and-zero-residuals">Advanced Skip Modes and
+Zero Residuals</h3>
+<p>When a background texture remains static between frames, re-encoding
+pixel data is unnecessary. AV1 provides an efficient
+<code>skip_mode</code> flag. If the predictor determines that a block in
+the current frame is identical to its co-located counterpart in a
+reference frame—with zero motion—it sets the skip flag. This signals the
+decoder to copy the texture directly from the reference buffer,
+completely bypassing the discrete cosine transform (DCT) and coefficient
+quantization stages. This reduces the bitrate contribution of the
+background in continuous surveillance feeds to virtually zero.</p>
+<h3 id="multiple-and-long-term-reference-frames">Multiple and Long-Term
+Reference Frames</h3>
+<p>Surveillance cameras frequently experience temporary occlusions, such
+as a vehicle driving across the frame or a person walking past a wall.
+AV1 maintains a buffer of up to eight reference frames, allowing up to
+seven to be actively utilized for inter-frame prediction. An AV1 encoder
+can designate a clean capture of the background as a long-term reference
+frame. When an occluding object moves away and reveals the stationary
+background again, the encoder can reference the historical frame
+directly instead of treating the newly revealed area as fresh,
+high-bitrate intra-frame data.</p>
+<h3 id="global-motion-compensation-for-camera-shake">Global Motion
+Compensation for Camera Shake</h3>
+<p>Outdoor security cameras mounted on poles or tall structures often
+suffer from micro-vibrations caused by wind or nearby traffic. In legacy
+codecs, this slight jitter forces the encoder to generate individual
+motion vectors for every block across the entire background. AV1
+addresses this with Global Motion Compensation (GMC). The encoder models
+the overall camera jitter using affine or rotational models applied
+across the whole frame, allowing static textures to be accurately
+predicted with global parameters rather than per-block displacement
+vectors.</p>
+<h3 id="film-grain-synthesis">Film Grain Synthesis</h3>
+<p>Low-light surveillance footage often introduces high-frequency sensor
+noise across otherwise flat background textures. In traditional
+encoding, this random noise prevents temporal matching, tricking the
+encoder into transmitting high-bitrate residual data for every frame.
+AV1 bypasses this with Film Grain Synthesis. The encoder strips the
+random noise, analyzes its statistical properties, and encodes only the
+clean, stationary background texture. A set of lightweight metadata
+parameters describing the noise profile is transmitted to the decoder,
+which regenerates and blends the grain locally during playback. This
+keeps the background visually natural to human operators without
+consuming vital transmission bandwidth.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

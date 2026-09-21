@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Twitch Delivers 1080p60 and 1440p with AV1 - av1</title>
+    <meta name="description" content="Twitch leverages the advanced compression efficiency of the AV1 codec to overcome the bitrate limitations of legacy H.264 streaming, enabling creators to broadcast high-motion gaming content in crystal-clear 1080p60 and 1440p. By integrating AV1 into its">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-twitch-delivers-1080-p-60-and-1440-p-with-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Twitch Delivers 1080p60 and 1440p with AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-twitch-delivers-1080-p-60-and-1440-p-with-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Twitch leverages the advanced compression efficiency of the AV1 codec to overcome the bitrate limitations of legacy H.264 streaming, enabling creators to broadcast high-motion gaming content in crystal-clear 1080p60 and 1440p. By integrating AV1 into its" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-twitch-delivers-1080p60-and-1440p-with-av1">How Twitch
+Delivers 1080p60 and 1440p with AV1</h1>
+<p>Twitch leverages the advanced compression efficiency of the AV1 codec
+to overcome the bitrate limitations of legacy H.264 streaming, enabling
+creators to broadcast high-motion gaming content in crystal-clear
+1080p60 and 1440p. By integrating AV1 into its Enhanced Broadcasting
+framework alongside dedicated hardware encoding from modern GPUs, Twitch
+significantly reduces bandwidth demands while maximizing video fidelity
+and viewer accessibility across diverse network conditions.</p>
+<h2 id="overcoming-h264-bitrate-limitations">Overcoming H.264 Bitrate
+Limitations</h2>
+<p>For over a decade, Twitch’s live streaming infrastructure relied
+almost entirely on the AVC/H.264 codec, capped at a soft ingest limit of
+roughly 6,000 to 8,000 kbps. While sufficient for slow-paced content,
+this bandwidth envelope causes severe macroblocking, pixelation, and
+motion blur during fast-paced gameplay such as first-person shooters or
+racing titles at 1080p60. Delivering 1440p (2K) under these constraints
+was virtually impossible without degrading stream stability or
+alienating viewers on constrained mobile connections.</p>
+<p>AV1 solves this bottleneck by providing roughly 30% to 50% better
+compression efficiency compared to H.264. This allows Twitch to transmit
+the same visual quality at nearly half the bitrate, or dramatically
+increase resolution and fidelity at standard ingest speeds.</p>
+<h2
+id="client-side-multi-track-encoding-via-enhanced-broadcasting">Client-Side
+Multi-Track Encoding via Enhanced Broadcasting</h2>
+<p>Live video transcoding at Twitch’s scale is computationally
+expensive. Traditional pipelines required streamers to send a single
+high-bitrate video feed, which Twitch servers then decoded and
+re-encoded into multiple lower resolutions (transcodes) for viewers.</p>
+<p>To deploy AV1 efficiently, Twitch introduced Enhanced Broadcasting in
+collaboration with companies like NVIDIA, AMD, and Intel, as well as
+software developers like OBS Studio. This architecture offloads
+multi-resolution encoding to the streamer’s local hardware:</p>
+<ul>
+<li><strong>Hardware AV1 Encoders:</strong> Modern GPUs (such as NVIDIA
+GeForce RTX 40-Series, AMD Radeon RX 7000-Series, and Intel Arc) feature
+dedicated silicon for hardware-accelerated AV1 encoding, executing
+compression with negligible impact on in-game performance.</li>
+<li><strong>Simultaneous Multi-Encode:</strong> Instead of transmitting
+just one feed, the streamer's client encodes and pushes multiple
+resolutions and codecs simultaneously (e.g., an AV1 track for 1440p or
+1080p, and fallback H.264 tracks for lower resolutions).</li>
+<li><strong>Reduced Server Burden:</strong> Because the creator's
+machine generates the different stream qualities directly, Twitch’s edge
+ingest servers act primarily as a distribution and routing layer rather
+than consuming massive compute resources to transcode high-density
+streams in real time.</li>
+</ul>
+<h2 id="high-density-1440p-and-artifact-free-1080p60">High-Density 1440p
+and Artifact-Free 1080p60</h2>
+<p>High-density gaming broadcasts benefit directly from AV1’s advanced
+coding tools, such as larger block sizes (Superblocks up to 128x128),
+directional intra-prediction, and sophisticated motion compensation.</p>
+<ol type="1">
+<li><strong>Elimination of Motion Artifacts at 1080p60:</strong> In
+high-complexity scenes—such as foliage in open-world games or particle
+effects in shooters—AV1 preserves sharp edges and fine details without
+the bitrate spikes that cause frame drops in older codecs.</li>
+<li><strong>Accessible 1440p Streams:</strong> 1440p requires more than
+1.7 times the pixel count of standard 1080p. AV1 allows broadcast of
+this resolution within an accessible 8,000 to 10,000 kbps range, fitting
+comfortably within typical domestic broadband upload capacities.</li>
+</ol>
+<h2 id="dynamic-delivery-and-backward-compatibility">Dynamic Delivery
+and Backward Compatibility</h2>
+<p>While modern desktops, smart TVs, and mobile devices increasingly
+feature native AV1 decoding hardware, a substantial portion of Twitch's
+global audience still uses legacy hardware that relies on software
+decoding, which can drain batteries or cause dropped frames.</p>
+<p>Twitch handles this through hybrid manifest generation. When an
+AV1-compatible broadcast is ingested:</p>
+<ul>
+<li>Devices with AV1 hardware or capable software decoders receive the
+primary AV1 stream at high resolutions (1440p or pristine 1080p60).</li>
+<li>Devices lacking AV1 support automatically receive a secondary H.264
+or HEVC stream supplied by the Enhanced Broadcasting multi-track
+pipeline.</li>
+</ul>
+<p>This hybrid edge delivery ensures that adopting high-density AV1
+feeds does not fracture Twitch's user base, providing maximum quality to
+viewers with modern devices while maintaining seamless backward
+compatibility for everyone else.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Application Profiles for the AV1 Standard - av1</title>
+    <meta name="description" content="This article provides an overview of how the Alliance for Open Media (AOMedia) is shaping the long-term maintenance of the AV1 video codec through new and refined application profiles. As AV1 solidifies its role across the web, future maintenance relies">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/future-application-profiles-for-the-av-1-standard">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Future Application Profiles for the AV1 Standard - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/future-application-profiles-for-the-av-1-standard" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the Alliance for Open Media (AOMedia) is shaping the long-term maintenance of the AV1 video codec through new and refined application profiles. As AV1 solidifies its role across the web, future maintenance relies" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="future-application-profiles-for-the-av1-standard">Future
+Application Profiles for the AV1 Standard</h1>
+<p>This article provides an overview of how the Alliance for Open Media
+(AOMedia) is shaping the long-term maintenance of the AV1 video codec
+through new and refined application profiles. As AV1 solidifies its role
+across the web, future maintenance relies on tailoring profiles to
+emerging paradigms—including ultra-low-latency communications, extended
+reality (XR), professional production, and edge computing—without
+compromising broad cross-platform interoperability.</p>
+<h3 id="current-baseline-the-existing-av1-profiles">Current Baseline:
+The Existing AV1 Profiles</h3>
+<p>The initial AV1 specification established three core profiles:</p>
+<ul>
+<li><strong>Main Profile:</strong> Supports 8-bit and 10-bit color
+depths with 4:0:0 (monochrome) and 4:2:0 chroma subsampling, serving as
+the standard for general consumer web streaming and video-on-demand
+(VOD).</li>
+<li><strong>High Profile:</strong> Extends capabilities to 4:4:4 chroma
+subsampling for 8-bit and 10-bit video, targeting content like desktop
+screen sharing and high-fidelity graphics.</li>
+<li><strong>Professional Profile:</strong> Adds support for 12-bit color
+depth across all subsampling formats (4:0:0, 4:2:0, 4:2:2, and 4:4:4),
+intended for professional post-production and mastering workflows.</li>
+</ul>
+<p>While these baseline profiles cover conventional broadcast and web
+delivery, ongoing standard maintenance is shifting toward specialized
+application-specific profiles designed to meet distinct performance,
+latency, and hardware constraints.</p>
+<h3 id="real-time-communication-rtc-profiles">Real-Time Communication
+(RTC) Profiles</h3>
+<p>Real-time video calling, cloud gaming, and interactive broadcasting
+require strict sub-second latency guarantees. Future RTC-focused
+profiles target:</p>
+<ul>
+<li><strong>Constrained Toolsets:</strong> Disabling computationally
+expensive tools (such as complex in-loop filtering and multi-frame
+referencing) to reduce encoding and decoding latency.</li>
+<li><strong>Fine-Grained Scalability:</strong> Standardizing Scalable
+Video Coding (SVC) modes natively within the profile to handle dynamic
+network bandwidth fluctuations seamlessly.</li>
+<li><strong>Screen Content Coding Optimization:</strong> Enhancing
+palette mode and intra-block copy mechanisms specifically for
+collaborative work environments and remote desktop applications.</li>
+</ul>
+<h3 id="professional-editing-and-archival-profiles">Professional Editing
+and Archival Profiles</h3>
+<p>To compete with mezzanine and editing formats such as Apple ProRes
+and Avid DNxHR, future maintenance considerations include dedicated
+intermediate profiles:</p>
+<ul>
+<li><strong>Intra-Only Modes:</strong> Removing inter-frame temporal
+dependencies to allow zero-latency frame scrubbing and rapid random
+access during non-linear editing.</li>
+<li><strong>Extended Dynamic Range:</strong> Enhancing support for
+12-bit and 14-bit workflows, lossless coding modes, and uncompressed
+alpha channels to facilitate compositing and visual effects
+rendering.</li>
+</ul>
+<h3 id="immersive-and-extended-reality-xr-profiles">Immersive and
+Extended Reality (XR) Profiles</h3>
+<p>Virtual reality (VR), augmented reality (AR), and volumetric video
+present unique bandwidth and processing challenges due to extreme
+resolutions (8K+ per eye) and high frame rates (90 Hz to 120 Hz).
+Envisioned XR profiles focus on:</p>
+<ul>
+<li><strong>Optimized Tiling:</strong> Enhancing independent tile
+decoding to enable viewport-dependent streaming, where only the sector
+of the 360-degree sphere that the user is actively viewing is decoded at
+maximum resolution.</li>
+<li><strong>Multi-View and Depth Maps:</strong> Integrating synchronized
+stereoscopic views and depth-map metadata within a single elementary
+stream to reduce rendering overhead on head-mounted displays.</li>
+</ul>
+<h3 id="low-power-and-edge-constrained-profiles">Low-Power and
+Edge-Constrained Profiles</h3>
+<p>As internet-of-things (IoT) devices, smart surveillance cameras, and
+automotive systems adopt AV1, high computational complexity becomes a
+limiting factor. An ultra-lightweight profile aims to:</p>
+<ul>
+<li><strong>Limit Decoding Hardware Footprint:</strong> Restricting
+syntax elements to reduce silicon gate count and power draw in
+battery-powered or resource-constrained embedded systems.</li>
+<li><strong>Fixed Transform and Motion Toolsets:</strong> Standardizing
+a simplified subset of transform blocks and motion vector predictions to
+facilitate cost-effective ASIC implementations.</li>
+</ul>
+<p>By systematically introducing these focused application profiles,
+AOMedia ensures that the AV1 standard remains computationally practical,
+power-efficient, and adaptable to modern video architectures throughout
+its operational lifecycle.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

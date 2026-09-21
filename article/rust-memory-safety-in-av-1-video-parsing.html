@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Memory Safety in AV1 Video Parsing - av1</title>
+    <meta name="description" content="Parsing AV1 video streams is an inherently complex task that exposes media applications to severe security risks when processing untrusted input. This article examines the core Rust language features—such as ownership and borrowing, slice-based bounds">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/rust-memory-safety-in-av-1-video-parsing">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Rust Memory Safety in AV1 Video Parsing - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/rust-memory-safety-in-av-1-video-parsing" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Parsing AV1 video streams is an inherently complex task that exposes media applications to severe security risks when processing untrusted input. This article examines the core Rust language features—such as ownership and borrowing, slice-based bounds" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="rust-memory-safety-in-av1-video-parsing">Rust Memory Safety in
+AV1 Video Parsing</h1>
+<p>Parsing AV1 video streams is an inherently complex task that exposes
+media applications to severe security risks when processing untrusted
+input. This article examines the core Rust language features—such as
+ownership and borrowing, slice-based bounds checking, algebraic data
+types, and compile-time concurrency guarantees—that eliminate
+traditional memory corruption vulnerabilities during the parsing of
+intricate AV1 bitstreams without sacrificing high-performance
+decoding.</p>
+<h3 id="the-parsing-challenge-in-av1">The Parsing Challenge in AV1</h3>
+<p>The AV1 codec relies on Open Bitstream Units (OBUs) containing nested
+syntax elements, variable-length codes, and dynamic tile configurations.
+In languages like C and C++, manual pointer manipulation and unchecked
+memory offsets frequently lead to out-of-bounds reads, heap corruption,
+integer overflows, and use-after-free vulnerabilities. Rust eliminates
+these classes of bugs at compile time through specific architectural
+guarantees.</p>
+<h3 id="ownership-and-the-borrow-checker">Ownership and the Borrow
+Checker</h3>
+<p>Rust’s ownership model governs resource management without relying on
+a runtime garbage collector. When an AV1 parser ingests bitstream
+packets:</p>
+<ul>
+<li><strong>No Dangling Pointers:</strong> Frame references and parsed
+syntax elements cannot outlive the underlying buffer they reference. The
+borrow checker statically verifies lifetimes, ensuring that reference
+frames used for inter-prediction cannot be dropped while downstream
+operations still hold references to them.</li>
+<li><strong>Elimination of Double-Free and Use-After-Free:</strong> Each
+allocation (such as reference picture buffers or entropy decoding
+contexts) has a single owner. When the owner drops out of scope, the
+memory is safely deallocated, preventing stale pointers from being
+dereferenced.</li>
+</ul>
+<h3 id="slice-semantics-and-automatic-bounds-checking">Slice Semantics
+and Automatic Bounds Checking</h3>
+<p>Parsing raw binary headers requires traversing byte slices
+continually. Rust provides slice primitives (<code>&amp;[u8]</code>)
+that inherently encapsulate both a pointer and a length:</p>
+<ul>
+<li><strong>Guaranteed Memory Boundaries:</strong> Access to bitstream
+data using standard indexing is checked against slice lengths. Any
+attempt to read truncated or maliciously crafted OBU payloads triggers a
+controlled panic rather than an arbitrary memory read.</li>
+<li><strong>Safe Sub-Slicing:</strong> Parsers can split streams into
+sub-slices (for example, isolating tile group payloads) without dynamic
+memory allocations or raw pointer arithmetic, preserving guaranteed
+bounds across sub-parsers.</li>
+</ul>
+<h3 id="enums-and-exhaustive-pattern-matching">Enums and Exhaustive
+Pattern Matching</h3>
+<p>AV1 bitstreams define multiple OBU types, including Sequence Headers,
+Frame Headers, Metadata, and Tile Groups. Rust handles this through
+algebraic data types (enums) with associated data:</p>
+<ul>
+<li><strong>No Uninitialized States:</strong> Rust enums enforce that an
+OBU variant can only be accessed when it contains valid, initialized
+data.</li>
+<li><strong>Exhaustive Matching:</strong> The compiler requires every
+potential OBU type or syntax condition to be explicitly handled. Invalid
+bitstream combinations or unexpected syntax states cannot result in
+undefined memory states or type confusion.</li>
+</ul>
+<h3 id="thread-safety-for-multi-threaded-decoding">Thread Safety for
+Multi-Threaded Decoding</h3>
+<p>High-resolution AV1 decoding utilizes multi-threading across tiles
+and frame rows. Rust ensures data safety across CPU cores through the
+<code>Send</code> and <code>Sync</code> marker traits:</p>
+<ul>
+<li><strong>Data-Race Freedom:</strong> The compiler prevents
+concurrent, unsynchronized mutable access to shared frame reconstruction
+contexts.</li>
+<li><strong>Safe Parallelism:</strong> Tasks such as concurrent loop
+restoration, entropy parsing, and inverse transform computations can be
+distributed across threads without the risk of read-after-write hazards
+in shared frame stores.</li>
+</ul>
+<h3 id="safe-abstractions-over-simd-and-low-level-primitives">Safe
+Abstractions Over SIMD and Low-Level Primitives</h3>
+<p>While performance-critical routines (like inverse discrete cosine
+transforms and directional intra prediction) may employ specialized SIMD
+instructions or isolated <code>unsafe</code> blocks, Rust encapsulates
+these within strictly typed, safe public APIs. This containment isolates
+parsing logic from execution logic, keeping the untrusted input-handling
+surface completely protected by safe Rust guarantees.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

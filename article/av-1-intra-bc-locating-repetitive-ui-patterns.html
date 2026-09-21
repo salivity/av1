@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 IntraBC: Locating Repetitive UI Patterns - av1</title>
+    <meta name="description" content="The AV1 video codec incorporates a specialized screen content coding feature known as Intra Block Copy (IntraBC) to dramatically improve compression efficiency for synthetic graphics, remote desktop feeds, and application interfaces. This article explain">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-intra-bc-locating-repetitive-ui-patterns">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 IntraBC: Locating Repetitive UI Patterns - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-intra-bc-locating-repetitive-ui-patterns" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec incorporates a specialized screen content coding feature known as Intra Block Copy (IntraBC) to dramatically improve compression efficiency for synthetic graphics, remote desktop feeds, and application interfaces. This article explain" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-intrabc-locating-repetitive-ui-patterns">AV1 IntraBC:
+Locating Repetitive UI Patterns</h1>
+<p>The AV1 video codec incorporates a specialized screen content coding
+feature known as Intra Block Copy (IntraBC) to dramatically improve
+compression efficiency for synthetic graphics, remote desktop feeds, and
+application interfaces. This article explains what the IntraBC tool is,
+its underlying operating principles, and how the search and block vector
+mechanisms detect and compress identical, repetitive user interface (UI)
+elements within a single frame.</p>
+<h2 id="what-is-the-intrabc-tool-in-av1">What Is the IntraBC Tool in
+AV1?</h2>
+<p>Traditional intra-prediction predicts pixel values in a current block
+by extrapolating from the boundary pixels of immediately adjacent,
+already reconstructed blocks. While effective for natural video with
+smooth gradients and camera noise, this spatial extrapolation fails to
+compress screen content efficiently. Modern computer displays and
+software UIs consist of crisp text, geometric borders, solid colors, and
+identical icons placed at distant coordinates across the display.</p>
+<p>IntraBC bridges this gap by applying the principles of inter-frame
+motion compensation inside a single frame. Instead of referencing an
+entirely different frame in time, IntraBC treats the current, partially
+decoded frame as a reference picture. It allows the encoder to copy
+matching blocks of pixels from previously decoded regions directly into
+the current block, bypassing the limitations of edge-based spatial
+prediction.</p>
+<h2 id="how-intrabc-locates-repetitive-ui-patterns">How IntraBC Locates
+Repetitive UI Patterns</h2>
+<p>To locate and reuse repeating UI components—such as recurring glyphs
+in text, toolbar buttons, list indicators, or window edges—the IntraBC
+process relies on a structured sequence of vector search, matching
+criteria, and vector prediction.</p>
+<h3 id="1-integer-pixel-block-vector-search">1. Integer-Pixel Block
+Vector Search</h3>
+<p>When evaluating a coding block, the AV1 encoder performs a search
+across the reconstructed areas of the current frame to identify
+identical or near-identical pixel arrangements.</p>
+<ul>
+<li><strong>Block Vectors (BVs):</strong> The spatial displacement
+between the current block and the reference block is represented by a
+Block Vector rather than a Motion Vector.</li>
+<li><strong>Full-Pel Resolution:</strong> Standard video motion vectors
+use sub-pixel (half-pel or quarter-pel) precision and interpolation
+filters to estimate smooth movement. IntraBC restricts block vectors to
+integer-pixel (full-pel) precision. This design prevents the blurring of
+sharp graphic edges and minimizes computational overhead when copying UI
+assets.</li>
+</ul>
+<h3 id="2-distortion-metrics-and-pattern-matching">2. Distortion Metrics
+and Pattern Matching</h3>
+<p>During the search stage, candidate blocks within the search window
+are evaluated using rate-distortion optimization (RDO) alongside
+distortion metrics such as:</p>
+<ul>
+<li><strong>Sum of Absolute Differences (SAD)</strong> or <strong>Sum of
+Squared Errors (SSE)</strong> to verify exact or near-exact pixel
+equality.</li>
+<li><strong>Cost Evaluation:</strong> The encoder balances the fidelity
+of the match against the bit cost required to signal the displacement
+vector. Because computer UI elements are digital duplicates, the
+residual error (the difference between the reference and the current
+block) is frequently zero, allowing the encoder to skip residual coding
+entirely.</li>
+</ul>
+<h3 id="3-search-range-constraints">3. Search Range Constraints</h3>
+<p>The search for matching UI patterns must strictly follow the decoding
+order:</p>
+<ul>
+<li>The encoder can only search regions of the frame that have already
+been reconstructed.</li>
+<li>The search is bounded by hardware constraints to keep the decoding
+pipeline feasible. AV1 restricts the valid reference memory to an area
+that avoids dependencies on unfiltered loop filter pixels and respects
+tile boundaries, ensuring memory buffers remain within specified
+limits.</li>
+</ul>
+<h3 id="4-vector-prediction-and-regular-spacing">4. Vector Prediction
+and Regular Spacing</h3>
+<p>UI elements often appear in grid-like, evenly spaced layouts (such as
+rows of menu items or lines of text). AV1 leverages this spatial
+regularity through block vector prediction:</p>
+<ul>
+<li><strong>Vector Candidates:</strong> The encoder derives predicted
+block vectors from spatial neighbors that also utilized IntraBC.</li>
+<li><strong>Residual Encoding:</strong> When an entire row of identical
+UI icons repeats with fixed intervals, the difference between their
+block vectors is minimal or zero. AV1 encodes only the block vector
+difference (BVD), drastically reducing the bitstream overhead needed to
+replicate patterns across the screen.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

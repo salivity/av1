@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widevine DRM AV1 Video Encryption and Decryption - av1</title>
+    <meta name="description" content="This article explains the end-to-end technical process of how Google's Widevine Digital Rights Management (DRM) secures elementary AV1 video streams. It outlines the preparation and subsample encryption of AV1 Open Bitstream Units (OBUs) using Common Enc">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/widevine-drm-av-1-video-encryption-and-decryption">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Widevine DRM AV1 Video Encryption and Decryption - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/widevine-drm-av-1-video-encryption-and-decryption" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains the end-to-end technical process of how Google's Widevine Digital Rights Management (DRM) secures elementary AV1 video streams. It outlines the preparation and subsample encryption of AV1 Open Bitstream Units (OBUs) using Common Enc" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="widevine-drm-av1-video-encryption-and-decryption">Widevine DRM
+AV1 Video Encryption and Decryption</h1>
+<p>This article explains the end-to-end technical process of how
+Google's Widevine Digital Rights Management (DRM) secures elementary AV1
+video streams. It outlines the preparation and subsample encryption of
+AV1 Open Bitstream Units (OBUs) using Common Encryption (CENC)
+standards, the key exchange via Encrypted Media Extensions (EME), and
+the final hardware- or software-level decryption within the Content
+Decryption Module (CDM).</p>
+<h3 id="the-structure-of-elementary-av1-streams">The Structure of
+Elementary AV1 Streams</h3>
+<p>An elementary AV1 video stream consists of a sequence of Open
+Bitstream Units (OBUs). Each OBU contains a header indicating its type
+and payload data. Key OBU types include:</p>
+<ul>
+<li><strong>Sequence Header OBU:</strong> Contains profile, level, bit
+depth, and color format parameters.</li>
+<li><strong>Frame Header OBU:</strong> Contains frame dimensions, render
+size, and presentation parameters.</li>
+<li><strong>Tile Group OBU / Frame OBU:</strong> Carries the actual
+compressed video sample data (transform coefficients, motion vectors,
+and intra/inter prediction data).</li>
+<li><strong>Metadata OBU:</strong> Contains optional HDR metadata,
+timing data, or custom user data.</li>
+</ul>
+<p>To allow players and decoders to parse stream parameters without
+needing immediate decryption keys, Widevine relies on subsample
+encryption. Non-visual metadata—such as Sequence Headers, Frame Headers,
+and standard OBU headers—remain unencrypted (in the clear). Only the raw
+compressed pixel payload inside the Tile Group or Frame OBUs is targeted
+for encryption.</p>
+<h3 id="the-encryption-process">The Encryption Process</h3>
+<p>Widevine integrates with standard Common Encryption (ISO/IEC 23001-7,
+or CENC) to protect AV1 content. Content packaging tools (such as Shaka
+Packager or FFmpeg) follow these steps:</p>
+<ol type="1">
+<li><p><strong>Key Generation and Packaging:</strong></p>
+<ul>
+<li>A 128-bit Content Encryption Key (CEK) and an associated Key ID
+(KID) are requested from the Widevine Key Management System (KMS).</li>
+<li>A Protection System Specific Header (PSSH) box is generated,
+populated with the Widevine System ID
+(<code>edef8ba9-79d6-4ace-a3c8-27dcd51d21ed</code>), the KID, and
+optional provider metadata.</li>
+</ul></li>
+<li><p><strong>Subsample Mapping:</strong></p>
+<ul>
+<li>The packager parses the elementary AV1 stream at the OBU
+boundary.</li>
+<li>It measures the unencrypted bytes (OBU headers, configuration OBUs)
+and flags them as "clear bytes."</li>
+<li>It locates the tile payload bytes inside the Tile Group OBU and
+flags them as "protected bytes."</li>
+</ul></li>
+<li><p><strong>Payload Encryption:</strong></p>
+<ul>
+<li>The packager encrypts the protected bytes using either AES-128 CTR
+(<code>cenc</code>) or AES-128 CBC with 10% pattern protection
+(<code>cbcs</code>). The AV1 specification under the Alliance for Open
+Media (AOM) heavily favors <code>cbcs</code>.</li>
+<li>Initialization Vectors (IVs) of 8 or 16 bytes are generated for each
+sample or subsample.</li>
+<li>The encrypted OBUs are reassembled alongside the subsample mapping
+index and encapsulated into a container format (commonly MP4/ISOBMFF or
+WebM/Matroska) for distribution via DASH or HLS.</li>
+</ul></li>
+</ol>
+<h3 id="license-exchange-via-eme">License Exchange via EME</h3>
+<p>Before the client can decode the stream, the AV1 elementary stream
+data and DRM metadata must be exchanged with the Widevine license
+server:</p>
+<ol type="1">
+<li>The media player extracts the PSSH box or <code>initData</code> and
+passes it to the browser via the W3C Encrypted Media Extensions (EME)
+API.</li>
+<li>The browser forwards the initialization data to the Widevine Content
+Decryption Module (CDM).</li>
+<li>The CDM generates an encrypted License Request (challenge)
+containing device integrity tokens, client identity, and the requested
+KID.</li>
+<li>The application sends this challenge to the Widevine License Server,
+which verifies user entitlements.</li>
+<li>The server responds with an encrypted License Response containing
+the CEK wrapped with a device-specific key.</li>
+</ol>
+<h3 id="the-decryption-process">The Decryption Process</h3>
+<p>Once the CDM receives the license response, decryption of the
+elementary stream takes place:</p>
+<ol type="1">
+<li><p><strong>Key Unwrapping:</strong> The CDM un-wraps the CEK. In
+Widevine Level 1 (L1), the CEK is loaded directly into the device’s
+Trusted Execution Environment (TEE) or hardware Secure Video Path (SVP).
+In Level 3 (L3), the key remains in host memory within a
+software-protected CDM.</p></li>
+<li><p><strong>Subsample Extraction:</strong> The player’s demuxer
+separates the elementary AV1 OBUs from the transport container and
+passes the encrypted slices, IVs, and subsample maps to the
+CDM.</p></li>
+<li><p><strong>AES Decryption:</strong></p>
+<ul>
+<li>The decryptor parses the subsample map.</li>
+<li>The clear bytes (OBU headers, Sequence Headers) bypass the AES
+engine directly to the decoder.</li>
+<li>The protected bytes (tile data) pass through the AES-128 engine with
+the IV and CEK, outputting decrypted AV1 tile payload.</li>
+</ul></li>
+<li><p><strong>Decoding and Rendering:</strong></p>
+<ul>
+<li><strong>In Widevine L3:</strong> The decrypted, complete elementary
+AV1 stream is reconstructed in system memory and sent to a software or
+hardware video decoder.</li>
+<li><strong>In Widevine L1:</strong> The elementary stream is decrypted
+strictly inside the protected hardware memory. The hardware AV1 decoder
+receives the clear stream internally, decodes the frames, and directs
+the video planes straight to the display processor via the Secure Video
+Path, preventing the decrypted elementary stream or raw pixel buffers
+from being read by user-space applications.</li>
+</ul></li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

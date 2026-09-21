@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common AV1 Visual Artifacts at Low Bitrates - av1</title>
+    <meta name="description" content="When the AV1 video codec operates under severe bitrate constraints, its advanced compression tools prioritize structural integrity and smoothness over fine detail, creating visual distortions that differ significantly from older codecs. While legacy enco">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/common-av-1-visual-artifacts-at-low-bitrates">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Common AV1 Visual Artifacts at Low Bitrates - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/common-av-1-visual-artifacts-at-low-bitrates" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When the AV1 video codec operates under severe bitrate constraints, its advanced compression tools prioritize structural integrity and smoothness over fine detail, creating visual distortions that differ significantly from older codecs. While legacy enco" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="common-av1-visual-artifacts-at-low-bitrates">Common AV1 Visual
+Artifacts at Low Bitrates</h1>
+<p>When the AV1 video codec operates under severe bitrate constraints,
+its advanced compression tools prioritize structural integrity and
+smoothness over fine detail, creating visual distortions that differ
+significantly from older codecs. While legacy encoders like H.264 often
+break down into harsh, grid-like macroblocks, AV1 employs sophisticated
+in-loop filtering and flexible block partitioning that shift the failure
+mode toward heavy smoothing, color degradation, and temporal
+inconsistencies. Understanding these specific visual artifacts helps
+video engineers and streaming platforms optimize encoding parameters to
+balance bandwidth efficiency and perceptual quality.</p>
+<h3 id="excessive-smoothing-and-the-plastic-effect">Excessive Smoothing
+and the "Plastic" Effect</h3>
+<p>The most prevalent artifact in bitrate-starved AV1 video is an
+aggressive loss of fine texture and detail, frequently referred to as an
+"oversmoothed," "waxy," or "plastic" appearance. AV1 relies on tools
+such as the Constrained Directional Enhancement Filter (CDEF) and Loop
+Restoration filters (Wiener and Self-Guided) to eliminate ringing and
+blocking. Under extreme bitrate starvation, the encoder heavily
+quantizes high-frequency data, and these filters aggressively blend
+adjacent pixels. This causes natural textures—such as facial pores, film
+grain, fabric weaves, and foliage—to smear into flat, watercolor-like
+surfaces.</p>
+<h3 id="color-banding-and-posterization">Color Banding and
+Posterization</h3>
+<p>Color banding, or false contouring, occurs when there is insufficient
+bitrate to preserve subtle luminance and chrominance gradients. Common
+in flat or dimly lit areas such as skies, walls, and shadows, banding
+transforms smooth color transitions into distinct, stepped tiers of
+solid color. Because AV1 heavily compresses chroma channels and reduces
+color precision under low-bitrate settings, smooth tonal shifts degrade
+into noticeable, stair-stepped boundaries.</p>
+<h3 id="ringing-and-directional-halos">Ringing and Directional
+Halos</h3>
+<p>Around sharp, high-contrast boundaries—such as hard text, subtitles,
+or silhouettes against bright backgrounds—AV1 can produce ringing
+artifacts. High quantization levels discard the high-frequency transform
+coefficients required to define crisp edges cleanly. While CDEF works to
+align filtering with the directional edge to minimize this issue, severe
+starvation can still result in faint, halo-like ripples or ghosting
+along sharp contours.</p>
+<h3 id="temporal-pumping-and-breathing">Temporal Pumping and
+Breathing</h3>
+<p>Temporal instability occurs when visual quality fluctuates from frame
+to frame. In low-bitrate configurations, AV1 may allocate a
+disproportionately higher share of bits to keyframes or golden frames
+compared to predictive (inter) frames. As the sequence plays, a scene
+may briefly appear sharp upon hitting an intra-frame, rapidly degrade
+and blur across subsequent inter-frames, and snap back to sharpness at
+the next reference frame. This cyclical variation produces a perceptible
+"pumping" or "breathing" sensation, particularly in static areas with
+subtle movement.</p>
+<h3 id="muted-block-discontinuities">Muted Block Discontinuities</h3>
+<p>While AV1 excels at concealing the rigid square macroblocks typical
+of older standards, extreme bitrate starvation still reveals block
+boundaries. AV1 utilizes Recursive Partitioning, allowing blocks ranging
+from 4x4 up to 128x128 pixels in various rectangular shapes (such as
+1:2, 2:1, 1:4, and 4:1). When the deblocking filter is overwhelmed by
+extreme quantization, these partitions become faintly visible as
+irregular, geometric patches rather than a uniform grid.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

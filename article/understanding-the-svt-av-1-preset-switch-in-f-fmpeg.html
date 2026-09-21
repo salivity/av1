@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding the SVT-AV1 Preset Switch in FFmpeg - av1</title>
+    <meta name="description" content="When encoding video with the SVT-AV1 codec using the FFmpeg command-line interface, the --preset switch determines the balance between encoding speed and compression efficiency. This guide explains the core mechanics of the SVT-AV1 preset parameter, deta">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/understanding-the-svt-av-1-preset-switch-in-f-fmpeg">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Understanding the SVT-AV1 Preset Switch in FFmpeg - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/understanding-the-svt-av-1-preset-switch-in-f-fmpeg" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When encoding video with the SVT-AV1 codec using the FFmpeg command-line interface, the --preset switch determines the balance between encoding speed and compression efficiency. This guide explains the core mechanics of the SVT-AV1 preset parameter, deta" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="understanding-the-svt-av1-preset-switch-in-ffmpeg">Understanding
+the SVT-AV1 Preset Switch in FFmpeg</h1>
+<p>When encoding video with the SVT-AV1 codec using the FFmpeg
+command-line interface, the <code>--preset</code> switch determines the
+balance between encoding speed and compression efficiency. This guide
+explains the core mechanics of the SVT-AV1 preset parameter, detailing
+how it modulates encoder complexity, how numerical values affect
+performance, and how to implement it correctly in an FFmpeg
+workflow.</p>
+<h3 id="the-function-of-the---preset-switch">The Function of the
+<code>--preset</code> Switch</h3>
+<p>The <code>--preset</code> option directly controls the trade-off
+between computational processing time and compression efficiency (the
+quality retained at a given file size). SVT-AV1 provides a numerical
+scale ranging from <strong>0</strong> to <strong>13</strong>:</p>
+<ul>
+<li><strong>Lower numbers (e.g., 0 to 4)</strong> instruct the encoder
+to prioritize compression efficiency. The encoder conducts exhaustive
+mathematical searches for optimal frame representation, resulting in
+smaller file sizes and higher fidelity at the cost of significantly
+longer processing times.</li>
+<li><strong>Higher numbers (e.g., 8 to 13)</strong> prioritize speed.
+The encoder utilizes aggressive pruning, heuristics, and simplified
+mathematical models to process frames quickly, but produces larger file
+sizes for equivalent visual quality.</li>
+</ul>
+<h3 id="what-the-preset-changes-under-the-hood">What the Preset Changes
+Under the Hood</h3>
+<p>Adjusting the preset alters dozens of internal algorithmic decisions
+within SVT-AV1 rather than changing the video resolution or baseline
+target quality. Specifically, the switch controls:</p>
+<ul>
+<li><strong>Block Partitioning Search:</strong> AV1 supports variable
+block sizes ranging from 128x128 down to 4x4 pixels. Lower presets
+analyze deeper block partition trees; higher presets skip less common
+splits.</li>
+<li><strong>Motion Estimation:</strong> Dictates how exhaustively the
+encoder searches reference frames for motion vectors, including
+sub-pixel precision searches.</li>
+<li><strong>Rate-Distortion Optimization (RDO):</strong> Controls the
+mathematical rigor used to evaluate whether a specific coding decision
+yields enough visual quality to justify the bit cost.</li>
+<li><strong>AV1 Tool Enablement:</strong> Dynamically enables or
+simplifies advanced AV1 features such as Constrained Directional
+Enhancement Filtering (CDEF), loop restoration filters, and complex
+intra/inter prediction modes.</li>
+</ul>
+<h3 id="preset-categories-and-recommended-use-cases">Preset Categories
+and Recommended Use Cases</h3>
+<ul>
+<li><strong>Presets 0 to 3 (Extreme Archival):</strong> These presets
+run exceedingly slow and offer diminishing returns in compression
+efficiency. They are generally impractical for everyday use and are
+primarily reserved for codec development benchmarks.</li>
+<li><strong>Presets 4 to 6 (High Efficiency / Archival):</strong> The
+optimal range for permanent media libraries and high-fidelity video
+archiving. Preset 5 or 6 offers an ideal balance of superior AV1
+compression gains over older codecs (like HEVC) within reasonable
+encoding times on modern multi-core CPUs.</li>
+<li><strong>Presets 7 to 9 (General Purpose / Desktop
+Transcoding):</strong> Faster encodes suitable for user-generated
+content, quick distribution, or rendering on lower-powered hardware
+where encoding time is limited.</li>
+<li><strong>Presets 10 to 13 (Real-Time and Live Streaming):</strong>
+Strips away the most computationally expensive AV1 features to achieve
+ultra-low latency. Presets 10 and above are tuned for real-time video
+conferencing, live broadcasting, and draft previews.</li>
+</ul>
+<h3 id="using-the-preset-switch-in-ffmpeg">Using the Preset Switch in
+FFmpeg</h3>
+<p>In the FFmpeg CLI, the preset can be declared using either the native
+FFmpeg <code>-preset</code> option or passed directly through the
+<code>-svtav1-params</code> flag:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ffmpeg</span> <span class="at">-i</span> input.mp4 <span class="at">-c:v</span> libsvtav1 <span class="at">-preset</span> 6 <span class="at">-crf</span> 28 output.mp4</span></code></pre></div>
+<p>Alternatively, to pass it explicitly through SVT-AV1 parameters:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ffmpeg</span> <span class="at">-i</span> input.mp4 <span class="at">-c:v</span> libsvtav1 <span class="at">-svtav1-params</span> preset=6 <span class="at">-crf</span> 28 output.mp4</span></code></pre></div>
+<p>Using the switch in combination with a target Constant Rate Factor
+(<code>-crf</code>) allows the preset to focus strictly on producing the
+smallest possible file size for that defined visual baseline.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

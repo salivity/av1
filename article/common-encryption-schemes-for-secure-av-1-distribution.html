@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common Encryption Schemes for Secure AV1 Distribution - av1</title>
+    <meta name="description" content="This article explores the Common Encryption (CENC) scheme implementations used to protect AV1 video streams across modern digital rights management (DRM) ecosystems. It covers the standardization of AV1 protection within ISO Base Media File Format (ISOBM">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/common-encryption-schemes-for-secure-av-1-distribution">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Common Encryption Schemes for Secure AV1 Distribution - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/common-encryption-schemes-for-secure-av-1-distribution" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores the Common Encryption (CENC) scheme implementations used to protect AV1 video streams across modern digital rights management (DRM) ecosystems. It covers the standardization of AV1 protection within ISO Base Media File Format (ISOBM" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="common-encryption-schemes-for-secure-av1-distribution">Common
+Encryption Schemes for Secure AV1 Distribution</h1>
+<p>This article explores the Common Encryption (CENC) scheme
+implementations used to protect AV1 video streams across modern digital
+rights management (DRM) ecosystems. It covers the standardization of AV1
+protection within ISO Base Media File Format (ISOBMFF) and Common Media
+Application Format (CMAF) containers, details the primary encryption
+schemes (<code>cbcs</code> and <code>cenc</code>), and explains how Open
+Bitstream Units (OBUs) are encrypted at the subsample level to ensure
+broad cross-platform compatibility.</p>
+<h3 id="standardization-and-container-framework">Standardization and
+Container Framework</h3>
+<p>Securing the AV1 video codec relies on the ISO/IEC 23001-7 standard,
+commonly known as Common Encryption (CENC). The Alliance for Open Media
+(AOMedia) defines the mapping of AV1 bitstreams into ISOBMFF and CMAF
+containers. Under this framework, media protection metadata—such as
+encryption algorithms, key identifiers (KIDs), initialization vectors
+(IVs), and subsample mapping—is stored within standard ISOBMFF
+protection boxes (such as <code>sinf</code>, <code>senc</code>, and
+<code>pssh</code>). This allows multiple DRM systems (Google Widevine,
+Microsoft PlayReady, and Apple FairPlay) to decrypt the same media file
+using a shared decryption methodology.</p>
+<h3 id="the-primary-cenc-schemes-cbcs-vs-cenc">The Primary CENC Schemes:
+<code>cbcs</code> vs. <code>cenc</code></h3>
+<p>While ISO/IEC 23001-7 defines four distinct encryption schemes,
+secure AV1 distribution in commercial streaming relies almost
+exclusively on two:</p>
+<ol type="1">
+<li><p><strong><code>cbcs</code> (AES-CBC with Pattern
+Protection):</strong> The <code>cbcs</code> scheme uses the Advanced
+Encryption Standard (AES) in Cipher Block Chaining (CBC) mode with a 10%
+pattern protection scheme (typically a 1:9 crypt-to-skip pattern, where
+one 16-byte block is encrypted followed by nine 16-byte unencrypted
+blocks). This scheme has become the preferred standard for modern AV1
+delivery because it enables unified CMAF delivery across all major
+platforms. Apple FairPlay exclusively requires <code>cbcs</code>, and
+recent versions of Google Widevine and Microsoft PlayReady provide
+native support for it on AV1-capable hardware.</p></li>
+<li><p><strong><code>cenc</code> (AES-CTR Counter Mode):</strong> The
+original <code>cenc</code> protection scheme uses AES in Counter (CTR)
+mode without pattern protection, encrypting targeted payload bytes
+completely. Historically, <code>cenc</code> was the default
+implementation for MPEG-DASH streaming on Android, Windows, and smart TV
+platforms. While widely supported across legacy devices, maintaining
+<code>cenc</code> alongside <code>cbcs</code> requires dual-packaging
+and increased storage overhead. Consequently, modern AV1 pipelines often
+prioritize <code>cbcs</code> unless legacy hardware support mandates
+AES-CTR.</p></li>
+</ol>
+<h3 id="subsample-encryption-for-av1-bitstreams">Subsample Encryption
+for AV1 Bitstreams</h3>
+<p>AV1 relies on Open Bitstream Units (OBUs) to structure its video
+data. Rather than encrypting the entire media sample, Common Encryption
+implementations for AV1 use subsample encryption. This technique
+selectively encrypts only the sensitive compressed video data while
+leaving structural metadata exposed for container-level processing.</p>
+<ul>
+<li><strong>Clear Headers:</strong> OBU headers, Sequence Headers,
+Metadata OBUs, and Frame Header OBUs remain completely unencrypted. This
+allows demuxers, parsers, and decoders to read essential playback
+parameters (such as resolution, profile, and timing information) without
+requiring access to DRM keys.</li>
+<li><strong>Encrypted Payloads:</strong> Tile Group OBUs and Frame OBUs
+containing the actual transform coefficients and motion vectors are
+encrypted. Within these units, the uncompressed header data remains in
+the clear, and the encrypted range covers the compressed tile data.</li>
+<li><strong>Initialization Vector Alignment:</strong> Depending on
+whether <code>cbcs</code> or <code>cenc</code> is used, IVs are reset
+per sample or subsample, ensuring cryptographic integrity across
+segments.</li>
+</ul>
+<h3 id="industry-convergence-and-unified-delivery">Industry Convergence
+and Unified Delivery</h3>
+<p>Secure AV1 distribution increasingly converges on CMAF combined with
+the <code>cbcs</code> encryption scheme. Because modern consumer silicon
+with hardware AV1 decoders also features universal support for AES-CBC
+with pattern protection, content distributors can package AV1 content a
+single time. By referencing distinct DRM vendor identifiers within the
+<code>pssh</code> (Protection System Specific Header) boxes, a single
+set of encrypted AV1 chunks can be decrypted by Widevine, PlayReady, or
+FairPlay clients across web, mobile, and connected television
+ecosystems.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

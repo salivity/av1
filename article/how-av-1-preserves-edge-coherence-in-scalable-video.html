@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Preserves Edge Coherence in Scalable Video - av1</title>
+    <meta name="description" content="Scalable video coding in AV1 allows a single bitstream to provide multiple spatial resolutions, enabling seamless adaptation to fluctuating network bandwidth and diverse display capabilities. Preserving edge coherence across these scalable spatial enhanc">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-preserves-edge-coherence-in-scalable-video">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Preserves Edge Coherence in Scalable Video - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-preserves-edge-coherence-in-scalable-video" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Scalable video coding in AV1 allows a single bitstream to provide multiple spatial resolutions, enabling seamless adaptation to fluctuating network bandwidth and diverse display capabilities. Preserving edge coherence across these scalable spatial enhanc" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-preserves-edge-coherence-in-scalable-video">How AV1
+Preserves Edge Coherence in Scalable Video</h1>
+<p>Scalable video coding in AV1 allows a single bitstream to provide
+multiple spatial resolutions, enabling seamless adaptation to
+fluctuating network bandwidth and diverse display capabilities.
+Preserving edge coherence across these scalable spatial enhancement
+layers is critical to preventing visual artifacts such as ringing,
+blurring, and edge misalignments. AV1 accomplishes this through a
+combination of normative inter-layer upscaling filters, direction-aware
+in-loop filtering, fine-grained directional prediction, and specialized
+block-partitioning mechanisms.</p>
+<h3 id="normative-inter-layer-upscaling-and-phase-alignment">Normative
+Inter-Layer Upscaling and Phase Alignment</h3>
+<p>In AV1's scalable framework, an enhancement layer often uses decoded
+frames from lower-resolution base layers as reference frames. To utilize
+a lower-resolution picture as a reference, the frame must be scaled up
+to match the dimensions of the enhancement layer.</p>
+<p>AV1 specifies normative polyphase interpolation filters to perform
+this upscaling. Because the standard strictly defines these 8-tap filter
+kernels and their fractional phase handling, both the encoder and
+decoder produce mathematically identical upscaled references. This
+precise phase alignment prevents spatial phase shifting—a common cause
+of edge flickering, double edges, and jaggy artifacts when
+reconstructing high-frequency boundaries from lower-resolution data.</p>
+<h3 id="constrained-directional-enhancement-filter-cdef">Constrained
+Directional Enhancement Filter (CDEF)</h3>
+<p>The Constrained Directional Enhancement Filter (CDEF) plays a central
+role in maintaining sharp, coherent edges. CDEF operates after the
+standard deblocking filter and before the loop restoration stage.</p>
+<ol type="1">
+<li><strong>Direction Search:</strong> CDEF divides blocks into 8x8
+regions and identifies the dominant direction of edges within each block
+from eight possible angles.</li>
+<li><strong>Directional Filtering:</strong> Once the primary edge
+direction is determined, a non-linear 1D filter is applied along that
+direction rather than across it.</li>
+<li><strong>Artifact Suppression:</strong> By filtering parallel to
+edges, CDEF removes ringing artifacts caused by coarse quantization in
+base-layer references without smoothing or dulling the sharp transitions
+across the edge boundary.</li>
+</ol>
+<p>When enhancement layers add residual high frequencies to an upscaled
+base layer, CDEF ensures that residual noise does not degrade the
+primary directional contours established across layers.</p>
+<h3 id="directional-intra-prediction-and-angle-deltas">Directional Intra
+Prediction and Angle Deltas</h3>
+<p>When enhancement layers rely on spatial prediction, AV1 offers 56
+directional intra-prediction angles. Instead of limiting prediction to
+standard horizontal, vertical, or broad diagonal angles, AV1 allows an
+encoder to signal fine-grained angle offsets (deltas).</p>
+<p>This precision allows enhancement layers to track continuous diagonal
+edges across block boundaries. When predicting structural details on top
+of an upscaled reference, these fine angles prevent stepping artifacts
+(aliasing) and preserve consistent edge slopes throughout the
+picture.</p>
+<h3 id="wedge-code-and-compound-prediction">Wedge Code and Compound
+Prediction</h3>
+<p>AV1 introduces wedge-based prediction, a specialized mode within
+compound prediction. Wedge prediction splits a coding block into two
+regions along an arbitrary diagonal or vertical/horizontal edge using a
+predefined codebook of 16 wedge masks.</p>
+<p>In scalable enhancement layers, wedge prediction allows the codec to
+blend an inter-layer upscaled reference with a temporal reference or an
+intra-predicted block along an exact edge contour. The smooth transition
+mask applied at the wedge boundary prevents harsh discontinuities while
+keeping edge transitions sharp and localized.</p>
+<h3 id="dual-loop-restoration-filters">Dual Loop Restoration
+Filters</h3>
+<p>Following CDEF, AV1 applies Loop Restoration, which provides two
+switchable filtering algorithms: a separable symmetric Wiener filter and
+a self-guided filter.</p>
+<ul>
+<li><strong>Wiener Filter:</strong> Acts to invert blur introduced by
+lower-layer scaling and quantization by optimizing tap coefficients
+based on the original source frame.</li>
+<li><strong>Self-Guided Filter:</strong> Uses edge-preserving smoothing
+(based on local sample variance) to enhance fine structures without
+overshooting boundaries.</li>
+</ul>
+<p>These restoration filters reconstruct the high-frequency spectral
+components that are inherently attenuated in lower spatial layers,
+ensuring that edge transitions remain crisp, stable, and visually
+coherent across layer switches.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

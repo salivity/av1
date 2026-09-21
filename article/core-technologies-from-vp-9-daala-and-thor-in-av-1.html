@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Technologies from VP9, Daala, and Thor in AV1 - av1</title>
+    <meta name="description" content="The AOMedia Video 1 (AV1) codec is an open-source, royalty-free video standard developed by the Alliance for Open Media (AOMedia) to deliver superior compression efficiency for web and streaming media. Designed to succeed VP9, AV1 is a collaborative synt">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/core-technologies-from-vp-9-daala-and-thor-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Core Technologies from VP9, Daala, and Thor in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/core-technologies-from-vp-9-daala-and-thor-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AOMedia Video 1 (AV1) codec is an open-source, royalty-free video standard developed by the Alliance for Open Media (AOMedia) to deliver superior compression efficiency for web and streaming media. Designed to succeed VP9, AV1 is a collaborative synt" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="core-technologies-from-vp9-daala-and-thor-in-av1">Core
+Technologies from VP9, Daala, and Thor in AV1</h1>
+<p>The AOMedia Video 1 (AV1) codec is an open-source, royalty-free video
+standard developed by the Alliance for Open Media (AOMedia) to deliver
+superior compression efficiency for web and streaming media. Designed to
+succeed VP9, AV1 is a collaborative synthesis built upon the
+foundational architectures and research of three predecessor projects:
+Google’s VP9, Xiph.Org/Mozilla’s Daala, and Cisco’s Thor. This article
+outlines the specific core technologies that AV1 adopted from each of
+these three projects and how they shaped the final standard.</p>
+<h3 id="core-technologies-from-vp9">Core Technologies from VP9</h3>
+<p>Google's VP9 served as the baseline pipeline and bitstream framework
+for AV1. Rather than designing a codec from scratch, AOMedia used VP9's
+codebase as the starting point, expanding its capabilities across
+several domains:</p>
+<ul>
+<li><strong>Baseline Bitstream Architecture:</strong> AV1 preserves
+VP9’s high-level frame structure, tile division, and reference frame
+buffer management, providing a familiar framework for hardware
+implementation.</li>
+<li><strong>Partitioning Framework:</strong> VP9 introduced the concept
+of recursive four-way block splitting starting from 64x64 superblocks.
+AV1 expanded this structure to support 128x128 superblocks and added
+rectangular, non-square splits (such as 1:2, 2:1, 1:4, and 4:1) along
+with T-shaped partitions.</li>
+<li><strong>Deblocking Filter:</strong> The foundational in-loop
+deblocking filter in AV1 directly descends from VP9's edge-filtering
+system, smoothing artifact boundaries across block edges prior to newer
+filtering stages.</li>
+<li><strong>Inter and Intra Prediction Base:</strong> The core motion
+vector modeling and standard directional intra-prediction angles
+originated in VP9, which AV1 extended with finer angle gradients and
+multi-parameter affine transforms.</li>
+</ul>
+<h3 id="core-technologies-from-daala">Core Technologies from Daala</h3>
+<p>The Daala project, led by Xiph.Org and Mozilla, focused on
+experimental, non-traditional compression methods. While AV1 did not
+adopt Daala’s lapped transforms entirely, several of Daala's key
+innovations were integrated:</p>
+<ul>
+<li><strong>Multi-Symbol Entropy Coding:</strong> VP9 used a binary
+arithmetic coder that processed one bit per cycle. Daala contributed an
+advanced multi-symbol arithmetic coder capable of processing up to 8-bit
+symbols directly, significantly boosting throughput and facilitating
+parallel hardware decoding.</li>
+<li><strong>Chroma-from-Luma (CfL) Prediction:</strong> Daala pioneered
+the cross-component prediction technique known as Chroma-from-Luma. CfL
+models chroma pixels as a linear function of reconstructed luma pixels,
+exploiting the strong correlation between color and luminance channels
+to drastically reduce chroma residual data.</li>
+<li><strong>Directional Deringing:</strong> Daala’s directional
+deringing filter analyzes edge directions within a block and applies
+smoothing along—rather than across—those edges. This technique was
+combined with Thor’s filtering research to create AV1's hybrid
+post-processing stages.</li>
+</ul>
+<h3 id="core-technologies-from-thor">Core Technologies from Thor</h3>
+<p>Developed by Cisco to provide a royalty-free video standard optimized
+for real-time communications, Thor contributed critical motion
+prediction tools and filtering enhancements:</p>
+<ul>
+<li><strong>Constrained Low-Pass Filter (CLPF):</strong> Thor utilized a
+selective smoothing filter designed to reduce ringing and mosquito noise
+while preserving sharp edge details.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+AV1's signature in-loop filter, CDEF, is a direct merger of Thor’s CLPF
+and Daala’s directional deringing filter. CDEF first identifies the
+dominant edge direction of an 8x8 block and applies a non-linear
+low-pass filter aligned with that direction, suppressing artifacts
+without blurring fine lines.</li>
+<li><strong>Advanced Motion Vector Referencing:</strong> Thor
+contributed spatial and temporal motion vector prediction techniques,
+allowing AV1 to build sophisticated candidate lists from neighboring
+blocks and past reference frames to improve inter-frame motion
+accuracy.</li>
+</ul>
+<h3 id="conclusion">Conclusion</h3>
+<p>By using VP9 as a stable structural foundation, integrating Daala's
+advances in entropy coding and cross-channel prediction, and
+incorporating Thor’s motion modeling and filtering expertise, AV1
+achieved a compression performance exceeding that of its predecessors
+while maintaining a royalty-free deployment path.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

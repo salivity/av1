@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Screen Resizing in AV1 Scalable Streams - av1</title>
+    <meta name="description" content="This article explains how the AV1 video codec manages dynamic screen resizing within spatially scalable streams. It details the interplay between AV1's Reference Frame Resampling (RFR), spatial Scalable Video Coding (SVC) modes, and normative downsamplin">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/dynamic-screen-resizing-in-av-1-scalable-streams">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Dynamic Screen Resizing in AV1 Scalable Streams - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/dynamic-screen-resizing-in-av-1-scalable-streams" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the AV1 video codec manages dynamic screen resizing within spatially scalable streams. It details the interplay between AV1's Reference Frame Resampling (RFR), spatial Scalable Video Coding (SVC) modes, and normative downsamplin" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="dynamic-screen-resizing-in-av1-scalable-streams">Dynamic Screen
+Resizing in AV1 Scalable Streams</h1>
+<p>This article explains how the AV1 video codec manages dynamic screen
+resizing within spatially scalable streams. It details the interplay
+between AV1's Reference Frame Resampling (RFR), spatial Scalable Video
+Coding (SVC) modes, and normative downsampling filters. By examining
+these mechanisms, you will learn how AV1 dynamically changes spatial
+resolutions without relying on expensive keyframes, maintaining
+uninterrupted playback and bandwidth efficiency during viewport
+alterations.</p>
+<h3 id="the-role-of-reference-frame-resampling-rfr">The Role of
+Reference Frame Resampling (RFR)</h3>
+<p>Traditional video codecs typically require an Instantaneous Decoder
+Refresh (IDR) or keyframe to change stream resolution, which causes
+significant bitrate spikes and decoder latency. AV1 solves this
+limitation natively through Reference Frame Resampling (RFR).</p>
+<p>In an AV1 stream, inter-prediction frames can reference previous
+frames that were encoded at different spatial resolutions. When dynamic
+screen resizing occurs—such as a user dragging a browser window or
+switching between full-screen and tiled layouts—the encoder can alter
+the spatial downsampling ratio on any inter-frame. The AV1 decoder
+dynamically scales reference frames in memory to match the target
+frame's dimensions using high-precision 8-tap interpolation filters
+before executing motion compensation.</p>
+<h3 id="spatial-downsampling-within-svc-frameworks">Spatial Downsampling
+within SVC Frameworks</h3>
+<p>AV1 integrates spatial scalability natively into its bitstream
+structure through operating points and scalability structures defined in
+the sequence header. Spatial scalability relies on splitting the video
+feed into a base layer and one or more spatial enhancement layers:</p>
+<ul>
+<li><strong>Base Layer:</strong> Encoded at a downsampled resolution
+(e.g., 50% or 25% of the original capture).</li>
+<li><strong>Enhancement Layers:</strong> Encoded at higher resolutions,
+utilizing inter-layer prediction from the lower spatial layers as well
+as temporal prediction from prior frames.</li>
+</ul>
+<p>When a client dynamically resizes its display area, the receiving
+device or an intermediate Selective Forwarding Unit (SFU) responds by
+altering which spatial layer is actively forwarded or decoded. If a user
+shrinks the playback window, the delivery pipeline can drop higher
+spatial enhancement layers entirely, routing only the spatially
+downsampled base layer. Because the layers are temporally synchronized,
+this transition happens seamlessly without renegotiating the codec
+session.</p>
+<h3 id="frame-header-signaling-and-coordinate-mapping">Frame Header
+Signaling and Coordinate Mapping</h3>
+<p>Spatial downsampling adjustments during dynamic resizing are governed
+frame-by-frame via the <code>frame_size_override_flag</code> and
+<code>render_and_frame_size_info</code> syntax elements in the AV1
+uncompressed header.</p>
+<p>When a screen resize event triggers a resolution shift:</p>
+<ol type="1">
+<li><strong>Dimension Signaling:</strong> The frame header specifies the
+coded width and height alongside optional render width and height
+attributes.</li>
+<li><strong>Motion Vector Scaling:</strong> Motion vectors pointing to
+reference frames with differing dimensions are automatically scaled
+mathematically. AV1 maps the coordinates using fractional scaling
+factors based on the ratio between the current and reference frame
+dimensions.</li>
+<li><strong>Filter Application:</strong> The standard AV1 normative
+downscaler and upscaler handle fractional phase offsets, preventing
+drift between the reference buffers and newly reconstructed
+surfaces.</li>
+</ol>
+<h3 id="native-super-resolution-as-a-downsampling-tool">Native
+Super-Resolution as a Downsampling Tool</h3>
+<p>In addition to traditional spatial SVC layer configurations, AV1
+includes an integrated in-loop Super-Resolution tool. Super-resolution
+functions by applying a horizontal-only spatial downsampling step to the
+source frame prior to encoding, processing the frame at lower
+complexity, and applying a normative upscaling filter immediately after
+the loop restoration stage inside the decoding loop.</p>
+<p>During rapid dynamic screen resizing, an encoder can engage
+horizontal super-resolution dynamically. This allows the system to lower
+effective bitrate and processing overhead instantly without
+restructuring the global reference buffer dimensions, acting as a
+lightweight spatial resizing tool that stabilizes playback until the
+display dimensions settle.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

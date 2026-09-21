@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Dynamic Resolution Scaling Without Keyframes - av1</title>
+    <meta name="description" content="Yes, an AV1 encoder can downscale—and upscale—video resolution mid-stream without emitting a keyframe. This capability is made possible by a native AV1 feature known as Reference Frame Resampling (RFR). This overview explains how AV1 achieves inter-f">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-dynamic-resolution-scaling-without-keyframes">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Dynamic Resolution Scaling Without Keyframes - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-dynamic-resolution-scaling-without-keyframes" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Yes, an AV1 encoder can downscale—and upscale—video resolution mid-stream without emitting a keyframe. This capability is made possible by a native AV1 feature known as Reference Frame Resampling (RFR). This overview explains how AV1 achieves inter-f" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-dynamic-resolution-scaling-without-keyframes">AV1 Dynamic
+Resolution Scaling Without Keyframes</h1>
+<p>Yes, an AV1 encoder can downscale—and upscale—video resolution
+mid-stream without emitting a keyframe. This capability is made possible
+by a native AV1 feature known as Reference Frame Resampling (RFR). This
+overview explains how AV1 achieves inter-frame resolution changes, the
+technical mechanisms behind normative scaling, and the operational
+advantages this provides for real-time communications and adaptive
+bitrate streaming.</p>
+<h3 id="how-av1-changes-resolution-on-inter-frames">How AV1 Changes
+Resolution on Inter-Frames</h3>
+<p>In legacy video codecs like H.264 (AVC) and standard HEVC profiles, a
+change in frame dimensions typically invalidates previous reference
+buffers. To change resolution, the encoder must transmit a new Sequence
+Parameter Set (SPS) accompanied by an Instantaneous Decoder Refresh
+(IDR) or keyframe. Keyframes require significantly more bits than
+inter-frames (P-frames or B-frames), often creating sudden bandwidth
+spikes that can degrade network performance precisely when bandwidth is
+constrained.</p>
+<p>AV1 eliminates this requirement through Reference Frame Resampling.
+Under the AV1 specification, an inter-frame can possess different pixel
+dimensions than the frames stored in its reference buffer. When the
+encoder decides to lower the resolution, it signals the new frame width
+and height directly in the frame header.</p>
+<h3 id="the-reference-frame-resampling-rfr-mechanism">The Reference
+Frame Resampling (RFR) Mechanism</h3>
+<p>When decoding a frame that has a different resolution from its
+reference frames, the AV1 decoder applies a standardized scaling
+process:</p>
+<ol type="1">
+<li><strong>Normative Rescaling:</strong> The AV1 specification defines
+a precise, normative 8-tap polyphase filtering algorithm for scaling
+reference frames. Because the scaling filter is strictly defined by the
+standard, both the encoder and decoder generate bit-identical
+interpolated reference pixels, preventing drift.</li>
+<li><strong>Motion Vector Scaling:</strong> Motion vectors pointing to a
+reference frame of a different resolution are automatically scaled by
+the decoder to align with the spatial dimensions of the target
+frame.</li>
+<li><strong>Buffer Management:</strong> Decoded frames of varying
+dimensions can be saved directly into the circular reference frame
+buffers (DPB). Subsequent frames can reference downscaled or full-scale
+frames without forcing a pipeline flush.</li>
+</ol>
+<h3 id="practical-benefits-for-real-time-streaming">Practical Benefits
+for Real-Time Streaming</h3>
+<p>The ability to downscale mid-stream without keyframes provides
+critical advantages, particularly in real-time communication (RTC)
+frameworks like WebRTC:</p>
+<ul>
+<li><strong>No Congestion Bitrate Spikes:</strong> When network
+throughput drops, an encoder usually needs to lower the resolution to
+match available bandwidth. Generating an IDR frame at this moment
+worsens network congestion. AV1 allows an immediate downscale using a
+lightweight delta frame.</li>
+<li><strong>Lower Latency:</strong> Avoiding IDR frames eliminates
+buffer bloat and queue delays across network hops, keeping end-to-end
+latency minimal.</li>
+<li><strong>Smooth Quality Degradation:</strong> Instead of dropping
+frames or stuttering while waiting for a keyframe negotiation, the video
+resolution smoothly shifts down and scales back up as network conditions
+dictate.</li>
+</ul>
+<p>AV1 encoders like <code>libaom</code>, SVT-AV1, and specialized
+WebRTC implementations expose configuration flags to enable dynamic
+spatial resampling, allowing smooth, mid-stream resolution transitions
+entirely driven by inter-frames.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

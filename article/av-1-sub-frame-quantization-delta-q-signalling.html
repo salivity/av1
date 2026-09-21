@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Sub-Frame Quantization: Delta Q Signalling - av1</title>
+    <meta name="description" content="The AV1 video codec provides adaptive rate control and perceptual optimization by varying quantization step sizes within a single frame rather than relying solely on a uniform frame-level setting. This sub-frame quantization adjustment is primarily achie">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-sub-frame-quantization-delta-q-signalling">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Sub-Frame Quantization: Delta Q Signalling - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-sub-frame-quantization-delta-q-signalling" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec provides adaptive rate control and perceptual optimization by varying quantization step sizes within a single frame rather than relying solely on a uniform frame-level setting. This sub-frame quantization adjustment is primarily achie" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-sub-frame-quantization-delta-q-signalling">AV1 Sub-Frame
+Quantization: Delta Q Signalling</h1>
+<p>The AV1 video codec provides adaptive rate control and perceptual
+optimization by varying quantization step sizes within a single frame
+rather than relying solely on a uniform frame-level setting. This
+sub-frame quantization adjustment is primarily achieved through two
+distinct, complementary syntax mechanisms: Delta Quantization (Delta Q)
+signaled at the superblock level, and block-level Segmentation.
+Together, these tools allow encoders to alter the base quantizer index
+locally, redistributing bit allocation to match the complexity and
+visual sensitivity of different regions across the picture.</p>
+<h3 id="frame-level-enablement-and-configuration">Frame-Level Enablement
+and Configuration</h3>
+<p>Sub-frame quantization adjustments require frame-level setup within
+the uncompressed frame header.</p>
+<p>The frame header defines the global baseline with
+<code>base_q_idx</code> (ranging from 0 to 255). To allow localized
+changes, the frame header sets the <code>delta_q_present_flag</code>.
+When this flag is enabled, the bitstream specifies
+<code>delta_q_res</code>, which defines the mathematical step size or
+resolution of the transmitted deltas using the formula:</p>
+<p><span class="math display">\[\text{Step} = 1 \ll
+\text{delta\_q\_res}\]</span></p>
+<p>This resolution parameter allows the encoder to trade off the dynamic
+range of local adjustments against the bit cost of signaling delta
+values.</p>
+<h3 id="superblock-level-delta-q-signalling">Superblock-Level Delta Q
+Signalling</h3>
+<p>Once Delta Q is enabled, quantization updates occur across
+Superblocks (128x128 or 64x64 pixel coding units).</p>
+<ol type="1">
+<li><strong>Activation per Superblock</strong>: For each superblock
+containing non-zero transform coefficients, the bitstream signals
+whether a local quantizer modification occurs. If a superblock is
+completely skipped, delta values are omitted, and the quantization state
+carries forward.</li>
+<li><strong>Delta Representation</strong>: When signaled, the quantizer
+delta is coded using:
+<ul>
+<li><code>delta_q_abs</code>: The magnitude of the step index
+change.</li>
+<li><code>delta_q_sign_bit</code>: The direction of the change (positive
+or negative), sent if <code>delta_q_abs</code> is greater than
+zero.</li>
+</ul></li>
+<li><strong>Differential Updates</strong>: The decoded delta value is
+added to the running quantizer predictor (normally the quantizer of the
+previous superblock, reset at frame/tile boundaries). The resulting
+value is clamped to the valid [0, 255] range to establish the new active
+<span class="math inline">\(Q\)</span>-index:</li>
+</ol>
+<p><span class="math display">\[Q_{\text{current}} = \text{Clip3}(0,
+255, Q_{\text{previous}} + (\text{delta\_q\_val} \ll
+\text{delta\_q\_res}))\]</span></p>
+<p>This active index remains in effect for subsequent superblocks until
+a new delta is explicitly signaled.</p>
+<h3 id="segmentation-maps">Segmentation Maps</h3>
+<p>AV1 also supports sub-frame quantization variance via its
+segmentation engine. A frame can be divided into up to eight distinct
+segments:</p>
+<ul>
+<li><strong>Segment Map</strong>: The bitstream transmits a segment ID
+for individual coding blocks down to 4x4 resolution.</li>
+<li><strong>Feature Signalling</strong>: The frame header specifies
+feature data per segment, including <code>SEG_LVL_ALT_Q</code> (an
+absolute or relative delta quantizer index offset).</li>
+<li><strong>Combination</strong>: When both segmentation and Delta Q are
+active, the segment-specific offset is added to the baseline/Delta Q
+index, yielding block-specific quantization steps even finer than the
+superblock level.</li>
+</ul>
+<h3 id="component-specific-adjustments">Component-Specific
+Adjustments</h3>
+<p>AV1 applies the determined sub-frame <span
+class="math inline">\(Q\)</span>-index across the transform stages while
+allowing predefined plane offsets. Quantization steps for chroma planes
+(<span class="math inline">\(U\)</span> and <span
+class="math inline">\(V\)</span>) and transform coefficient types (DC
+versus AC) derive their final values by adding frame-level parameters
+(<code>delta_q_y_dc</code>, <code>delta_q_u_dc</code>,
+<code>delta_q_u_ac</code>, etc.) to the dynamically calculated sub-frame
+<span class="math inline">\(Q\)</span>-index before indexing the final
+reconstruction scaling tables.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

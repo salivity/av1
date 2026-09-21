@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Compound Inter-Intra Prediction Explained - av1</title>
+    <meta name="description" content="Compound inter-intra prediction is an advanced coding tool in the AV1 video codec that combines temporal motion compensation with spatial intra prediction inside a single block. By blending an inter-predicted reference with an intra-predicted reference u">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-compound-inter-intra-prediction-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Compound Inter-Intra Prediction Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-compound-inter-intra-prediction-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Compound inter-intra prediction is an advanced coding tool in the AV1 video codec that combines temporal motion compensation with spatial intra prediction inside a single block. By blending an inter-predicted reference with an intra-predicted reference u" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-compound-inter-intra-prediction-explained">AV1 Compound
+Inter-Intra Prediction Explained</h1>
+<p>Compound inter-intra prediction is an advanced coding tool in the AV1
+video codec that combines temporal motion compensation with spatial
+intra prediction inside a single block. By blending an inter-predicted
+reference with an intra-predicted reference using specialized weighting
+masks, AV1 significantly reduces residual energy in complex scenes such
+as lighting variations, moving shadows, and occlusion boundaries. This
+article explains the fundamentals of compound inter-intra prediction and
+details the specific mechanisms AV1 uses to blend these signals
+together.</p>
+<h3 id="what-is-compound-inter-intra-prediction">What is Compound
+Inter-Intra Prediction?</h3>
+<p>In traditional video coding, an encoder must choose between two
+primary prediction types for any given block:</p>
+<ul>
+<li><strong>Inter prediction:</strong> Predicts pixels using motion
+vectors pointing to previously decoded frames (temporal
+redundancy).</li>
+<li><strong>Intra prediction:</strong> Predicts pixels using adjacent,
+already-reconstructed boundary pixels within the same frame (spatial
+redundancy).</li>
+</ul>
+<p>While standard compound prediction combines two inter candidates
+(from different reference frames or motion vectors), AV1 introduces
+compound inter-intra prediction. This technique allows a block to
+simultaneously use one inter prediction signal and one intra prediction
+signal. It is particularly effective when motion compensation captures
+the general displacement of an object, but spatial neighbors provide
+better localized detail, such as at the edges of moving objects or
+during gradual scene transitions.</p>
+<h3 id="allowed-intra-modes">Allowed Intra Modes</h3>
+<p>To limit signaling overhead and computational complexity, AV1
+restricts the intra prediction modes that can be paired with an inter
+signal. An encoder can combine an inter candidate with one of four basic
+intra modes:</p>
+<ol type="1">
+<li><strong>DC Mode:</strong> Applies an average flat value derived from
+neighboring pixels.</li>
+<li><strong>Vertical Mode:</strong> Projects the reconstructed top row
+vertically downward.</li>
+<li><strong>Horizontal Mode:</strong> Projects the reconstructed left
+column horizontally across.</li>
+<li><strong>Smooth Mode:</strong> Uses bilinear interpolation to
+generate a gradual spatial gradient from the boundaries.</li>
+</ol>
+<h3 id="how-av1-blends-the-blocks">How AV1 Blends the Blocks</h3>
+<p>Once the inter predictor (<span
+class="math inline">\(P_{inter}\)</span>) and intra predictor (<span
+class="math inline">\(P_{intra}\)</span>) are generated, AV1 blends them
+on a pixel-by-pixel basis using a weighted mask (<span
+class="math inline">\(m\)</span>). The final sample value (<span
+class="math inline">\(P\)</span>) at coordinate <span
+class="math inline">\((x, y)\)</span> is calculated as:</p>
+<p><span class="math display">\[P(x, y) = m(x, y) \cdot P_{intra}(x, y)
++ (1 - m(x, y)) \cdot P_{inter}(x, y)\]</span></p>
+<p>AV1 determines the mask values <span class="math inline">\(m(x,
+y)\)</span> using two primary blending strategies:</p>
+<h4 id="1-smooth-blending-distance-based-mask">1. Smooth Blending
+(Distance-Based Mask)</h4>
+<p>In smooth blending mode, the influence of the intra prediction decays
+as the distance from the reconstructed boundary increases.</p>
+<p>Because intra prediction relies on spatial neighbors directly above
+and to the left of the current block, its accuracy is highest
+immediately adjacent to those boundaries and degrades further into the
+block. AV1 applies a predefined, 1D or 2D lookup table that assigns
+higher weights to <span class="math inline">\(P_{intra}\)</span> near
+the top and left edges. As <span class="math inline">\((x, y)\)</span>
+moves toward the bottom-right of the block, the weight shifts almost
+entirely to <span class="math inline">\(P_{inter}\)</span>.</p>
+<h4 id="2-wedge-based-blending">2. Wedge-Based Blending</h4>
+<p>Wedge-based blending partitions the block into two regions using a
+codebook of predefined geometric shapes (wedges).</p>
+<p>AV1 defines a set of 16 wedge orientations and offsets per block
+size. These wedges divide the block along straight lines at various
+angles (horizontal, vertical, or oblique). Along the dividing line, the
+codec applies a softened, anti-aliased transition zone rather than a
+sharp binary boundary. Pixels on the intra-designated side of the wedge
+receive a high intra weight, pixels on the opposite side receive a high
+inter weight, and pixels falling within the transition margin are
+smoothly linearly interpolated.</p>
+<h3 id="normalization-and-residual-encoding">Normalization and Residual
+Encoding</h3>
+<p>The weights in both smooth and wedge masks are normalized to sum to a
+fixed power-of-two constant (typically 64) to allow fast fixed-point
+arithmetic without division:</p>
+<p><span class="math display">\[P(x, y) = \left( m(x, y) \cdot
+P_{intra}(x, y) + (64 - m(x, y)) \cdot P_{inter}(x, y) + 32 \right) \gg
+6\]</span></p>
+<p>After blending, the resulting hybrid block <span
+class="math inline">\(P\)</span> is subtracted from the original source
+block to create the residual signal. Because the blended block accounts
+for both motion displacement and boundary continuity, the residual
+typically contains far less high-frequency data, allowing the transform
+and quantization stages to achieve superior compression ratios compared
+to using pure inter or pure intra prediction alone.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

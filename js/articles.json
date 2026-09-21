@@ -1,0 +1,2342 @@
+[
+  [
+    390,
+    "Future Application Profiles for the AV1 Standard",
+    "This article provides an overview of how the Alliance for Open Media (AOMedia) is shaping the long-term maintenance of the AV1 video codec through new and refined application profiles. As AV1 solidifies its role across the web, future maintenance relies",
+    false
+  ],
+  [
+    389,
+    "AV1 HDR Floating-Point Color in Mezzanine Workflows",
+    "This article examines how the AV1 video codec interfaces with high-dynamic range (HDR) floating-point color spaces within intermediate and mezzanine workflows. Because AV1 natively operates using integer-based bit depths up to 12 bits, utilizing it for h",
+    false
+  ],
+  [
+    388,
+    "AV1 Coefficient Tokenization and Entropy Optimization",
+    "This article explores the mechanics of transform coefficient tokenization in modern video compression, focusing specifically on the AOMedia Video 1 (AV1) codec. It breaks down how quantized frequency coefficients are mapped into compact syntax elements a",
+    false
+  ],
+  [
+    387,
+    "AV1 Context Models for Transform Coefficient Coding",
+    "This article provides an overview of the context modeling architecture used for transform coefficient coding within the AOMedia Video 1 (AV1) entropy engine. AV1 replaces traditional binary arithmetic coding (such as CABAC) with a symbol-adaptive multi-s",
+    false
+  ],
+  [
+    386,
+    "AV1 Arithmetic Coder Probability Estimation Limits",
+    "This article provides a technical overview of the probability estimation accuracy limits within the AV1 video codec's multi-symbol arithmetic coder. It examines how cumulative distribution function (CDF) quantization, fixed-point precision bounds, minimu",
+    false
+  ],
+  [
+    385,
+    "Fast Integer Division in AV1 Daala Entropy Coding",
+    "In video compression, arithmetic coding demands complete mathematical determinism across all playback hardware, as a single diverging bit ruins the decoded stream. The AV1 video codec incorporates the Daala entropy coder, which relies on a specialized fa",
+    false
+  ],
+  [
+    384,
+    "AV1 CDEF Dominant Direction Calculation Formula",
+    "The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec identifies the primary edge orientation of an 8x8 block to apply directional smoothing without blurring sharp details. To determine this dominant direction, CDEF analyzes eight",
+    false
+  ],
+  [
+    383,
+    "How CDEF Directional Search Prevents AV1 Ringing",
+    "The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec eliminates edge-ringing artifacts by dynamically aligning its filtering operations with the native orientation of visual edges. Ringing artifacts typically arise when coarse tra",
+    false
+  ],
+  [
+    382,
+    "Why AV1 Replaced SAO with CDEF and Loop Restoration",
+    "The AV1 video codec abandoned the Sample Adaptive Offset (SAO) filter used in HEVC in favor of a dual in-loop pipeline consisting of the Constrained Directional Enhancement Filter (CDEF) and Loop Restoration. While SAO helped reduce banding and ringing a",
+    false
+  ],
+  [
+    381,
+    "AV1 In-Loop Filters vs HEVC SAO Complexity",
+    "This article examines the computational complexity differences between the in-loop filtering architectures of the AV1 and HEVC (H.265) video codecs. While High Efficiency Video Coding (HEVC) relies on a lightweight two-stage filtering process featuring S",
+    false
+  ],
+  [
+    380,
+    "AV1 Re-Encoding: Compute Expense vs Storage Savings",
+    "Re-encoding video libraries to AV1 offers up to 30% to 50% data compression improvements over legacy codecs like H.264 and HEVC, presenting significant opportunities to reduce long-term storage and bandwidth expenses. However, achieving these savings req",
+    false
+  ],
+  [
+    379,
+    "Economic Benefits of AV1 for Long-Tail Video Catalogs",
+    "Long-tail video catalogs—vast libraries of older, niche, or infrequently watched content—represent a major financial burden for streaming platforms due to ongoing storage and retrieval expenses. This article examines how adopting high-density AV1 enc",
+    false
+  ],
+  [
+    378,
+    "H.264 to AV1 Edge Transcoding Requirements",
+    "Migrating legacy H.264 video libraries to AV1 at the network edge delivers substantial bandwidth reduction and optimized delivery without burdening centralized cloud infrastructure. However, the high computational complexity of the AV1 specification intr",
+    false
+  ],
+  [
+    377,
+    "Calculating CDN Caching Efficiency with AV1",
+    "Large-scale Content Delivery Networks (CDNs) quantify the caching benefits of the AV1 video codec by analyzing how its superior compression ratio—typically yielding 30% to 50% smaller file sizes than H.264—alters data footprint dynamics at the edge.",
+    false
+  ],
+  [
+    376,
+    "How AV1 Compression Reduces Cloud Carbon Footprint",
+    "This article examines how the global transition to the AV1 video codec across cloud networks substantially lowers carbon emissions. By delivering superior data compression compared to legacy standards like H.264 and HEVC, AV1 significantly reduces the ba",
+    false
+  ],
+  [
+    375,
+    "HTTP/3 Multiplexing in Live AV1 Streaming",
+    "Combining the high compression efficiency of the AV1 video codec with HTTP/3’s QUIC-based transport significantly reduces latency and improves stability in live video delivery. This article explains how HTTP/3 multiplexing optimizes the delivery of chu",
+    false
+  ],
+  [
+    374,
+    "Live AV1 Over QUIC: Transport Layer Security Impacts",
+    "Streaming live AV1 video over the QUIC protocol combines next-generation compression efficiency with modern transport performance, yet it fundamentally alters network security dynamics. Because QUIC integrates Transport Layer Security (TLS 1.3) directly",
+    false
+  ],
+  [
+    373,
+    "AV1 Video in MPEG-TS Legacy Broadcast Infrastructure",
+    "This article examines whether the AOMedia Video 1 (AV1) codec can be encapsulated and transmitted over legacy MPEG-2 Transport Stream (MPEG-TS) broadcast architectures. While the MPEG-TS container is fundamentally codec-agnostic and official specificatio",
+    false
+  ],
+  [
+    372,
+    "AV1 MPEG-TS Multiplexing Jitter Tolerances",
+    "This article provides an overview of the technical limits and timing specifications governing audio-video multiplexing jitter when transmitting AV1 elementary streams over MPEG Transport Stream (MPEG-TS). It covers the normative limits defined by the ISO",
+    false
+  ],
+  [
+    371,
+    "AV1 Audio Sync in Multi-Channel Streaming",
+    "The AV1 video specification handles media timing by combining internal bitstream markers with container-level synchronization mechanisms. Because the AV1 bitstream itself exclusively carries video data, synchronizing stereo and multi-channel audio stream",
+    false
+  ],
+  [
+    370,
+    "AV1 Performance in Ultra-High-Speed Video Encoding",
+    "This article examines the performance profile of the AV1 video codec when encoding and storing ultra-high-speed camera recordings. High-speed imaging captures hundreds to thousands of frames per second, creating massive raw data footprints that severely",
+    false
+  ],
+  [
+    369,
+    "How AV1 Optimizes Security Camera Backgrounds",
+    "This article examines how the AV1 video codec minimizes bandwidth and storage requirements for security camera feeds by specifically optimizing the compression of stationary background textures. Surveillance video typically features long stretches of sta",
+    false
+  ],
+  [
+    368,
+    "Best Deinterlacing Filters for AV1 Video Encoding",
+    "This article outlines the most effective preprocessing deinterlacing filters to use before compressing video with the AV1 codec. Because AV1 lacks native support for interlaced video, converting fields into progressive frames prior to encoding is mandato",
+    false
+  ],
+  [
+    367,
+    "AV1 Interlaced Video Support Explained",
+    "This article examines how the AV1 video codec manages legacy interlaced content and addresses whether progressive scanning is strictly required. Unlike older broadcast standards such as MPEG-2 and H.264, AV1 completely omits native interlaced field codin",
+    false
+  ],
+  [
+    366,
+    "AV1 Latency in Satellite and Cable Broadcasts",
+    "This article examines the transmission latency boundaries of deploying the AV1 video codec within satellite and cable television architectures. It breaks down the glass-to-glass delay profile—from hardware encoding and multiplexing to physical propagat",
+    false
+  ],
+  [
+    365,
+    "How SMPTE Evaluates AV1 for Contribution Links",
+    "The Society of Motion Picture and Television Engineers (SMPTE) evaluates the AOMedia Video 1 (AV1) codec for contribution links by rigorously testing its compression efficiency, picture quality preservation, latency performance, and resilience across mul",
+    false
+  ],
+  [
+    364,
+    "AV1 Forensic Watermarking in Theatrical Distribution",
+    "As the AV1 video codec emerges as a candidate for modern distribution workflows, adapting forensic watermarking for theatrical ecosystems introduces distinct operational and technical challenges. This article examines the primary considerations when depl",
+    false
+  ],
+  [
+    363,
+    "How AV1 Decoders Handle Encrypted Sub-Samples",
+    "This article provides an overview of how AV1 decoders process encrypted sub-sample mapping within Open Bitstream Unit (OBU) payloads. While video decoders themselves do not perform cryptographic operations, they interface directly with Content Decryption",
+    false
+  ],
+  [
+    362,
+    "PlayReady Hardware-Secured AV1 Decoding Profile",
+    "This article provides an overview of Microsoft PlayReady's implementation profile for hardware-secured AV1 decoding, detailing how premium 4K and HDR video streams are protected within modern silicon architectures. It outlines the core architectural comp",
+    false
+  ],
+  [
+    361,
+    "FairPlay Streaming: Delivering Protected AV1 Video",
+    "Apple’s FairPlay Streaming (FPS) technology secures premium video playback across Apple devices using robust digital rights management (DRM) integrated into HTTP Live Streaming (HLS). With the addition of hardware-accelerated AV1 decoding in Apple Sili",
+    false
+  ],
+  [
+    360,
+    "Common Encryption Schemes for Secure AV1 Distribution",
+    "This article explores the Common Encryption (CENC) scheme implementations used to protect AV1 video streams across modern digital rights management (DRM) ecosystems. It covers the standardization of AV1 protection within ISO Base Media File Format (ISOBM",
+    false
+  ],
+  [
+    359,
+    "Widevine DRM AV1 Video Encryption and Decryption",
+    "This article explains the end-to-end technical process of how Google's Widevine Digital Rights Management (DRM) secures elementary AV1 video streams. It outlines the preparation and subsample encryption of AV1 Open Bitstream Units (OBUs) using Common Enc",
+    false
+  ],
+  [
+    358,
+    "Impact of Zero-Copy Rendering on AV1 Playback",
+    "Zero-copy video rendering paths dramatically improve AV1 playback efficiency by eliminating redundant memory transfers between system memory, hardware decoders, and the display compositor. Because AV1 features advanced compression algorithms that demand",
+    false
+  ],
+  [
+    357,
+    "Composing Hardware-Decoded AV1 Video into the DOM",
+    "Modern web browsers offload AV1 video decoding to dedicated GPU hardware to enable power-efficient, high-resolution playback. However, integrating raw decoded video frames into the Document Object Model (DOM) alongside CSS styling, animations, and other",
+    false
+  ],
+  [
+    356,
+    "AV1 Dynamic Resolution Switching Dependencies",
+    "AV1 features native internal resolution switching, also known as dynamic resolution switching or reference frame scaling, allowing the encoder to alter the spatial resolution of a video stream without inserting a keyframe. This mechanism avoids the sever",
+    false
+  ],
+  [
+    355,
+    "Reference Frame Resampling for Bandwidth Drops",
+    "Reference Frame Resampling (RFR) is an advanced video encoding feature that allows video conferencing platforms to adapt instantly to network fluctuations without interrupting the video stream. This article explains how RFR functions, why traditional res",
+    false
+  ],
+  [
+    354,
+    "AV1 Dynamic Resolution Scaling Without Keyframes",
+    "Yes, an AV1 encoder can downscale—and upscale—video resolution mid-stream without emitting a keyframe. This capability is made possible by a native AV1 feature known as Reference Frame Resampling (RFR). This overview explains how AV1 achieves inter-f",
+    false
+  ],
+  [
+    353,
+    "AV1 Reference Frame Resampling Explained",
+    "The Reference Frame Resampling (RFR) tool in the AV1 video codec allows an encoder to dynamically change video resolution on a per-frame basis without requiring a keyframe. By enabling inter-frames to reference past frames encoded at different resolution",
+    false
+  ],
+  [
+    352,
+    "How AV1 Frame Resizing Enables Dynamic Resolution",
+    "AV1 introduces native support for frame resizing directly within the encoded bitstream, allowing the video resolution to change dynamically on a frame-by-frame basis without inserting a keyframe. By enabling inter-frames to reference reconstructed frames",
+    false
+  ],
+  [
+    351,
+    "Impact of Temporal Sub-Sampling in AV1 Archives",
+    "This article examines how temporal sub-sampling affects compression efficiency, file sizes, and visual quality in AV1 video archives. It explores the mechanics of AV1 inter-frame prediction, explains why halving frame rates does not equate to halving fil",
+    false
+  ],
+  [
+    350,
+    "Rate-Distortion Optimized Quantization in AV1",
+    "Rate-distortion optimized quantization (RDOQ) in the AV1 video codec is an advanced decision-making process that optimizes transform coefficient levels to achieve the best possible balance between compression efficiency and visual quality. Rather than re",
+    false
+  ],
+  [
+    349,
+    "AV1 Constant Quantization vs Adaptive Quantization",
+    "This article explains the fundamental differences between constant quantization and adaptive quantization within the AV1 video codec. Understanding these two quantization approaches is essential for balancing visual fidelity, file size, and encoding spee",
+    false
+  ],
+  [
+    348,
+    "AV1 HDR Ambient Viewing Environment Metadata Explained",
+    "This article explores how the AV1 video codec incorporates ambient viewing environment metadata to optimize High Dynamic Range (HDR) playback on consumer televisions. It details the underlying bitstream architecture used to transmit ambient lighting para",
+    false
+  ],
+  [
+    347,
+    "AV1 Mastering Display Color Volume Metadata",
+    "This article provides an overview of the mastering display color volume (MDCV) metadata fields embedded in an AV1 video bitstream. These static metadata fields define the color capabilities and luminance boundaries of the reference monitor used during co",
+    false
+  ],
+  [
+    346,
+    "AV1 Color Volume Transformations for WCG Displays",
+    "The AV1 video codec provides robust architectural support for wide color gamut (WCG) and high dynamic range (HDR) displays through standardized color signaling and dynamic metadata delivery. By leveraging Coding Independent Code Points (CICP), mastering",
+    false
+  ],
+  [
+    345,
+    "Neural Super-Resolution Overhead for AV1 Streams",
+    "Applying neural super-resolution to AV1 video streams reduces distribution bandwidth by upscaling lower-resolution source feeds on the client device, but it shifts a heavy processing burden to local hardware. This article examines the computational overh",
+    false
+  ],
+  [
+    344,
+    "Generative AI for AV1 High-Frequency Reconstruction",
+    "This article explores how generative artificial intelligence enhances the AV1 video codec by dynamically reconstructing high-frequency visual details lost during compression. It examines the mechanisms of AI-driven texture synthesis, the enhancement of A",
+    false
+  ],
+  [
+    343,
+    "Hybrid AV1 and Deep Learning Post-Filter Methods",
+    "This article examines hybrid video compression frameworks that combine the classical AOMedia Video 1 (AV1) codec with deep-learning-based post-filters. It covers the architectural designs of these hybrid systems, including convolutional artifact reductio",
+    false
+  ],
+  [
+    342,
+    "AV1 vs Neural Video Codecs Compression Efficiency",
+    "Video compression is undergoing a major technological shift from rule-based traditional algorithms to data-driven artificial intelligence. While the AOMedia Video 1 (AV1) format currently represents the leading standard for modern, royalty-free, block-ba",
+    false
+  ],
+  [
+    341,
+    "AV1 Codec Lifecycle: When Will Next-Gen Replace It?",
+    "The AV1 video codec, developed by the Alliance for Open Media (AOMedia), is currently in its primary expansion phase and is projected to remain the dominant open-source video standard through roughly 2030 to 2032. This article examines the technological",
+    false
+  ],
+  [
+    340,
+    "AV1 Cloud Video Indemnification for Enterprises",
+    "Legal indemnification clauses in cloud video platforms serve as a vital risk-mitigation tool for enterprise AV1 adopters. While the AV1 video codec is developed as an open-source, royalty-free standard by the Alliance for Open Media (AOMedia), third-part",
+    false
+  ],
+  [
+    339,
+    "Patent Pool Technical Arguments Against AV1",
+    "The Alliance for Open Media designed the AV1 video codec to deliver high-efficiency video compression under a royalty-free license, yet patent pools such as Sisvel have formed licensing programs claiming that AV1 infringes upon hundreds of essential pate",
+    false
+  ],
+  [
+    338,
+    "AV1 Royalty-Free Impact on Proprietary Codecs",
+    "The rise of AV1, developed by the Alliance for Open Media (AOMedia), has fundamentally altered the economics of digital video compression. By providing a high-performance, open-source alternative free of licensing fees, AV1 challenges the long-standing d",
+    false
+  ],
+  [
+    337,
+    "Alliance for Open Media Membership Tiers Explained",
+    "The Alliance for Open Media (AOMedia) is a non-profit consortium founded to develop next-generation, royalty-free video and media technologies, most notably the AV1 codec. To support its mission, AOMedia operates a structured membership model divided int",
+    false
+  ],
+  [
+    336,
+    "How AOMedia Handles Non-Member Contributions",
+    "The Alliance for Open Media (AOMedia) allows non-member organizations and individuals to submit technical feedback and code, provided they adhere to strict licensing frameworks that protect the royalty-free status of its technologies. To prevent patent h",
+    false
+  ],
+  [
+    335,
+    "Why Apple Was Slow to Adopt AV1 Hardware Decoding",
+    "Despite joining the Alliance for Open Media (AOMedia) as a founding-level board member in 2018, Apple did not introduce hardware-accelerated AV1 decoding until late 2023 with the A17 Pro and M3 processors. While competitor platforms began introducing AV1",
+    false
+  ],
+  [
+    334,
+    "How Android MediaCodec Exposes AV1 Decoders",
+    "This article provides an overview of how the Android MediaCodec framework identifies, prioritizes, and exposes both hardware and software AV1 video decoders to applications. It covers the underlying Codec 2.0 (C2) architecture, the standard component nam",
+    false
+  ],
+  [
+    333,
+    "VA-API and AV1 Hardware Acceleration on Linux",
+    "This article provides an overview of the Video Acceleration API (VA-API) on Linux and examines how it enables hardware-accelerated processing for the AV1 video codec. It covers the architectural layers of the VA-API framework, the role of modern GPU fixe",
+    false
+  ],
+  [
+    332,
+    "How Windows GPU Drivers Expose AV1 via DXVA2 and D3D11",
+    "Modern Windows graphics drivers expose hardware-accelerated AV1 decoding by bridging fixed-function media processing silicon with the operating system's video APIs: DirectX Video Acceleration 2.0 (DXVA2) and Direct3D 11 (D3D11) Video APIs. This article d",
+    false
+  ],
+  [
+    331,
+    "AV1 Software vs Hardware Decoding Power Consumption",
+    "AV1 is an advanced, royalty-free video codec designed to deliver high compression efficiency, reducing bandwidth requirements for high-resolution streaming compared to legacy codecs like H.264 and HEVC. However, AV1 achieves this compression density thro",
+    false
+  ],
+  [
+    330,
+    "OS Scheduling Impact on Multi-Threaded AV1 Decoding",
+    "Operating system thread scheduling plays a critical role in the efficiency and real-time performance of multi-threaded AV1 video decoders like dav1d and libaom. Because AV1 features complex intra-frame dependencies and multi-stage in-loop filtering, deco",
+    false
+  ],
+  [
+    329,
+    "Can Cortex-A53 Handle 1080p30 AV1 Decoding?",
+    "Low-power ARM Cortex-A53 processors cannot reliably handle 1080p30 AV1 video playback via pure software decoding without dropping frames. However, if the Cortex-A53 core is part of a system-on-chip (SoC) that integrates a modern, dedicated hardware video",
+    false
+  ],
+  [
+    328,
+    "Minimum CPU for 4K 60FPS AV1 Software Decoding",
+    "Software decoding of 4K AV1 video at 60 frames per second requires substantial processing power due to the codec's complex compression algorithms and the sheer volume of data being processed without dedicated hardware acceleration. Using optimized decode",
+    false
+  ],
+  [
+    327,
+    "How dav1d Uses Asynchronous Pipelines to Decode AV1",
+    "The dav1d decoder achieves industry-leading performance for the AV1 video format by moving beyond traditional frame- and tile-level threading. Instead of processing full frames sequentially or waiting for entire stages to complete, dav1d splits the decod",
+    false
+  ],
+  [
+    326,
+    "dav1d Optimizations for Older x86 Processors",
+    "The open-source AV1 decoder dav1d delivers industry-leading playback speeds on modern computers, but its exceptional efficiency on older x86 processor architectures sets it apart. This article examines the core engineering decisions behind dav1d's backwa",
+    false
+  ],
+  [
+    325,
+    "Why VideoLAN and FFmpeg Created dav1d for AV1",
+    "The dav1d project was established by the VideoLAN and FFmpeg communities to provide a fast, lightweight, and highly optimized open-source software decoder for the AV1 video format. When the AV1 specification was finalized, the lack of widespread hardware",
+    false
+  ],
+  [
+    324,
+    "Rust Memory Safety in AV1 Video Parsing",
+    "Parsing AV1 video streams is an inherently complex task that exposes media applications to severe security risks when processing untrusted input. This article examines the core Rust language features—such as ownership and borrowing, slice-based bounds",
+    false
+  ],
+  [
+    323,
+    "rav1e Custom Assembly for x86 AVX2 and ARM",
+    "This article examines how the rav1e AV1 video encoder implements and integrates custom assembly for x86 AVX2 and ARM platforms. It covers the build toolchain integration, foreign function interface (FFI) bindings, architecture-specific assembly designs,",
+    false
+  ],
+  [
+    322,
+    "SVT-AV1 Open Source License Structure",
+    "This article provides a concise breakdown of the open-source licensing framework governing the SVT-AV1 (Scalable Video Technology for AV1) repository hosted on GitHub. SVT-AV1 is governed by a dual-component legal model consisting of the BSD 3-Clause Cle",
+    false
+  ],
+  [
+    321,
+    "SVT-AV1 Pipeline Architecture and Processing Stages",
+    "The Scalable Video Technology for AV1 (SVT-AV1) encoder achieves high-throughput, multi-core scalability by partitioning the video encoding workflow into discrete, asynchronous processing stages. Rather than using a traditional monolithic, frame-by-frame",
+    false
+  ],
+  [
+    320,
+    "How AOMedia Testing Harness Catches libaom AV1 Bugs",
+    "The Alliance for Open Media (AOMedia) testing harness serves as the primary quality assurance system for libaom, the reference software library for the AV1 video coding format. By combining automated unit testing, bitstream conformance verification, visu",
+    false
+  ],
+  [
+    319,
+    "Automated CI Testing for Open-Source AV1 Encoders",
+    "Testing AV1 encoders requires balancing software stability, encoding speed, and complex rate-distortion performance across vast sets of video data. The open-source community accomplishes this by integrating continuous automated testing pipelines into cod",
+    false
+  ],
+  [
+    318,
+    "AV1 Decoder Constraints in Battery-Powered IoT",
+    "Deploying the AV1 video codec on battery-powered Internet of Things (IoT) devices presents significant engineering challenges, despite the format's superior compression efficiency and royalty-free nature. While AV1 dramatically reduces bandwidth consumpt",
+    false
+  ],
+  [
+    317,
+    "8K AV1 Reference Frame Buffer Memory Management",
+    "Decoding 8K video using the AV1 codec places extraordinary demands on system memory and bandwidth due to massive frame dimensions and high bit-depth requirements. The reconstructed reference frame buffer manages memory consumption in 8K AV1 playback thro",
+    false
+  ],
+  [
+    316,
+    "AV1 vs VP9 Decoder Memory Cache Efficiency",
+    "This article examines the distinct differences in memory cache efficiency between AV1 and VP9 decoders, detailing how their architectural features impact hardware caching subsystems. While AV1 delivers significantly higher compression efficiency than VP9",
+    false
+  ],
+  [
+    315,
+    "AV1 vs HEVC: Logarithmic Contouring Artifacts",
+    "This article compares how AV1 and HEVC (H.265) manage logarithmic contouring artifacts, commonly recognized as color banding along smooth gradients and low-contrast logarithmic curves. By examining the underlying compression architectures, in-loop filter",
+    false
+  ],
+  [
+    314,
+    "AV1 Directional Prediction Interpolation Equations",
+    "This article provides an overview of the directional intra-prediction interpolation equations used for diagonal modes in the AV1 video codec. In AV1, directional intra prediction extends boundary reference pixels across a target coding block along specif",
+    false
+  ],
+  [
+    313,
+    "AV1 Intra Block Splitting to 4x4 Explained",
+    "This article explores whether the AV1 video codec supports recursive intra block splitting down to 4x4 sub-partitions. It details the mechanics of AV1's recursive partitioning tree, discusses how minimum block boundaries apply to intra coding, explains c",
+    false
+  ],
+  [
+    312,
+    "AV1 Transform Partitioning for 64x64 Blocks",
+    "In the AV1 video coding standard, 64x64 blocks represent the maximum supported transform unit size, governed by a flexible transform tree designed to optimize residual data representation. This article explains how AV1 defines, splits, and processes tran",
+    false
+  ],
+  [
+    311,
+    "AV1 Dithering Techniques for Low-End Displays",
+    "This article provides an overview of the most effective dithering algorithms used when downsampling and rendering decoded AV1 video streams onto bit-depth-constrained screens. Because modern AV1 content is frequently encoded in 10-bit color to reduce com",
+    false
+  ],
+  [
+    310,
+    "How AV1 Prevents Color Banding at Low Bitrates",
+    "Smooth color gradients, such as clear skies, sunsets, and shadowed backgrounds, are notoriously prone to visible color banding artifacts at low and medium bitrates. The AV1 video codec effectively eliminates this issue without requiring excessive bandwid",
+    false
+  ],
+  [
+    309,
+    "10-Bit AV1 Decoding on an 8-Bit Pipeline",
+    "When decoding a 10-bit AV1 video stream targeting an 8-bit display or rendering pipeline, the pixel reconstruction bit depth remains strictly 10-bit. AV1 compliance mandates that all core decoding and reconstruction stages execute at the stream's native",
+    false
+  ],
+  [
+    308,
+    "Edge-Pixel Padding in AV1 Motion Compensation",
+    "Edge-pixel padding in the AV1 video codec ensures that motion compensation operates smoothly when motion vectors point beyond the boundaries of a reference frame. Because sub-pixel interpolation filters require surrounding context to calculate fractional",
+    false
+  ],
+  [
+    307,
+    "Viewport-Dependent Streaming with AV1 Tile Slicing",
+    "This article explores how viewport-dependent streaming optimizes bandwidth for immersive media like 360-degree video, and how the AV1 video codec's native tile slicing architecture dramatically improves this process. Viewport-dependent delivery works by",
+    false
+  ],
+  [
+    306,
+    "AV1 Tile Grids for Equirectangular 360 Video",
+    "This article examines how the equirectangular projection (ERP) format interfaces with the AV1 video codec's tile grid architecture to deliver high-resolution 360-degree video. By dividing the distorted two-dimensional ERP canvas into independently decoda",
+    false
+  ],
+  [
+    305,
+    "Immersive 360 Video Metadata Tracks in AV1",
+    "Delivering immersive 360-degree video using the AV1 video codec relies heavily on auxiliary metadata tracks embedded within the container format—predominantly ISOBMFF (MP4) aligned with MPEG-OMAF (Omnidirectional Media Format) specifications or Matrosk",
+    false
+  ],
+  [
+    304,
+    "How AV1 Compresses Stereoscopic and Multi-View 3D Video",
+    "This article provides an overview of how the AV1 video codec handles stereoscopic and multi-view 3D content. Because base AV1 does not include a dedicated multi-view profile like MVC or MV-HEVC, it compresses 3D material primarily through frame-packing f",
+    false
+  ],
+  [
+    303,
+    "Long Keyframe Intervals in AV1 Streaming",
+    "Configuring long keyframe intervals—also known as Group of Pictures (GOP) size—is a common strategy to maximize the compression efficiency of the AV1 codec. However, stretching the distance between keyframes introduces significant operational tradeof",
+    false
+  ],
+  [
+    302,
+    "Closed vs Open GOPs in AV1: Random Access Efficiency",
+    "This article examines the structural and operational differences between closed and open Groups of Pictures (GOPs) in the AV1 video codec, specifically focusing on random access efficiency. While closed GOPs ensure complete independence between segments",
+    false
+  ],
+  [
+    301,
+    "Visual Advantages of AV1 Gradual Decoder Refresh",
+    "Gradual Decoder Refresh (GDR) in AV1 replaces traditional full-frame intra keyframes by spreading intra-coded macroblocks across a sequence of consecutive frames. Instead of inserting a massive, standalone intra frame that disrupts steady data flow, GDR",
+    false
+  ],
+  [
+    300,
+    "How AV1 Signals Gradual Decoder Refresh",
+    "Gradual Decoder Refresh (GDR) in AV1 is a mechanism that enables random access and channel-change recovery without the bandwidth spikes caused by full Key Frames (intra frames). Instead of refreshing an entire picture at once, AV1 spreads intra-coded blo",
+    false
+  ],
+  [
+    299,
+    "AV1 Bitstream Recovery Points for Random Access",
+    "This article provides an overview of how the AV1 video codec enables random access through specific bitstream recovery points. Random access allows a media player or decoder to seek to an arbitrary position within a video stream and immediately begin val",
+    false
+  ],
+  [
+    298,
+    "AV1 Parser Synchronization on Corrupted OBUs",
+    "This article explores how an AV1 decoder maintains bitstream synchronization when encountering corrupted Open Bitstream Units (OBUs). It details the architectural mechanisms defined in the AV1 specification—such as explicit size signaling, temporal del",
+    false
+  ],
+  [
+    297,
+    "What Is LEB128 Encoding in the AV1 Bitstream?",
+    "Little Endian Base 128 (LEB128) is a variable-length integer compression format widely used in modern computing, including the Alliance for Open Media's AV1 video codec specification. This article explains how LEB128 works, how it is implemented within t",
+    false
+  ],
+  [
+    296,
+    "How to Parse AV1 OBU Size with Bitwise Operations",
+    "In the AV1 video codec specification, Open Bitstream Units (OBUs) utilize a variable-length integer encoding called LEB128 (Little Endian Base 128) to indicate their payload size when the header's obuhassizefield flag is set. Parsing this field requires",
+    false
+  ],
+  [
+    295,
+    "How AV1 Handles Endianness Across Architectures",
+    "This article examines how the AV1 video codec standard maintains a consistent bitstream syntax across both little-endian and big-endian hardware architectures. By defining its syntax strictly at the bit and byte level, standardizing variable-length integ",
+    false
+  ],
+  [
+    294,
+    "AV1 Background-Foreground Segmentation Explained",
+    "This article explores background-foreground segmentation within advanced machine-driven AV1 video encoding pipelines, detailing how neural networks and computer vision algorithms separate focal subjects from static environments. It explains how these seg",
+    false
+  ],
+  [
+    293,
+    "How AV1 Uses Segmentation to Protect Faces",
+    "The AV1 video codec uses a powerful feature known as segmentation to dynamically adjust encoding parameters across different areas of a video frame. By pairing segmentation with Region of Interest (ROI) detection, encoders can identify visually critical",
+    false
+  ],
+  [
+    292,
+    "AV1 Per-Segment Parameter Controls Explained",
+    "AV1 video coding includes a powerful segmentation feature that allows an encoder to divide a frame into up to eight distinct segments, applying unique coding parameters to each. This article outlines the specific parameter controls that can be assigned o",
+    false
+  ],
+  [
+    291,
+    "AV1 Segments for Localized Parameter Adaptation",
+    "This article provides an overview of the segmentation capabilities in the AV1 video codec, focusing on the maximum number of unique segments supported per frame for localized parameter adaptation. It explains the technical limits defined by the AV1 speci",
+    false
+  ],
+  [
+    290,
+    "AV1 Segment Maps and Localized Coding Features",
+    "Segment maps in the AV1 video codec are spatial control mechanisms that divide a video frame into distinct regions to apply tailored compression parameters. This article explains the technical architecture of AV1 segment maps, how they assign localized f",
+    false
+  ],
+  [
+    289,
+    "How AV1 Signals Skipped Transform Blocks",
+    "The AV1 video codec conserves data by identifying areas where prediction is accurate enough that transmitting residual error is unnecessary. To prevent wasting bits on empty transform coefficients, AV1 employs a hierarchical signaling mechanism that flag",
+    false
+  ],
+  [
+    288,
+    "Trellis Quantization in AV1 Video Encoding",
+    "Trellis quantization is an optimization technique that improves video compression efficiency by evaluating the trade-off between visual distortion and bit consumption at the transform coefficient level. This article explains the core principles of Trelli",
+    false
+  ],
+  [
+    287,
+    "How AV1 Signals Zero Coefficients Using EOB Markers",
+    "This article explains how the AV1 video codec efficiently signals trailing zero transform coefficients using End-Of-Block (EOB) markers. In transform coding, quantizing residual data produces sparse coefficient blocks with large clusters of zeros, partic",
+    false
+  ],
+  [
+    286,
+    "AV1 Transform Syntax: Zigzag vs Col-Scan Modes",
+    "In the AV1 video codec, scanning orders determine how two-dimensional arrays of quantized transform coefficients are linearized into a one-dimensional sequence for entropy coding. This article examines the primary differences between the Zigzag and Col-S",
+    false
+  ],
+  [
+    285,
+    "AV1 Coefficient Scan Orders for Non-Square Blocks",
+    "In the AV1 video codec, coefficient scan orders for non-square transform blocks map two-dimensional quantized transform coefficients into a one-dimensional array for entropy coding. Rather than relying solely on traditional diagonal zigzag scanning, AV1",
+    false
+  ],
+  [
+    284,
+    "Cross-Component Transform in AV1 Explained",
+    "The cross-component transform is an advanced coding tool designed to eliminate statistical redundancy between color channels in digital video. During the development and standardization of the AV1 video codec by the Alliance for Open Media (AOMedia), the",
+    false
+  ],
+  [
+    283,
+    "AV1 Inter-Component Prediction: Y, U, and V",
+    "This article provides an overview of how the AV1 video codec leverages correlation between color channels to boost compression efficiency. Specifically, it explores Chroma from Luma (CfL) prediction, detailing the mathematical and structural methods AV1",
+    false
+  ],
+  [
+    282,
+    "AV1 Spatial Scalability Hardware Decoder Requirements",
+    "AV1 spatial scalability enables a single video bitstream to deliver multiple resolution tiers, optimizing bandwidth for diverse playback environments without needing separate encodes. To successfully decode these multi-layered streams, hardware decoders",
+    false
+  ],
+  [
+    281,
+    "Dynamic Screen Resizing in AV1 Scalable Streams",
+    "This article explains how the AV1 video codec manages dynamic screen resizing within spatially scalable streams. It details the interplay between AV1's Reference Frame Resampling (RFR), spatial Scalable Video Coding (SVC) modes, and normative downsamplin",
+    false
+  ],
+  [
+    280,
+    "AV1 Temporal Scalability and Frame Rate Drops",
+    "The AOMedia Video 1 (AV1) codec employs a hierarchical temporal layer structure within its scalable video coding framework to facilitate smooth, artifact-free frame-rate drops. By organizing video frames into nested dependency tiers identified by tempora",
+    false
+  ],
+  [
+    279,
+    "AV1 LTR Frame Acknowledgment Signaling",
+    "In real-time AV1 video streaming, receivers use transport-level feedback to confirm the receipt of Long-Term Reference (LTR) frames to maintain stream resilience without relying on bandwidth-heavy keyframes. This article explains how an AV1 receiver iden",
+    false
+  ],
+  [
+    278,
+    "AV1 Reference Frame Invalidation in WebRTC",
+    "Reference Frame Invalidation (RFI) in AV1 WebRTC stacks is an advanced error-resilience technique designed to recover from packet loss without the bandwidth overhead and latency latency spikes associated with full keyframes. By leveraging AV1’s flexibl",
+    false
+  ],
+  [
+    277,
+    "AV1 Packet Loss Recovery Without IDR Frames",
+    "AV1 maintains smooth video playback during transmission packet loss without resorting to heavy, bandwidth-draining Instantaneous Decoder Refresh (IDR) keyframes. Instead of generating massive intra-coded frames that induce network jitter, the codec relie",
+    false
+  ],
+  [
+    276,
+    "AV1 Cyclic Refresh in Low-Delay Real-Time Video",
+    "Cyclic refresh is a rate-control and error-resilience technique used in AV1 real-time encoding to maintain video quality and prevent transmission delays without relying on full keyframes. In low-latency applications like video conferencing and cloud gami",
+    false
+  ],
+  [
+    275,
+    "How AV1 Lookahead Preserves Visual Transients",
+    "Lookahead analysis is a critical mechanism in AV1 encoding that scans upcoming video frames before performing the final encode, allowing the rate control system to anticipate sudden temporal shifts rather than merely reacting to them. This article explai",
+    false
+  ],
+  [
+    274,
+    "Temporal Dependency Modeling in AV1 Encoders",
+    "Temporal dependency modeling in modern AV1 encoders analyzes how individual video frames reference and influence one another over time to optimize compression efficiency and visual quality. By tracking distortion propagation and calculating the downstrea",
+    false
+  ],
+  [
+    273,
+    "AV1 Interpolation Filter Selection Explained",
+    "The AV1 video codec dynamically selects between bilinear, regular, and sharp interpolation filters to optimize sub-pixel motion compensation for each block. This selection is governed by the encoder’s Rate-Distortion Optimization (RDO) process, which e",
+    false
+  ],
+  [
+    272,
+    "What Is AV1 Adaptive Motion Vector Precision?",
+    "The adaptive motion vector precision control mechanism in the AV1 video codec is an optimization feature that dynamically adjusts the resolution of motion vectors based on content characteristics. By allowing the encoder to switch between different level",
+    false
+  ],
+  [
+    271,
+    "1/8-Pel Motion Vectors in AV1 Motion Compensation",
+    "This article explores how 1/8th-pel (eighth-pixel) motion vector precision functions within the AV1 video codec to enhance motion compensation. By allowing the codec to track motion at fractional pixel increments twice as fine as the 1/4-pel standard use",
+    false
+  ],
+  [
+    270,
+    "AV1 Motion Vector Precision in Inter Blocks",
+    "This article provides an overview of motion vector precision levels in the AV1 video codec. In inter-frame prediction, AV1 optimizes the trade-off between displacement accuracy and bit overhead by offering flexible motion vector precision. Depending on t",
+    false
+  ],
+  [
+    269,
+    "How AV1 Suppresses Artifacts on Text Documents",
+    "AV1 screen content mode eliminates the blurring, ringing, and ghosting typically caused by standard video compression on high-contrast text through a specialized suite of screen content coding (SCC) tools. Standard motion compensation uses fractional-pix",
+    false
+  ],
+  [
+    268,
+    "AV1 IntraBC: Locating Repetitive UI Patterns",
+    "The AV1 video codec incorporates a specialized screen content coding feature known as Intra Block Copy (IntraBC) to dramatically improve compression efficiency for synthetic graphics, remote desktop feeds, and application interfaces. This article explain",
+    false
+  ],
+  [
+    267,
+    "AV1 Palette Mode in Desktop Screen Capture",
+    "The AV1 video codec incorporates Palette Mode, a specialized coding tool that significantly boosts compression efficiency and visual fidelity for desktop screen content. By replacing traditional frequency-transform coding with a quantized index-based col",
+    false
+  ],
+  [
+    266,
+    "AV1 Performance for Anime and Animation Compression",
+    "This article explores how the AV1 video codec handles synthetic animation and anime styles, detailing its compression efficiency, preservation of line art, handling of flat colors, and the impact of film grain synthesis. By evaluating key encoder mechani",
+    false
+  ],
+  [
+    265,
+    "AV1 vs VP9 Bandwidth Savings on Mobile",
+    "Switching from VP9 to AV1 delivers measurable data reduction for mobile video delivery, with major streaming platforms consistently reporting bandwidth savings between 15% and 30% at equivalent visual quality. This article breaks down the data metrics ob",
+    false
+  ],
+  [
+    264,
+    "How Cloudflare Stream Uses AV1 for Video Delivery",
+    "Cloudflare Stream integrates the open-source AV1 video codec across its global edge network to deliver high-resolution video using significantly less bandwidth than legacy formats. By leveraging AV1’s advanced compression capabilities alongside automat",
+    false
+  ],
+  [
+    263,
+    "Low-Latency CMAF Requirements for Live AV1 Delivery",
+    "Delivering live video using the AV1 codec over Common Media Application Format (CMAF) with low latency requires a coordinated setup across encoding, packaging, distribution, and playback. This article outlines the essential technical requirements for imp",
+    false
+  ],
+  [
+    262,
+    "Delivering AV1 via CMAF to HLS and DASH Clients",
+    "The Common Media Application Format (CMAF) standardizes the container layer for streaming media, allowing content providers to package next-generation AV1 video into a single set of fragmented MP4 (fMP4) chunks that simultaneously serve both HTTP Live St",
+    false
+  ],
+  [
+    261,
+    "AV1 Over CMAF Fragmentation Headers Explained",
+    "Streaming AV1 video over the Common Media Application Format (CMAF) requires packaging AV1 bitstreams into standardized ISO Base Media File Format (ISOBMFF) structures. To achieve seamless adaptive bitrate streaming and low-latency delivery, CMAF divides",
+    false
+  ],
+  [
+    260,
+    "AV1 Bitstream Packaging for Progressive vs Byte-Range",
+    "AV1 video streams are packaged differently depending on whether they are delivered via progressive download or byte-range requests used in adaptive bitrate streaming. While both methods encapsulate AV1 Open Bitstream Units (OBUs) inside container formats",
+    false
+  ],
+  [
+    259,
+    "AV1 Timecode and Synchronization Structures Explained",
+    "This article explores how the AOMedia Video 1 (AV1) format handles timing, synchronization, and frame scheduling across both its elementary bitstream and standard container formats like ISOBMFF (MP4) and Matroska (MKV/WebM). While the AV1 bitstream provi",
+    false
+  ],
+  [
+    258,
+    "Encapsulating PCM and Opus Audio with AV1",
+    "This article explains how uncompressed PCM and high-resolution Opus audio streams are paired and encapsulated alongside AV1 video. Because AV1 is strictly a video coding format rather than a multimedia container, it does not package audio on its own. Ins",
+    false
+  ],
+  [
+    257,
+    "AV1 Container Overhead: WebM vs MP4 Compared",
+    "When packaging AV1 (AOMedia Video 1) video streams, selecting between WebM and MP4 affects container-level overhead, metadata placement, and transmission efficiency. WebM relies on the Extensible Binary Meta Language (EBML) to wrap AV1 frames in inline b",
+    false
+  ],
+  [
+    256,
+    "Two-Pass AV1 Encoding with Batch Scripts",
+    "This article provides a technical guide on automating two-pass AV1 video encoding across multiple media files using standard command-line batch processing scripts. Implementing a two-pass workflow enables optimal rate control and compression efficiency,",
+    false
+  ],
+  [
+    255,
+    "Understanding the SVT-AV1 Preset Switch in FFmpeg",
+    "When encoding video with the SVT-AV1 codec using the FFmpeg command-line interface, the --preset switch determines the balance between encoding speed and compression efficiency. This guide explains the core mechanics of the SVT-AV1 preset parameter, deta",
+    false
+  ],
+  [
+    254,
+    "Libaom AV1 cpu-used Parameter Explained",
+    "The -cpu-used parameter in the libaom AV1 encoder wrapper controls the trade-off between encoding speed and compression efficiency. By adjusting this setting, users dictate how exhaustively the encoder searches for optimal compression paths using Rate-Di",
+    false
+  ],
+  [
+    253,
+    "FFmpeg AV1 Encoding: Standard Command Guide",
+    "This guide details the standard command-line parameters required to encode video using the modern AV1 codec in FFmpeg. It focuses on using the recommended SVT-AV1 encoder (libsvtav1), breaking down the essential flags for rate control, encoding presets,",
+    false
+  ],
+  [
+    252,
+    "FFmpeg AV1 Encoding: libaom, SVT-AV1, and rav1e",
+    "FFmpeg delivers versatile AV1 video compression by acting as a unified wrapper around three external open-source libraries: libaom-av1, libsvtav1, and librav1e. Through its libavcodec subsystem, FFmpeg abstracts the unique APIs, memory models, and parame",
+    false
+  ],
+  [
+    251,
+    "AV1 Support in Premiere Pro and Media Frameworks",
+    "The AV1 video codec offers royalty-free, high-efficiency compression designed to succeed HEVC (H.265) and AVC (H.264), but its adoption differs significantly across professional software and open ecosystems. While open-source media frameworks have fully",
+    false
+  ],
+  [
+    250,
+    "DaVinci Resolve AV1 Hardware-Accelerated Export",
+    "This article examines how DaVinci Resolve utilizes modern hardware architectures to deliver high-performance AV1 video encoding. Beginning in DaVinci Resolve Studio 18.1, Blackmagic Design integrated native AV1 export pipelines that interface directly wi",
+    false
+  ],
+  [
+    249,
+    "Using AV1 as an Intermediate Video Editing Codec",
+    "This article examines whether the open-source AV1 codec can function effectively as an intermediate (mezzanine) format in non-linear video editors (NLEs). While AV1 delivers industry-leading compression efficiency for final distribution and streaming, it",
+    false
+  ],
+  [
+    248,
+    "Encoding and Decoding 12-Bit Cinema Video with AV1",
+    "This article examines how professional 12-bit cinema formats are encoded and decoded using the AOMedia Video 1 (AV1) standard. It details the role of the AV1 Professional Profile, the end-to-end processing pipeline for mastering-grade color spaces, the c",
+    false
+  ],
+  [
+    247,
+    "AV1 Professional Profile 4:4:4 Color Pipeline Explained",
+    "The AV1 Professional Profile offers comprehensive support for high-fidelity video production by incorporating an uncompromised 4:4:4 color handling pipeline alongside bit depths of up to 12 bits. This article breaks down how this color pipeline operates,",
+    false
+  ],
+  [
+    246,
+    "AV1 Chroma Subsampling in High-Contrast Text",
+    "High-contrast typography often exposes the severe limitations of standard 4:2:0 chroma subsampling, producing noticeable color fringing, haloing, and legibility loss around sharp glyph edges. The AV1 video codec addresses these distortions through specia",
+    false
+  ],
+  [
+    245,
+    "AV1 vs HEVC: Fast Presets for Live Streams",
+    "This article examines whether the open-source AV1 video codec can realistically compete with HEVC (H.265) when configured with fast, real-time encoding presets for user-generated live streams. It evaluates how both codecs balance compression efficiency,",
+    false
+  ],
+  [
+    244,
+    "SVT-AV1 Fast Presets vs x264 Veryfast Efficiency",
+    "This article compares the compression efficiency and performance tradeoffs between SVT-AV1’s fast presets (Presets 8 through 11) and x264’s veryfast preset. While x264 veryfast has long served as the baseline for high-speed encoding and live broadcas",
+    false
+  ],
+  [
+    243,
+    "Understanding SVT-AV1 Presets and Trade-Offs",
+    "The SVT-AV1 video encoder balances compression efficiency, video fidelity, and processing time through a standardized numerical speed-preset scale ranging from Preset 0 to Preset 13. This article examines how the SVT-AV1 preset system operates, outlines",
+    false
+  ],
+  [
+    242,
+    "Why Full-Search RDO Is So Slow in AV1 Encoding",
+    "Rate-Distortion Optimization (RDO) is the decision-making engine of modern video compression, balancing visual fidelity against bitrate by minimizing the cost function $J = D + \\lambda R$. In the AV1 video codec, executing a brute-force or \"full-search\"",
+    false
+  ],
+  [
+    241,
+    "AV1 Encoding Heuristic Search Pruning Explained",
+    "The AV1 video codec provides exceptional compression efficiency compared to predecessors like VP9 and H.264, but this advantage comes at the cost of massive computational complexity. To make AV1 encoding commercially viable and fast enough for production",
+    false
+  ],
+  [
+    240,
+    "AV1 16-Way Partitioning Rate-Distortion Optimization",
+    "This article examines how an AV1 video encoder evaluates rate-distortion (RD) curves across its 16-way block partitioning scheme. AV1 expands traditional quad-tree partitioning into a flexible recursive tree supporting square, rectangular, and non-symmet",
+    false
+  ],
+  [
+    239,
+    "Deep Learning in AV1 Motion Estimation",
+    "Deep learning is transforming modern motion estimation within the AOMedia Video 1 (AV1) codec by replacing and augmenting traditional block-matching heuristics with neural representations. This article examines how neural networks accelerate search compl",
+    false
+  ],
+  [
+    238,
+    "AMD Alveo Enterprise AV1 Live Stream Acceleration",
+    "The AMD Alveo series, particularly media accelerators like the Alveo MA35D, provides enterprise-grade infrastructure for real-time AV1 video streaming by offloading computationally heavy video processing tasks to dedicated hardware engines. Designed to s",
+    false
+  ],
+  [
+    237,
+    "NETINT Codensity AV1 Transcoder Technical Capabilities",
+    "This article provides a technical overview of NETINT Codensity hardware transcoders optimized for the AV1 video codec. It details the underlying ASIC architecture, throughput capacity, latency benchmarks, power efficiency metrics, and software integratio",
+    false
+  ],
+  [
+    236,
+    "How Google Argos VPU Accelerates AV1 Video",
+    "This article examines how the Google Argos Video Processing Unit (VPU)—also known as the Argos Video Coding Unit (VCU)—provides dedicated hardware acceleration for the AV1 video codec. It covers the architectural design of the ASIC, how it offloads c",
+    false
+  ],
+  [
+    235,
+    "Server Hardware Accelerators for Mass-Scale AV1",
+    "This article provides a direct breakdown of the leading server-side hardware accelerator cards designed for high-density, mass-scale AV1 video transcoding. It details the dedicated PCIe-based solutions from Intel, AMD, NVIDIA, and specialized ASIC vendor",
+    false
+  ],
+  [
+    234,
+    "How Twitch Delivers 1080p60 and 1440p with AV1",
+    "Twitch leverages the advanced compression efficiency of the AV1 codec to overcome the bitrate limitations of legacy H.264 streaming, enabling creators to broadcast high-motion gaming content in crystal-clear 1080p60 and 1440p. By integrating AV1 into its",
+    false
+  ],
+  [
+    233,
+    "AV1 Global Streaming Traffic Share on Major CDNs",
+    "This article examines the current adoption rate of the AV1 video codec across major Content Delivery Networks (CDNs). While adoption is accelerating among tier-one streaming platforms, AV1 currently accounts for an estimated 2% to 8% of total global stre",
+    false
+  ],
+  [
+    232,
+    "How YouTube Serves AV1 Streams to Desktop Browsers",
+    "YouTube delivers AV1 video streams to desktop browsers through a combination of browser capability detection, dynamic adaptive streaming protocols, and tailored client-side decoding pipelines. By evaluating system capabilities such as GPU hardware accele",
+    false
+  ],
+  [
+    231,
+    "WebCodecs API: Low-Level AV1 Video Decoding",
+    "This article provides an overview of the WebCodecs API and explains how it enables developers to achieve low-level, high-performance AV1 video decoding directly in web browsers. You will learn about the limitations of traditional browser media elements,",
+    false
+  ],
+  [
+    230,
+    "Sandboxing AV1 Video Decoding for Memory Safety",
+    "Modern web browsers handle massive volumes of untrusted multimedia, making complex formats like AV1 a prime target for exploitation. Because high-performance AV1 decoders are traditionally written in memory-unsafe languages like C or C++, parsing untrust",
+    false
+  ],
+  [
+    229,
+    "AV1 Decoder Vulnerabilities Uncovered by Fuzzing",
+    "Early implementations of the AV1 video codec, notably reference libraries like AOMedia’s libaom and the VideoLAN-led dav1d project, were subjected to extensive automated testing through fuzzing frameworks such as Google's OSS-Fuzz, AFL, and LibFuzzer.",
+    false
+  ],
+  [
+    228,
+    "Using Edge-Case Bitstreams to Test AV1 Parsers",
+    "This article explores how security researchers and developers use edge-case bitstreams to uncover critical security vulnerabilities in third-party AV1 video parsers. By intentionally engineering non-standard, malformed, or boundary-pushing inputs targeti",
+    false
+  ],
+  [
+    227,
+    "AV1 Decoder Compliance Test Suites by AOMedia",
+    "This article provides an overview of the official compliance and validation test suites developed by the Alliance for Open Media (AOMedia) to verify AV1 decoder implementations. It outlines the core components of the AV1 Conformance Test Suite, the categ",
+    false
+  ],
+  [
+    226,
+    "Are AV1 Hardware Encoders Free of Licensing Fees?",
+    "Commercial hardware vendors can legally design and sell proprietary AV1 encoders without paying licensing fees to the Alliance for Open Media (AOMedia). AOMedia distributes the AV1 specification under a royalty-free patent license designed specifically t",
+    false
+  ],
+  [
+    225,
+    "AV1 Source Code Open Source License Explained",
+    "The reference source code for the AV1 video codec is governed by a royalty-free licensing model created by the Alliance for Open Media (AOMedia). This article outlines the specific open-source terms applied to the official AV1 reference implementation, e",
+    false
+  ],
+  [
+    224,
+    "How AV1 Vets Intellectual Property Contributions",
+    "The Alliance for Open Media (AOMedia) employs a multi-tiered legal and technical framework to vet all intellectual property (IP) before it is integrated into the AV1 video codec. To deliver a truly royalty-free, open-source standard, AOMedia combines str",
+    false
+  ],
+  [
+    223,
+    "AOMedia Board vs Working Groups: Key Differences",
+    "The Alliance for Open Media (AOMedia) relies on a two-tiered operational model to develop and standardize open, royalty-free media technologies such as the AV1 video codec. While the Governing Board operates at the executive level to establish strategic",
+    false
+  ],
+  [
+    222,
+    "How HEVC Licensing Uncertainty Accelerated AV1",
+    "The rapid development and commercial deployment of the AV1 video codec was largely catalyzed by the fragmented and unpredictable licensing landscape of High Efficiency Video Coding (HEVC/H.265). While HEVC offered the compression efficiency required for",
+    false
+  ],
+  [
+    221,
+    "Cisco Thor Features in the AV1 Video Codec",
+    "When the Alliance for Open Media (AOMedia) developed the AV1 video standard, it synthesized core technologies from three major predecessor codecs: Google’s VP9/VP10, Mozilla/Xiph’s Daala, and Cisco’s Thor. Cisco designed Thor specifically for royal",
+    false
+  ],
+  [
+    220,
+    "Mozilla Daala: Perceptual Vector Quantization in AV1",
+    "The Daala project, developed by Mozilla and the Xiph.Org Foundation, served as a testing ground for radical, patent-unencumbered video coding techniques, most notably Perceptual Vector Quantization (PVQ). When the Alliance for Open Media (AOMedia) formed",
+    false
+  ],
+  [
+    219,
+    "Why Google Merged VP10 into AV1",
+    "Google decided to cancel the standalone development of the VP10 video codec and merge its intellectual property into the AV1 project to establish a unified, royalty-free video standard backed by the entire tech industry. Facing complex and prohibitive pa",
+    false
+  ],
+  [
+    218,
+    "The Relationship Between AV1 and Early VP10",
+    "AOMedia Video 1 (AV1) is fundamentally built upon the architectural and source-code baseline of Google's experimental VP10 codec. This article details the structural relationship between the two formats, examining how the early VP10 development directly",
+    false
+  ],
+  [
+    217,
+    "How AV1 Preserves Edge Coherence in Scalable Video",
+    "Scalable video coding in AV1 allows a single bitstream to provide multiple spatial resolutions, enabling seamless adaptation to fluctuating network bandwidth and diverse display capabilities. Preserving edge coherence across these scalable spatial enhanc",
+    false
+  ],
+  [
+    216,
+    "AV1 Scalability Mode Identifiers and L3T3 Explained",
+    "AV1 scalability mode identifiers, such as L3T3, define standardized configurations for Scalable Video Coding (SVC) within the AV1 video codec framework. These identifiers describe how an encoded video stream is partitioned into distinct spatial (resoluti",
+    false
+  ],
+  [
+    215,
+    "How AV1 Demuxers Select an Operating Point",
+    "This article explains how an AV1 demuxer identifies and selects an appropriate operating point by reading sequence metadata and matching it against a client device's display and decoding capabilities. By comparing constraints such as resolution, frame ra",
+    false
+  ],
+  [
+    214,
+    "AV1 Operating Points and Scalable Bitstreams",
+    "In the AV1 video codec, operating points serve as standardized identifiers that define specific combinations of spatial and temporal layers within a single scalable bitstream. They provide the necessary metadata for decoders, media servers, and extractor",
+    false
+  ],
+  [
+    213,
+    "AV1 Spatial Scalability in Video Conferencing",
+    "This article explores how the AV1 video codec implements spatial Scalable Video Coding (SVC) to optimize multi-party video conferencing. By generating a single bitstream that contains multiple resolution layers, AV1 enables real-time communication system",
+    false
+  ],
+  [
+    212,
+    "Why AV1 Low Latency Omits Bidirectional Prediction",
+    "In ultra-low-latency (ULL) video streaming, minimizing the glass-to-glass delay between video capture and display is the primary engineering objective. While the AV1 video codec incorporates sophisticated bidirectional prediction to maximize compression",
+    false
+  ],
+  [
+    211,
+    "AV1 Low-Delay Mode for Conversational Video",
+    "AV1 low-delay mode is an encoder configuration designed for real-time, bidirectional video communications such as WebRTC calls, live streaming, and interactive cloud applications. This mode optimizes the AV1 codec to prioritize minimal end-to-end latency",
+    false
+  ],
+  [
+    210,
+    "AV1 Latency and Initial Buffer Occupancy",
+    "Initial buffer occupancy—the amount of encoded video data a media player must download and store before beginning playback—serves as the foundational baseline for glass-to-glass delay in live streaming. In the context of the AV1 video codec, initial",
+    false
+  ],
+  [
+    209,
+    "AV1 HRD Leaky Bucket Buffer Model Parameters",
+    "The AV1 Hypothetical Reference Decoder (HRD) relies on a leaky bucket model to mathematically verify that a bitstream can be decoded in real time without causing memory overflow or buffer underflow. This article breaks down the essential parameters gover",
+    false
+  ],
+  [
+    208,
+    "How AV1 Uses HRD to Prevent Buffer Overflow",
+    "This article explains how the AOMedia Video 1 (AV1) video codec uses the Hypothetical Reference Decoder (HRD) to prevent buffer overflows and ensure smooth playback. By defining a mathematical model of an idealized decoder buffer, the HRD enforces strict",
+    false
+  ],
+  [
+    207,
+    "AV1 Frame Buffer Memory Alignment Requirements",
+    "High-performance AV1 video decoding and encoding rely heavily on hardware-accelerated Single Instruction, Multiple Data (SIMD) vector instructions and Direct Memory Access (DMA) hardware units. To maximize throughput, prevent CPU execution pipeline stall",
+    false
+  ],
+  [
+    206,
+    "ARM NEON Optimization for AV1 Interpolation Filters",
+    "This article explores how the ARM NEON SIMD architecture accelerates the computationally intensive 7-tap and 8-tap sub-pixel interpolation filters used in AV1 video decoding and encoding. It details how NEON handles the separable horizontal and vertical",
+    false
+  ],
+  [
+    205,
+    "dav1d AVX2 and AVX-512 Optimization Paths",
+    "This article examines the specialized AVX2 and AVX-512 instruction set architecture (ISA) optimization paths implemented in the open-source dav1d AV1 decoder. It details the specific algorithmic workloads targeted by these vector extensions—including i",
+    false
+  ],
+  [
+    204,
+    "SIMD Vectorization in 8-Bit vs 10-Bit AV1 Arithmetic",
+    "Single Instruction, Multiple Data (SIMD) vectorization is the backbone of real-time AV1 encoding and decoding performance, allowing modern processors to manipulate multiple pixel values simultaneously. This article explores how SIMD vectorization acceler",
+    false
+  ],
+  [
+    203,
+    "4K AV1 Software Decoder Memory Bandwidth Requirements",
+    "This article examines the system memory bandwidth required for high-bitrate 4K AV1 software decoding. Decoding 4K AV1 content at 60 frames per second without hardware acceleration places immense pressure on CPU cache hierarchies and system RAM. Below is",
+    false
+  ],
+  [
+    202,
+    "How AV1 Tiles Enable Parallel Wavefront Processing",
+    "AV1 decoders achieve high-throughput decoding on multi-core processors by dividing video frames into a grid of tile rows and columns. This structural partitioning limits intra-frame data dependencies, allowing decoders to deploy parallel wavefront proces",
+    false
+  ],
+  [
+    201,
+    "Frame-Parallel Decoding in AV1 Video Codec",
+    "Frame-parallel decoding is an architectural approach that enables a video decoder to process multiple frames simultaneously across different processor cores to maximize throughput. While traditional decoders parse and reconstruct video frames sequentiall",
+    false
+  ],
+  [
+    200,
+    "AV1 Multi-Frame Entropy Probability Backward Update",
+    "This article explains the operation of backward entropy probability updates across multi-frame contexts in the AV1 video codec. In AV1, entropy coding relies on Cumulative Distribution Functions (CDFs) that adapt dynamically to the statistics of syntax e",
+    false
+  ],
+  [
+    199,
+    "Maximum Pyramid Depth for AV1 AltRef Frames",
+    "This article provides an overview of Alternative Reference (AltRef) frames in the AV1 video codec and details their hierarchical organization. It specifically examines the maximum pyramid depth commonly utilized in standard AV1 implementations, explainin",
+    false
+  ],
+  [
+    198,
+    "Nested AltRef Frames in AV1 Hierarchical Structures",
+    "An AV1 bitstream can fully support multiple nested Alternative Reference (AltRef) frames across hierarchical Group of Pictures (GOP) structures. AV1's advanced reference frame architecture allows encoders to define several non-displayed predictive anchor",
+    false
+  ],
+  [
+    197,
+    "How AV1 Alternate Reference Frames Improve Compression",
+    "In modern video encoding, the AV1 codec achieves significant bandwidth efficiency by utilizing Alternate Reference (altref) frames—internally generated frames that are decoded into reference buffers but never directly rendered on the screen. By acting",
+    false
+  ],
+  [
+    196,
+    "AV1 Golden Frames and AltRef Frames Explained",
+    "This article explores the roles of Golden Frames and Alternative Reference (AltRef) frames within the AV1 video codec's architectural hierarchy. While traditional codecs rely heavily on rigid I-, P-, and B-frame sequences, AV1 uses a flexible reference f",
+    false
+  ],
+  [
+    195,
+    "How AV1 Encoders Handle Scene Cut Detection",
+    "Efficient video compression in the AV1 format depends heavily on placing keyframes accurately at scene transitions to prevent quality degradation and unnecessary bitrate spikes. This article examines the mechanisms AV1 encoders use to detect scene cuts,",
+    false
+  ],
+  [
+    194,
+    "AV1 Keyframe Placement for Adaptive Bitrate Streaming",
+    "This article provides an overview of keyframe placement strategies used in AV1 encoding for adaptive bitrate (ABR) streaming workflows. It explores the technical necessity of aligning keyframes across bitrate ladders, evaluates fixed versus dynamic GOP s",
+    false
+  ],
+  [
+    193,
+    "AV1 2-Pass Rate Control for High-Motion Sports",
+    "AV1’s two-pass temporal rate control manages high-motion sports content by splitting encoding into an initial statistical analysis phase and a finalized optimization phase. By inspecting motion vectors, scene transitions, and temporal dependencies acro",
+    false
+  ],
+  [
+    192,
+    "Variance Adaptive Quantization in libaom AV1",
+    "Variance-based adaptive quantization (VAQ) in the libaom AV1 encoder is a psychoacoustic optimization technique that dynamically adjusts quantization parameters at the block level based on local spatial complexity. By calculating the variance—a measure",
+    false
+  ],
+  [
+    191,
+    "How AV1 AQ-Mode Adjusts Quantization Parameters",
+    "Adaptive Quantization (AQ-mode) in the AV1 video codec dynamically modulates Quantization Parameters (QP) at the sub-frame block level to optimize visual quality based on Human Visual System (HVS) characteristics. Rather than applying a uniform QP across",
+    false
+  ],
+  [
+    190,
+    "Psychovisual Rate Distortion in AV1 Encoders",
+    "This article explains the concept of psychovisual rate distortion optimization (Psy-RDO) and its practical implementation within modern AV1 video encoders such as SVT-AV1 and libaom. While traditional rate-distortion optimization relies on purely mathema",
+    false
+  ],
+  [
+    189,
+    "How SVT-AV1 VMAF Tuning Modifies RDO Curves",
+    "This article provides an overview of how the VMAF (Video Multi-Method Assessment Fusion) tuning mode in the SVT-AV1 encoder shifts traditional rate-distortion optimization (RDO). By replacing standard mathematical error metrics with perceptually weighted",
+    false
+  ],
+  [
+    188,
+    "Why PSNR Fails for AV1 Film Grain Synthesis",
+    "AV1 film grain synthesis drastically improves perceived video quality at lower bitrates by removing natural grain before encoding and synthetically regenerating it during playback. While this technique creates a visually pleasing, cinematic experience th",
+    false
+  ],
+  [
+    187,
+    "Perceptual Metrics in AV1: Butteraugli and SSIMULACRA",
+    "This article explores how advanced perceptual metrics—specifically Butteraugli and SSIMULACRA—are used to tune AV1 video encoders. While legacy metrics like PSNR and standard SSIM prioritize mathematical pixel differences, perceptual metrics model th",
+    false
+  ],
+  [
+    186,
+    "Neural Network In-Loop Filtering in Post-AV1 Codecs",
+    "As the Alliance for Open Media (AOMedia) advances research into next-generation video compression beyond AV1—commonly referred to within the AOM Video Model (AVM) research codebase—neural-network-based in-loop filtering has emerged as a cornerstone t",
+    false
+  ],
+  [
+    185,
+    "ML Super-Resolution in AV1 Post-Processing",
+    "This article examines how machine-learning-based super-resolution functions within the AV1 video ecosystem as an out-of-loop post-processing stage. By coupling aggressive AV1 compression at lower native resolutions with client-side neural network upscali",
+    false
+  ],
+  [
+    184,
+    "AV1 Algorithms Slated for Overhaul in AV2",
+    "As the Alliance for Open Media (AOMedia) develops AV2 to succeed the AV1 video standard, researchers are systematically re-engineering the baseline coding tools to achieve substantial bitrate reductions. While AV1 combined technologies from VP9, Daala, a",
+    false
+  ],
+  [
+    183,
+    "Development Relationship Between AV1 and AV2 Codecs",
+    "The development of AV2 is directly tied to the technical foundation, ecosystem footprint, and institutional knowledge established by AV1. Developed by the Alliance for Open Media (AOMedia), AV1 set the benchmark for an open-source, royalty-free video sta",
+    false
+  ],
+  [
+    182,
+    "How AV1 Bitstream Handles Future Extensions",
+    "The AV1 video codec incorporates a modular bitstream architecture designed specifically for forward compatibility, ensuring that newer features can be introduced without breaking existing legacy decoders. By structuring data into discrete, self-delimitin",
+    false
+  ],
+  [
+    181,
+    "AOMedia Response to AV1 Third-Party Royalty Claims",
+    "The Alliance for Open Media (AOMedia) responds to third-party royalty claims against the AV1 video codec by firmly defending its royalty-free mandate, relying on proactive patent review processes, and providing legal defense mechanisms for its adopters.",
+    false
+  ],
+  [
+    180,
+    "Sisvel AV1 Patent Pool Royalty Rates Per Device",
+    "The Sisvel AV1 licensing pool establishes a standardized patent royalty framework for hardware manufacturers implementing the AV1 video codec. This article outlines how Sisvel categorizes consumer hardware into distinct tiers, the specific per-unit fees",
+    false
+  ],
+  [
+    179,
+    "Unified Patents AV1 Patent Defense Initiative",
+    "The Unified Patents AV1 initiative is a dedicated defense effort established to protect the royalty-free AV1 video codec from patent assertion entities, commonly known as Non-Practicing Entities (NPEs) or patent trolls. By monitoring licensing pools, fil",
+    false
+  ],
+  [
+    178,
+    "AV1 Patent Indemnification for Open Source Developers",
+    "This article examines how the Alliance for Open Media (AOMedia) and the broader AV1 ecosystem address patent risks, distinguishing between royalty-free licensing and actual legal indemnification for independent open-source developers. While the ecosystem",
+    false
+  ],
+  [
+    177,
+    "ATSC 3.0 and AV1 Video Codec Integration",
+    "This article examines the relationship between the ATSC 3.0 broadcast standard and the royalty-free AV1 video codec. It outlines ATSC 3.0's current reliance on HEVC, explores the technical pathways for integrating AV1 into both broadcast and broadband st",
+    false
+  ],
+  [
+    176,
+    "Why DVB Adopted AV1 for Digital TV Broadcasting",
+    "The Digital Video Broadcasting (DVB) Project officially approved the AV1 video codec to expand its core specification suite, addressing the urgent demand for next-generation compression efficiency and flexible distribution. This article details why DVB e",
+    false
+  ],
+  [
+    175,
+    "AV1 in Broadcast Standards: Regulatory Hurdles",
+    "While the AV1 video codec offers superior compression efficiency and lower bandwidth demands compared to its predecessors, its integration into traditional over-the-air, cable, and satellite television architectures faces substantial delays. Unlike the a",
+    false
+  ],
+  [
+    174,
+    "How Google Mandates AV1 on Android TV Devices",
+    "Google mandates AV1 video decoding support for Android TV devices through its strict hardware certification guidelines and operating system compatibility standards. Beginning with devices running Android TV 10 and reinforced in subsequent releases, any o",
+    false
+  ],
+  [
+    173,
+    "AV1 Hardware Decoding in Modern Smart TVs",
+    "This article examines the current penetration rate of AV1 hardware decoding across modern smart television platforms. Driven by mandates from streaming platforms and operating system developers, AV1 hardware decoding has rapidly expanded from an experime",
+    false
+  ],
+  [
+    172,
+    "How AV1 Impacts Tier-1 Internet Transit Costs",
+    "The rapid adoption of the AV1 video codec is reshaping global network traffic patterns by delivering superior data compression compared to legacy codecs like H.264 and HEVC. Because video streaming represents the majority of worldwide IP traffic, AV1's a",
+    false
+  ],
+  [
+    171,
+    "How VOD Platforms Balance AV1 Encoding Costs",
+    "Video-on-demand (VOD) platforms evaluate the adoption of the AV1 video codec by weighing its high computational encoding costs against the substantial bandwidth savings it provides during delivery. While AV1 delivers roughly 20% to 30% better compression",
+    false
+  ],
+  [
+    170,
+    "AV1 Encoding Complexity and Data Center Energy Use",
+    "The adoption of the AV1 video codec offers substantial bandwidth savings across the internet, but its advanced compression algorithms demand significantly higher computational power than previous standards. In hyperscale data centers—where platforms pr",
+    false
+  ],
+  [
+    169,
+    "AV1 IntraBC Motion Compensation and Safe Zones",
+    "Intra Block Copy (IntraBC) in AV1 allows blocks to reference previously reconstructed pixels within the same frame, which is particularly effective for screen content. To ensure that hardware decoders operate reliably and parallel decoding pipelines rema",
+    false
+  ],
+  [
+    168,
+    "Color Cache in AV1 Palette Coding Explained",
+    "This article explores the color cache tool in the AV1 video codec, detailing its role within palette mode and how it optimizes compression performance. Readers will learn the mechanics of palette coding for screen content, how the color cache prevents re",
+    false
+  ],
+  [
+    167,
+    "AV1 Screen Content Detection in Modern Encoders",
+    "Modern AV1 encoders rely on automated screen content detection to distinguish synthetic media—such as computer desktops, text, gaming HUDs, and digital graphics—from natural camera-captured video. By analyzing spatial statistics, color distributions,",
+    false
+  ],
+  [
+    166,
+    "AV1 Auxiliary Alpha Bitstream Packing Methods",
+    "This article provides an overview of the standard techniques used to encode, signal, and pack auxiliary alpha bitstreams in the AV1 video format. While the core AV1 bitstream syntax primarily targets standard color planes, transparency is supported by co",
+    false
+  ],
+  [
+    165,
+    "How AV1 Supports Alpha Channel Transparency",
+    "AV1 achieves alpha channel transparency for video overlays by encoding a separate, synchronized monochrome auxiliary stream rather than embedding opacity directly into a four-channel pixel format. This approach allows standard AV1 compression tools to en",
+    false
+  ],
+  [
+    164,
+    "Can AV1 Encode Raw YUV with Identity Transforms?",
+    "This article examines whether the AV1 video codec can encode uncompressed raw YUV pixel values directly via identity transformations. In short, while AV1 supports lossless encoding where an identity transform bypasses frequency-domain transformation, it",
+    false
+  ],
+  [
+    163,
+    "AV1 Lossless Mode: Mathematical Explanation",
+    "This article provides an overview of the lossless coding mode in the AOMedia Video 1 (AV1) codec, detailing the technical architecture that enables bit-exact reconstruction of source video. It explains how AV1 eliminates information loss by bypassing irr",
+    false
+  ],
+  [
+    162,
+    "AV1 Sub-Frame Quantization: Delta Q Signalling",
+    "The AV1 video codec provides adaptive rate control and perceptual optimization by varying quantization step sizes within a single frame rather than relying solely on a uniform frame-level setting. This sub-frame quantization adjustment is primarily achie",
+    false
+  ],
+  [
+    161,
+    "AV1 Loop Restoration Tile-Level Control",
+    "The AV1 video codec uses Loop Restoration as a post-reconstruction filtering tool to remove artifacts and restore edge fidelity. While loop restoration is globally defined at the frame header level, its tile-level control is managed through a combination",
+    false
+  ],
+  [
+    160,
+    "AV1 Wiener Filter: Balancing Ringing and Sharpness",
+    "The AV1 video codec incorporates the Wiener restoration filter as an in-loop tool designed to recover high-frequency details lost during transform quantization and motion compensation. While aggressive sharpening algorithms frequently trigger noticeable",
+    false
+  ],
+  [
+    159,
+    "Why CDEF Runs Before Loop Restoration in AV1",
+    "The AV1 video codec incorporates a sophisticated multi-stage in-loop filtering pipeline to suppress compression artifacts and restore high-frequency details. In this pipeline, the Constrained Directional Enhancement Filter (CDEF) runs immediately after t",
+    false
+  ],
+  [
+    158,
+    "How AV1 CDEF Uses Primary and Secondary Taps",
+    "The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec removes ringing artifacts and preserves edge sharpness by filtering along the dominant direction of image features. By partitioning reconstructed frames into blocks, determining",
+    false
+  ],
+  [
+    157,
+    "AV1 Deblocking: Luma vs Chroma Filter Tap Lengths",
+    "The AOMedia Video 1 (AV1) codec utilizes an adaptive in-loop deblocking filter designed to suppress grid-like boundary artifacts while preserving true image detail. The deblocking process treats luminance (luma) and chrominance (chroma) channels differen",
+    false
+  ],
+  [
+    156,
+    "AV1 Deblocking Filter Edge Thresholds Explained",
+    "The AV1 video codec employs an in-loop deblocking filter to eliminate blocking artifacts caused by transform and prediction block partitions while preserving true image edges. To prevent the unwanted blurring of genuine picture details, the filter evalua",
+    false
+  ],
+  [
+    155,
+    "Disable AV1 Film Grain Without Breaking Conformance",
+    "This article examines whether film grain synthesis in the AV1 video codec can be safely disabled at the decoder level without breaking bitstream conformance. It details the underlying architecture of AV1's film grain pipeline, explains why the process is",
+    false
+  ],
+  [
+    154,
+    "AV1 Film Grain Hardware Decoder Memory Constraints",
+    "AV1 film grain synthesis significantly reduces video transmission bitrate by stripping high-frequency noise at the encoder and synthetically regenerating it on the playback device. However, applying this process in hardware decoders introduces distinct m",
+    false
+  ],
+  [
+    153,
+    "AV1 Film Grain: Autoregressive Coefficients Explained",
+    "This article explores how the AV1 video codec utilizes autoregressive (AR) coefficients within its film grain synthesis model to recreate natural, correlated grain patterns. By stripping high-frequency noise prior to compression and re-synthesizing it on",
+    false
+  ],
+  [
+    152,
+    "AV1 Film Grain Random Noise Generator Standard",
+    "This article provides an overview of how film grain synthesis is standardized in the AV1 video codec, focusing on the specific random noise generator used inside compliant decoders. It explains the normative 16-bit Linear Feedback Shift Register (LFSR) a",
+    false
+  ],
+  [
+    151,
+    "How AV1 Preserves Film Grain Without High Bitrates",
+    "The AV1 video codec retains high-frequency film textures without consuming excessive bandwidth by utilizing a dedicated technology called Film Grain Synthesis (FGS). Instead of encoding grain as raw image data—which typically bloats bitrates and causes",
+    false
+  ],
+  [
+    150,
+    "AV1 3D LUT Signaling for Advanced Color Workflows",
+    "The 3D Lookup Table (LUT) signaling mechanism proposed for AV1 provides an efficient, standardized method to transmit volumetric color transformation data directly within the video bitstream. Designed for advanced color management, including High Dynamic",
+    false
+  ],
+  [
+    149,
+    "AV1 Block-Level Chroma Quantization Offsets Explained",
+    "AV1 manages variable block-level quantization offsets for color components by combining global frame-level offsets, superblock-level delta quantization parameters, and block-level segmentation. Rather than signaling completely independent quantization ma",
+    false
+  ],
+  [
+    148,
+    "AV1 Chroma from Luma Prediction Equations",
+    "Chroma from Luma (CfL) is an intra-prediction tool in the AV1 video codec that predicts chroma component samples directly from the reconstructed luma component of the same block. Instead of relying purely on spatial edge extension from neighboring chroma",
+    false
+  ],
+  [
+    147,
+    "AV1 Chroma Compression via Cross-Component Correlation",
+    "This article provides an overview of how the AV1 video codec leverages cross-component correlation to compress chrominance (color) channels. By utilizing an advanced intra-prediction tool known as Chroma from Luma (CfL), AV1 models the relationship betwe",
+    false
+  ],
+  [
+    146,
+    "AV1 Palette Map Run-Length Coding Explained",
+    "This article provides an overview of the run-length coding (RLC) mechanism utilized in the AV1 video codec for palette map transmission. When encoding screen content or computer-generated graphics, AV1 uses palette mode to represent pixel blocks using a",
+    false
+  ],
+  [
+    145,
+    "AV1 Palette Index Encoding with Multi-Symbol Entropy",
+    "The AV1 video codec utilizes palette prediction mode to efficiently compress screen content, computer graphics, and synthetic video blocks featuring sharp edges and low color variance. Rather than transmitting discrete transform coefficients or standard",
+    false
+  ],
+  [
+    144,
+    "What Is Directional Smoothing in AV1 Intra Prediction?",
+    "Directional smoothing in AV1 intra prediction is an adaptive reference-filtering technique designed to enhance the quality of spatially predicted video blocks. This article breaks down how AV1 uses directional smoothing, the specific artifacts it prevent",
+    false
+  ],
+  [
+    143,
+    "How Recursive Filtering Works in AV1 Intra Modes",
+    "This article provides an overview of how recursive filtering operates within the intra prediction framework of the AV1 video codec. It examines the mechanics of dividing blocks into smaller sub-units, applying pre-trained filter matrices, and using newly",
+    false
+  ],
+  [
+    142,
+    "Intra-Boundary Filtering in AV1 Video Coding",
+    "Intra-boundary filtering in the AV1 video codec is a prediction refinement technique designed to reduce edge artifacts and improve compression efficiency during intra-frame coding. By conditioning the reference samples along the top and left boundaries o",
+    false
+  ],
+  [
+    141,
+    "AV1 Affine Motion Limits for Decoders",
+    "The AV1 video codec incorporates warped motion compensation to efficiently model non-translational movements such as zooming, rotation, and shear. To prevent these complex geometric transformations from creating unpredictable memory bandwidth spikes or e",
+    false
+  ],
+  [
+    140,
+    "AV1 8-Parameter Motion Transformations Explained",
+    "This article examines the mathematical transformations used to represent complex camera and object movement in the AV1 video codec, focusing on 8-parameter motion models. It details the underlying geometry of the projective transformation (homography), c",
+    false
+  ],
+  [
+    139,
+    "AV1 Local Warped Motion in Rotating Scenes",
+    "This article explains how the AV1 video codec utilizes local warped motion compensation to drastically reduce prediction residuals in rotating scenes. Traditional video compression relies heavily on simple translational motion vectors, which struggle to",
+    false
+  ],
+  [
+    138,
+    "Overlapped Block Motion Compensation in AV1",
+    "Overlapped Block Motion Compensation (OBMC) is an advanced inter-prediction technique used in modern video codecs to minimize boundary artifacts and boost compression efficiency. This article breaks down the fundamental mechanics of OBMC and details how",
+    false
+  ],
+  [
+    137,
+    "How AV1 Uses Dual Interpolation Filters",
+    "The AOMedia Video 1 (AV1) codec enhances inter-frame motion compensation by introducing dual interpolation filters, allowing encoders to independently select distinct sub-pixel filters for horizontal and vertical dimensions. Unlike legacy codecs that typ",
+    false
+  ],
+  [
+    136,
+    "Subpel Interpolation Filter Selection in AV1",
+    "In video compression, sub-pixel (subpel) motion compensation enables motion vectors to point to fractional pixel locations, requiring interpolation filters to reconstruct intermediate sample values. The AV1 codec significantly enhances this process compa",
+    false
+  ],
+  [
+    135,
+    "How AV1 NEWMV Mode Signals Displacement Vectors",
+    "This article provides an overview of how the AOMedia Video 1 (AV1) video codec signals displacement vectors—commonly known as motion vectors—when using the NEWMV prediction mode. It details the process of establishing a reference predictor, calculati",
+    false
+  ],
+  [
+    134,
+    "AV1 Zeromv in Motion Vector Search Hierarchy",
+    "The ZEROMV candidate in the AV1 video codec is a baseline motion vector representing zero spatial displacement (0, 0) between the current block and its reference frame. Within AV1's motion vector prediction hierarchy, it functions as a primary predictor",
+    false
+  ],
+  [
+    133,
+    "AV1 Motion Vector Candidate Ranking and Pruning",
+    "In the AV1 video codec, inter-frame prediction relies heavily on motion vector (MV) signaling, where coding efficiency depends on accurately predicting motion with minimal bit overhead. To achieve this, AV1 builds a dynamic motion vector candidate list f",
+    false
+  ],
+  [
+    132,
+    "Temporal Motion Vector Field in AV1 Inter Prediction",
+    "This article explores the Temporal Motion Vector Field (TMVF) mechanism in the AV1 video codec, explaining how it functions within inter prediction. You will learn the fundamental purpose of TMVF, how motion vectors are stored and projected from referenc",
+    false
+  ],
+  [
+    131,
+    "AV1 Spatial Motion Vector Prediction Explained",
+    "This article explores how the AOMedia Video 1 (AV1) video codec optimizes compression efficiency through advanced motion vector prediction, focusing specifically on spatial motion vector candidates. By analyzing the motion trajectories of previously enco",
+    false
+  ],
+  [
+    130,
+    "Tile List OBU in Viewport-Dependent AV1 Streaming",
+    "This article provides an overview of the Tile List Open Bitstream Unit (OBU) within the AV1 video codec and explains its practical implementation in viewport-dependent streaming. Readers will learn how the Tile List OBU enables arbitrary extraction and d",
+    false
+  ],
+  [
+    129,
+    "AV1 Loop Filtering Across Tile Borders Explained",
+    "This article explores how the AV1 video codec manages in-loop filtering across tile boundaries, balancing multithreaded decoding performance with visual consistency. In AV1, three primary filter stages—the Deblocking Filter, the Constrained Directional",
+    false
+  ],
+  [
+    128,
+    "Can AV1 Tiles Be Decoded Independently?",
+    "An AV1 video frame can be partitioned into a grid of rectangular regions known as tiles, designed primarily to facilitate parallel processing and multi-threaded decoding. While AV1 tiles are architected to allow parallel entropy decoding and pixel recons",
+    false
+  ],
+  [
+    127,
+    "Purpose of the Frame Header OBU in AV1",
+    "In the AV1 video codec, high-level control parameters are intentionally decoupled from raw compressed video pixels through the use of Open Bitstream Units (OBUs). This article explores the purpose of the Frame Header OBU, examining how isolating frame-le",
+    false
+  ],
+  [
+    126,
+    "How AV1 Signals Film Grain Synthesis Metadata",
+    "This article provides an overview of how the AV1 video codec implements film grain synthesis (FGS) by transmitting parametric data instead of encoding raw grain directly into the pixel stream. By stripping high-frequency noise during encoding and signali",
+    false
+  ],
+  [
+    125,
+    "Metadata OBU in AV1 Broadcasting Explained",
+    "In AV1 video transmission, the Metadata Open Bitstream Unit (OBU) is a dedicated data structure used to carry supplemental, non-video information alongside encoded frames. In broadcast environments, it plays an essential role by delivering High Dynamic R",
+    false
+  ],
+  [
+    124,
+    "AV1 OBU Headers: Stream Isolation and Compatibility",
+    "The AOMedia Video 1 (AV1) bitstream relies on a modular Open Bitstream Unit (OBU) architecture to guarantee robust stream parsing isolation and seamless backward compatibility. By decoupling packet transport from syntax decoding through standardized head",
+    false
+  ],
+  [
+    123,
+    "AV1 Bitstream Conformance Syntax Explained",
+    "In the AV1 video coding format, bitstream conformance ensures that encoded content complies with specific processing and memory constraints so that standard-compliant decoders can reliably reconstruct the video. This article explains the syntax elements",
+    false
+  ],
+  [
+    122,
+    "How AV1 Manages DPB Size at 4K and 8K Resolutions",
+    "The AOMedia Video 1 (AV1) codec efficiently processes high-resolution video streams by utilizing a strictly regulated Decoded Picture Buffer (DPB) architecture. At 4K and 8K resolutions, where uncompressed frame storage can easily consume gigabytes of me",
+    false
+  ],
+  [
+    121,
+    "AV1 Level 5.1 Maximum Bitrate Limits",
+    "Under the AOMedia Video 1 (AV1) specification, Level 5.1 defines performance boundaries for decoding high-definition and 4K media. The maximum permitted bitrate under AV1 Level 5.1 is 160 Mbps (160,000 kbps) when operating in the High Tier, and 40 Mbps (",
+    false
+  ],
+  [
+    120,
+    "AV1 Codec: Main Tier vs High Tier Differences",
+    "This article provides an overview of how the AV1 video codec differentiates between Main Tier and High Tier applications. In the AV1 specification, tiers specify the maximum bitrates allowed for a given operating level, dividing decoding requirements int",
+    false
+  ],
+  [
+    119,
+    "AV1 Frame Rate Limits Across Levels and Tiers",
+    "This article provides an overview of how the AV1 video codec handles frame rate limitations across its standardized Levels and Tiers. In the AV1 specification, maximum frame rates are fundamentally determined by Level definitions—specifically through m",
+    false
+  ],
+  [
+    118,
+    "Max Video Resolution of AV1 Level 6.3",
+    "The AOMedia Video 1 (AV1) Level 6.3 specification defines the highest tier of performance standardized for the open-source video codec, targeting ultra-high-resolution and high-frame-rate streaming. This article outlines the exact maximum resolution limi",
+    false
+  ],
+  [
+    117,
+    "How AV1 Decoders Construct Reference Buffers",
+    "In the AV1 video coding standard, the decoder maintains an internal Decoded Picture Buffer (DPB) consisting of eight virtual frame slots to manage advanced temporal prediction and reference sharing. This article explains how an AV1 decoder processes refe",
+    false
+  ],
+  [
+    116,
+    "AV1 Key Frames vs Intra-Only Frames Explained",
+    "In the AV1 video codec, both Key Frames and Intra-only Frames are decoded independently without relying on temporal information from other frames, but they serve fundamentally different roles in stream management. The core difference lies in how they han",
+    false
+  ],
+  [
+    115,
+    "How AV1 Overlay Frames Work in Two-Pass Encoding",
+    "In an AV1 two-pass compression pipeline, overlay frames work in tandem with Alternate Reference (AltRef) frames to improve visual quality and compression efficiency without confusing the display pipeline. During the first pass, the encoder analyzes the t",
+    false
+  ],
+  [
+    114,
+    "Understanding Show Existing Frame in AV1",
+    "This article provides an overview of the showexistingframe syntax element in the AV1 video codec, explaining its core function, structural mechanics, and operational benefits. Readers will learn how this flag instructs decoders to display previously deco",
+    false
+  ],
+  [
+    113,
+    "AV1 Scalable Video Coding: Inter-Layer Prediction",
+    "AV1 natively supports Scalable Video Coding (SVC) without requiring a separate extension profile or specialized inter-layer prediction syntax. Instead of introducing isolated prediction modes, AV1 achieves inter-layer prediction by combining its flexible",
+    false
+  ],
+  [
+    112,
+    "AV1 Compound Inter-Intra Prediction Explained",
+    "Compound inter-intra prediction is an advanced coding tool in the AV1 video codec that combines temporal motion compensation with spatial intra prediction inside a single block. By blending an inter-predicted reference with an intra-predicted reference u",
+    false
+  ],
+  [
+    111,
+    "How SVT-AV1 Temporal Filter Enhances Video Quality",
+    "SVT-AV1 leverages an advanced motion-compensated temporal filter (TF) to significantly boost the perceptual fidelity of compressed video. By analyzing multiple frames across time and applying motion-compensated smoothing prior to encoding, this mechanism",
+    false
+  ],
+  [
+    110,
+    "Common AV1 Visual Artifacts at Low Bitrates",
+    "When the AV1 video codec operates under severe bitrate constraints, its advanced compression tools prioritize structural integrity and smoothness over fine detail, creating visual distortions that differ significantly from older codecs. While legacy enco",
+    false
+  ],
+  [
+    109,
+    "Why AV1 Performs Better in Dark and Shadowed Scenes",
+    "Compressing dark and shadowed video content has historically presented a major challenge for video codecs, frequently resulting in severe banding, blocking artifacts, and excessive bitrate consumption. The AV1 video codec addresses these issues through a",
+    false
+  ],
+  [
+    108,
+    "Two-Pass Encoding for AV1 Video Streams Explained",
+    "Two-pass encoding is a critical video processing method used to maximize visual quality and compress data efficiently when producing AV1 video streams. This article examines the core function of two-pass workflows in AV1 compression, detailing the mechan",
+    false
+  ],
+  [
+    107,
+    "How AV1 CRF Encoding Determines Quality Allocation",
+    "Constant Rate Factor (CRF) encoding in the AV1 video codec is a rate-control method designed to achieve consistent visual quality throughout a video while letting the bitrate fluctuate naturally according to scene complexity. Instead of allocating a stat",
+    false
+  ],
+  [
+    106,
+    "AV1 Rate Control Modes for Video Archiving",
+    "When compressing video for long-term archival using the AV1 codec, selecting the correct rate control mode is critical for preserving visual fidelity while maximizing storage efficiency. Unlike streaming or live broadcasting, archival workflows prioritiz",
+    false
+  ],
+  [
+    105,
+    "DASH Manifest Specifications for Streaming AV1 Content",
+    "This article outlines the technical specifications and guidelines for streaming fragmented AV1 video content using the Dynamic Adaptive Streaming over HTTP (DASH) protocol. It details the required Media Presentation Description (MPD) parameters, codec pa",
+    false
+  ],
+  [
+    104,
+    "HLS AV1 Video Fragmentation for Apple Delivery",
+    "This article provides an overview of how HTTP Live Streaming (HLS) delivers AV1-encoded video to Apple devices using fragmented MP4 (fMP4) containers. It covers the structural requirements of Common Media Application Format (CMAF) media segments, initial",
+    false
+  ],
+  [
+    103,
+    "AV1 in WebM: Audio-Video Encapsulation Requirements",
+    "This article provides an overview of the technical specifications and encapsulation requirements for muxing AV1 video and compatible audio streams into the WebM container format. Standardized as a restricted subset of the Matroska (MKV) specification, We",
+    false
+  ],
+  [
+    102,
+    "AV1 Video in Matroska: MKV Mapping Explained",
+    "This article provides an overview of how the AOMedia Video 1 (AV1) bitstream is encapsulated within the Matroska (MKV) multimedia container. Matroska accommodates AV1 by standardizing a specific Codec ID, embedding a configuration record inside the track",
+    false
+  ],
+  [
+    101,
+    "Packaging AV1 Bitstreams in MP4 Containers",
+    "Packaging AV1 video bitstreams within the MP4 container—formally known as the ISO Base Media File Format (ISOBMFF)—requires strict adherence to the binding specifications defined by the Alliance for Open Media (AOMedia). This article details the esse",
+    false
+  ],
+  [
+    100,
+    "How EU Antitrust Probes Impact AV1 Licensing Terms",
+    "This article examines how the European Commission’s antitrust scrutiny into the Alliance for Open Media (AOMedia) shaped the licensing environment for the AV1 video codec. It outlines the core regulatory concerns regarding mandatory royalty-free licens",
+    false
+  ],
+  [
+    99,
+    "Why AOMedia Maintains a Royalty-Free AV1 Patent Pool",
+    "The Alliance for Open Media (AOMedia) maintains a royalty-free patent pool for the AV1 video codec to eliminate costly licensing barriers, prevent legal fragmentation, and accelerate universal adoption across hardware and the open web. By pooling essenti",
+    false
+  ],
+  [
+    98,
+    "How AOMedia Defensive Patent License Protects AV1",
+    "The Alliance for Open Media (AOMedia) designed the AV1 video codec to deliver high-performance, next-generation video compression without the encumbrance of costly and unpredictable licensing fees. Central to this mission is the AOMedia Patent License 1.",
+    false
+  ],
+  [
+    97,
+    "Patent Pools Claiming Royalties on AV1 Codec",
+    "Although the AV1 video codec was developed by the Alliance for Open Media (AOMedia) as an open-source, royalty-free standard, several third-party patent holders have challenged this status by demanding licensing fees. This article examines the primary pa",
+    false
+  ],
+  [
+    96,
+    "Software AV1 Playback Impact on Budget Phone Thermals",
+    "Software-only AV1 decoding places a heavy computational burden on budget smartphones, leading to rapid heat generation and significant thermal management challenges. Because low-cost chipsets generally lack dedicated hardware decoders for the AV1 codec,",
+    false
+  ],
+  [
+    95,
+    "Impact of Hardware AV1 Decoding on Mobile Battery",
+    "Hardware AV1 decoding drastically reduces mobile device battery consumption by offloading video decompression from power-hungry general-purpose processors to dedicated, energy-efficient silicon. While software decoding relies on the CPU and GPU to proces",
+    false
+  ],
+  [
+    94,
+    "MediaTek Dimensity Chipsets with AV1 Decoding",
+    "MediaTek played a pioneering role in mobile video streaming by being the first chipmaker to integrate hardware-based AV1 video decoding into smartphone processors. This article details the specific MediaTek Dimensity chipsets that introduced AV1 hardware",
+    false
+  ],
+  [
+    93,
+    "Qualcomm Snapdragon AV1 Hardware Acceleration",
+    "This article explains how Qualcomm integrates native AV1 hardware decoding into its Snapdragon processors to improve media playback efficiency. By shifting the intensive computation required to decompress AV1 video from general-purpose processing units t",
+    false
+  ],
+  [
+    92,
+    "Apple M3 AV1 Support: Encoding vs Decoding",
+    "The Apple M3 processor family introduces dedicated hardware acceleration for the modern AV1 video codec, but this capability is limited strictly to decoding. While the M3, M3 Pro, and M3 Max chips deliver highly efficient, battery-friendly playback of AV",
+    false
+  ],
+  [
+    91,
+    "Apple Silicon AV1 Hardware Decode Support",
+    "This article provides a direct breakdown of which Apple silicon generations include dedicated hardware decoding for the AV1 video codec. Apple began incorporating dedicated AV1 hardware decoders into its processors in late 2023, starting with the M3 Mac",
+    false
+  ],
+  [
+    90,
+    "NVENC AV1 Hardware Encoding on Ada Lovelace GPUs",
+    "Nvidia’s Ada Lovelace microarchitecture introduces the eighth-generation NVENC (Nvidia Encoder), incorporating dedicated hardware support for the open-source AV1 video codec. This integration delivers approximately 40% to 50% greater compression effici",
+    false
+  ],
+  [
+    89,
+    "Which Nvidia GPUs Support AV1 Hardware Decoding?",
+    "Nvidia introduced hardware-accelerated AV1 video decoding with the GeForce RTX 30 Series, built on the Ampere architecture. This generation marked a significant milestone for media playback, offloading the processing of high-resolution, bandwidth-efficie",
+    false
+  ],
+  [
+    88,
+    "AV1 Encoding Capabilities in AMD RDNA 3 GPUs",
+    "AMD’s RDNA 3 architecture introduced dedicated hardware acceleration for AV1 encoding and decoding, significantly improving compression efficiency and video quality over older standards like H.264. This article breaks down the specific AV1 encoding cap",
+    false
+  ],
+  [
+    87,
+    "When AMD Added AV1 Decode to RDNA GPUs",
+    "AMD officially introduced hardware-accelerated AV1 decoding with the launch of its RDNA 2 graphics architecture in November 2020. This milestone arrived with the Radeon RX 6000 series desktop graphics cards, marking the first time AMD included dedicated",
+    false
+  ],
+  [
+    86,
+    "Intel Quick Sync AV1 Hardware Acceleration Explained",
+    "This article explores how Intel Quick Sync Video (QSV) implements hardware-accelerated encoding and decoding for the AV1 video codec. It covers the dedicated architectural hardware inside modern Intel processors and discrete GPUs, the specific stages of",
+    false
+  ],
+  [
+    85,
+    "First Intel CPUs With Hardware AV1 Decoding",
+    "Intel first introduced dedicated hardware-accelerated AV1 decoding with its 11th Gen Core processors, code-named \"Tiger Lake,\" launched in late 2020. This capability was driven by the integrated Intel Iris Xe graphics architecture (Gen12), which incorpor",
+    false
+  ],
+  [
+    84,
+    "Best AV1 Presets for Low-Latency Live Streaming",
+    "AV1 delivers exceptional compression efficiency, but its computational complexity has traditionally made real-time processing difficult. Modern software encoders like SVT-AV1, libaom, and rav1e, alongside dedicated hardware encoders, now offer optimized",
+    false
+  ],
+  [
+    83,
+    "AV1 L1T3 Temporal Scalability Explained",
+    "The L1T3 temporal scalability structure in the AV1 video codec provides an efficient mechanism for real-time video communication systems to adapt to changing network bandwidths without renegotiating connections. By encoding a single spatial resolution ac",
+    false
+  ],
+  [
+    82,
+    "Challenges of Deploying AV1 in WebRTC",
+    "The AV1 video codec promises significant bandwidth savings and superior image quality compared to legacy codecs like VP8 and H.264, making it a natural candidate for WebRTC applications. However, deploying AV1 in real-time communication environments pres",
+    false
+  ],
+  [
+    81,
+    "How Netflix Uses VMAF to Measure AV1 Quality",
+    "Netflix evaluates the streaming efficiency and visual performance of the AV1 video codec by pairing extensive encoding tests with Video Multi-Method Assessment Fusion (VMAF), its open-source perceptual video quality metric. Instead of relying solely on t",
+    false
+  ],
+  [
+    80,
+    "Why Netflix Launched AV1 on Mobile Before TVs",
+    "Netflix initially launched the AV1 codec on mobile devices—specifically Android—before bringing it to connected TVs because mobile environments stood to gain the most immediate benefits from advanced compression. Cellular networks involve data caps,",
+    false
+  ],
+  [
+    79,
+    "Role of AV1 in YouTube 8K Video Streaming",
+    "This article examines how the AOMedia Video 1 (AV1) codec serves as the foundational backbone for YouTube’s 8K streaming infrastructure. By delivering superior data compression compared to legacy formats, AV1 reduces the massive bandwidth required for",
+    false
+  ],
+  [
+    78,
+    "Firefox AV1 Decoding Rollout on Desktop",
+    "Mozilla played a foundational role in the adoption of AV1, rolling out decoding capabilities to the Firefox desktop browser through a phased approach that spanned several years. Beginning with initial experimental support, Mozilla transitioned from early",
+    false
+  ],
+  [
+    77,
+    "When Did Google Chrome Add Native AV1 Support?",
+    "Google Chrome introduced native support for software-based AV1 playback in October 2018 with the release of Chrome 70. This milestone enabled users on major desktop platforms to decode the next-generation, royalty-free AV1 video format without needing th",
+    false
+  ],
+  [
+    76,
+    "What Is libgav1 and Its Optimized Hardware Platforms",
+    "This article provides a concise overview of libgav1, an open-source AV1 video decoder developed by Google. It details what the library is, its purpose in multimedia ecosystems, and the specific hardware platforms and instruction sets it is primarily opti",
+    false
+  ],
+  [
+    75,
+    "dav1d ARM Assembly Optimizations for AV1 Decoding",
+    "This article explores how the open-source dav1d decoder delivers industry-leading AV1 video playback speeds on ARM-powered devices, from smartphones to servers. By bypassing compiler auto-vectorization in favor of hand-tuned assembly, dav1d maximizes the",
+    false
+  ],
+  [
+    74,
+    "dav1d vs libaom: AV1 Decoder Speed Comparison",
+    "The open-source dav1d decoder, developed by VideoLAN and FFmpeg, is significantly faster than the original AOMedia reference decoder, libaom. While libaom served as the proof-of-concept software implementation during the development of the AV1 video stan",
+    false
+  ],
+  [
+    73,
+    "What Is dav1d? VideoLAN’s AV1 Decoder Explained",
+    "The dav1d decoder is an open-source, highly optimized AV1 software decoder developed by the VideoLAN and FFmpeg communities and backed by the Alliance for Open Media (AOMedia). This article explores what dav1d is, the performance bottlenecks it solved, a",
+    false
+  ],
+  [
+    72,
+    "How rav1e Balances Memory Safety and AV1 Speed",
+    "The rav1e video encoder provides a production-ready AV1 implementation that achieves an optimal balance between strict memory safety and competitive execution speed. By building the encoder in Rust, rav1e eliminates entire classes of memory corruption vu",
+    false
+  ],
+  [
+    71,
+    "What Is rav1e and Why Is It Written in Rust?",
+    "rav1e is an open-source video encoder designed for the AV1 video format, built to deliver a fast, safe, and modern encoding solution for multimedia applications. This article explores what rav1e is, its role in the AV1 ecosystem, and the key technical re",
+    false
+  ],
+  [
+    70,
+    "How SVT-AV1 Scales on High Core-Count Cloud CPUs",
+    "Scalable Video Technology for AV1 (SVT-AV1) achieves exceptional performance on modern high-core-count cloud architectures by implementing a multi-dimensional, asynchronous parallel processing framework. Instead of relying solely on traditional spatial p",
+    false
+  ],
+  [
+    69,
+    "What Is SVT-AV1 and How Was It Developed?",
+    "SVT-AV1 (Scalable Video Technology for AV1) is an open-source, production-grade video encoder designed to bring high-performance AV1 compression to multi-core processors. Developed through a strategic collaboration between Intel and the Alliance for Open",
+    false
+  ],
+  [
+    68,
+    "CPU Optimization Flags for Compiling AV1 libaom",
+    "Compiling the AV1 Reference Encoder (libaom) with targeted CPU optimization flags dramatically accelerates video encoding speeds by taking full advantage of modern processor instruction sets and compiler-level enhancements. This guide outlines the essent",
+    false
+  ],
+  [
+    67,
+    "What Is libaom? The AV1 Reference Encoder Explained",
+    "This article explores libaom, the official open-source reference implementation for the AV1 video codec. It outlines the origins of libaom within the Alliance for Open Media (AOMedia), examines its primary components and capabilities, and explains its cr",
+    false
+  ],
+  [
+    66,
+    "AV1 Tile Rendering for VR Panoramas Explained",
+    "This article explores how the AV1 video codec enables efficient, high-resolution virtual reality (VR) panoramic streaming through its advanced tiling framework. By dividing massive 360-degree video frames into independent, decodable rectangular segments,",
+    false
+  ],
+  [
+    65,
+    "AV1 Tiling: Computational Trade-Offs Explained",
+    "Dividing an AV1 video frame into multiple tiles enables concurrent processing across multiple CPU or GPU cores, dramatically reducing encoding and decoding times for high-resolution video. However, scaling up the number of tiles introduces distinct compu",
+    false
+  ],
+  [
+    64,
+    "AV1 Uniform Tile Grid vs Arbitrary Tile Grid",
+    "In the AV1 video codec, tiling divides video frames into independent rectangular regions to enable multi-threaded encoding and decoding. The AV1 specification supports two methods for structuring these regions: the uniform tile grid and the arbitrary til",
+    false
+  ],
+  [
+    63,
+    "AV1 Tile Groups in Error Resilience and Streaming",
+    "This article examines how the AV1 video codec leverages tile groups to enhance media delivery across unreliable networks. By breaking down video frames into distinct, independently decodable rectangular units, AV1 tile groups provide robust error resilie",
+    false
+  ],
+  [
+    62,
+    "AV1 Tile-Based Encoding: Multi-Threading Explained",
+    "Tile-based encoding is a structural video compression technique that divides individual video frames into independent rectangular grids, allowing multiple CPU or GPU cores to process distinct areas of a frame simultaneously. In the AV1 video codec, which",
+    false
+  ],
+  [
+    61,
+    "AV1 Monochrome Video Encoding Explained",
+    "This article explores how the AV1 video codec implements native monochrome video encoding to optimize black-and-white content. By eliminating unnecessary color channels directly at the bitstream level, AV1 reduces file sizes, conserves bandwidth, and low",
+    false
+  ],
+  [
+    60,
+    "AVIF Advantages Over JPEG and WebP Formats",
+    "The AV1 Image File Format (AVIF) represents a major leap forward in digital imaging, leveraging the open-source AV1 video codec to deliver vastly superior compression efficiency and visual fidelity compared to older standards. While JPEG has served as th",
+    false
+  ],
+  [
+    59,
+    "How AVIF Uses AV1 Keyframes to Compress Images",
+    "The AV1 Image File Format (AVIF) achieves state-of-the-art compression efficiency by repurposing the intra-frame encoding architecture of the AV1 video codec for static pictures. Rather than inventing a distinct algorithm for still photography, AVIF enca",
+    false
+  ],
+  [
+    58,
+    "What Is AVIF and How Is It Derived from AV1?",
+    "The AV1 Image File Format (AVIF) is an open-source, royalty-free image format engineered to provide significantly better compression efficiency than legacy formats like JPEG, PNG, and WebP while preserving high visual quality. Derived directly from the A",
+    false
+  ],
+  [
+    57,
+    "AV1 Color Spaces and Transfer Characteristics",
+    "The AOMedia Video 1 (AV1) specification standardizes color representations by adopting the ITU-T H.273 and ISO/IEC 23091-2 Coding-Independent Code Points (CICP) system. Through this architecture, AV1 officially supports a broad spectrum of color spaces,",
+    false
+  ],
+  [
+    56,
+    "AV1 Dynamic HDR: HDR10+ and Dolby Vision Support",
+    "This article provides a technical overview of how the open-source AV1 video codec incorporates dynamic High Dynamic Range (HDR) metadata, specifically focusing on HDR10+ and Dolby Vision. While legacy static HDR (HDR10) applies a single tone-mapping curv",
+    false
+  ],
+  [
+    55,
+    "Static HDR Metadata in AV1 Containers",
+    "This article provides an overview of the static High Dynamic Range (HDR) metadata formats supported for direct transport within AV1 bitstreams and associated container formats, such as ISOBMFF (MP4) and Matroska (MKV). It details how standard static meta",
+    false
+  ],
+  [
+    54,
+    "How AV1 Implements HDR Color Signaling",
+    "This article provides an overview of how the AOMedia Video 1 (AV1) codec standardizes High Dynamic Range (HDR) color signaling. AV1 conveys HDR information directly within its bitstream structure using Sequence Header syntax elements and dedicated Metada",
+    false
+  ],
+  [
+    53,
+    "AV1 Maximum Bit Depths Across All Profiles",
+    "The AOMedia Video 1 (AV1) video coding format specifies three distinct profiles designed to support various use cases ranging from consumer web streaming to high-end video production. Across these profiles, AV1 supports color bit depths of 8-bit, 10-bit,",
+    false
+  ],
+  [
+    52,
+    "AV1 Professional Profile Supported Chroma Formats",
+    "This article examines the chroma subsampling formats supported by the AV1 Professional profile, detailing how this specific profile accommodates professional-grade video workflows. Designed by the Alliance for Open Media (AOMedia), the AV1 codec divides",
+    false
+  ],
+  [
+    51,
+    "AV1 High Profile vs Main Profile Differences",
+    "The AV1 video codec standard defines specific profiles to balance decoding complexity with visual capabilities across various devices. While the Main profile serves as the standard baseline for consumer video distribution, the High profile expands on thi",
+    false
+  ],
+  [
+    50,
+    "AV1 Main Profile: Bit-Depth and Color Formats",
+    "This article examines the bit-depth and color sensitivity specifications standardized within the AOMedia Video 1 (AV1) Main profile. It outlines the precise chroma subsampling configurations and bit-depth limits supported by this profile, explaining how",
+    false
+  ],
+  [
+    49,
+    "AV1 Palette Mode Coding for Computer Graphics",
+    "This article provides an overview of how the AV1 video codec implements palette mode coding to optimize the compression of computer-generated graphics and screen content. Traditional video coding tools rely on transforms like DCT, which are designed for",
+    false
+  ],
+  [
+    48,
+    "AV1 Film Grain Metadata for Client-Side Synthesis",
+    "The AV1 video codec uses Film Grain Synthesis to preserve visual texture at low bitrates by stripping random high-frequency noise during encoding and synthetically regenerating it during playback. Instead of carrying heavy pixel data for grain, the AV1 b",
+    false
+  ],
+  [
+    47,
+    "How AV1 Film Grain Modeling Reduces Video Bitrate",
+    "Film grain parameter modeling, often referred to as Film Grain Synthesis (FGS), is a dedicated feature in the AV1 video codec designed to preserve the aesthetic texture of analog film while drastically lowering required bitrates. Traditional video compre",
+    false
+  ],
+  [
+    46,
+    "Film Grain Synthesis in AV1 Explained",
+    "Film Grain Synthesis is an advanced video compression technique that strips natural grain from source footage prior to encoding and mathematically recreates it during playback. This article explores how Film Grain Synthesis works and why the Alliance for",
+    false
+  ],
+  [
+    45,
+    "AV1 Self-Guided Filter in Loop Restoration Explained",
+    "The Self-Guided filter mode in AV1 Loop Restoration is an edge-preserving in-loop filtering tool designed to remove coding artifacts and recover fine details lost during lossy compression. Acting as one of two switchable restoration methods alongside the",
+    false
+  ],
+  [
+    44,
+    "How AV1 Uses Wiener Filters in Loop Restoration",
+    "The AOMedia Video 1 (AV1) codec employs a Loop Restoration tool to reverse blur and distortion introduced during the lossy transform and quantization stages. A key component of this tool is the separable Wiener filter, which models image degradation as a",
+    false
+  ],
+  [
+    43,
+    "Loop Restoration Stage in AV1 Decoding Explained",
+    "The Loop Restoration stage in the AV1 video codec is an advanced in-loop filtering tool designed to reverse the blur, ringing, and loss of fidelity introduced during block-based compression and earlier filtering stages. By applying mathematically driven",
+    false
+  ],
+  [
+    42,
+    "How CDEF Detects Edges to Prevent Blurring in AV1",
+    "The Constrained Directional Enhancement Filter (CDEF) is a core in-loop filtering tool in the AV1 video codec designed to eliminate ringing artifacts without sacrificing edge sharpness. By combining the directional deblocking filter from the Thor codec w",
+    false
+  ],
+  [
+    41,
+    "What Is the AV1 Constrained Directional Enhancement Filter?",
+    "The Constrained Directional Enhancement Filter (CDEF) is a key in-loop filtering tool in the AV1 video codec designed to eliminate ringing artifacts and edge noise while preserving sharp visual details. Positioned directly after the deblocking filter and",
+    false
+  ],
+  [
+    40,
+    "How AV1 In-Loop Deblocking Filters Remove Artifacts",
+    "This article provides an overview of the in-loop deblocking filter in the AV1 video codec, explaining how it identifies and mitigates artificial block edges caused by transform and prediction quantization. It covers the root causes of boundary discontinu",
+    false
+  ],
+  [
+    39,
+    "Delta-QP Signaling per Superblock in AV1",
+    "This article provides an overview of delta quantization parameters (delta-QP) in the AV1 video codec and examines how these values are signaled at the superblock level. It covers the role of delta-QP in adaptive quantization, the frame-level configuratio",
+    false
+  ],
+  [
+    38,
+    "AV1 Quantization Matrices Across Transform Blocks",
+    "The AOMedia Video 1 (AV1) codec utilizes frequency-dependent quantization matrices (QM) to optimize perceptual video quality across a wide range of transform block sizes. This article explains how AV1 defines, signals, and applies these scaling matrices",
+    false
+  ],
+  [
+    37,
+    "AV1 CDF Update Mechanism in Symbol Decoding",
+    "The Cumulative Distribution Function (CDF) update mechanism in the AV1 video codec is a core component of its entropy coding engine, allowing the decoder to adapt dynamically to the shifting statistics of video data. By recalculating symbol probabilities",
+    false
+  ],
+  [
+    36,
+    "How AV1 Daala Entropy Coding Outperforms CABAC",
+    "The AV1 video codec incorporates an entropy coding framework derived from the experimental Daala project rather than the traditional Context-Adaptive Binary Arithmetic Coding (CABAC) standard found in H.264 and HEVC. This article examines the architectur",
+    false
+  ],
+  [
+    35,
+    "AV1 Multi-Symbol Entropy Coder Architecture",
+    "The AOMedia Video 1 (AV1) video codec uses an advanced multi-symbol arithmetic entropy coder designed to balance high compression efficiency with hardware decoding throughput. Derived from technologies developed in the Daala video coding research project",
+    false
+  ],
+  [
+    34,
+    "How AV1 Identity Transform Benefits Screen Content",
+    "This article explores how the AV1 video codec leverages the identity transform to dramatically improve the compression and visual quality of synthetic and screen content. Unlike natural camera-captured video, screen content—such as user interfaces, tex",
+    false
+  ],
+  [
+    33,
+    "AV1 Largest Transform Block Size Explained",
+    "This article explores the transform block architecture of the AV1 video codec, focusing specifically on the maximum allowable transform size defined in the standard. It details the dimensions of the largest transform block, how it integrates with AV1's s",
+    false
+  ],
+  [
+    32,
+    "How ADST Improves Edge Coding in AV1",
+    "The AV1 video codec incorporates the Asymmetric Discrete Sine Transform (ADST) alongside the traditional Discrete Cosine Transform (DCT) to significantly optimize compression efficiency near block boundaries. In intra-prediction, pixel values are predict",
+    false
+  ],
+  [
+    31,
+    "AV1 Transform Types Beyond Standard DCT",
+    "The AOMedia Video 1 (AV1) video codec achieves superior compression efficiency over predecessor formats largely through its advanced transform framework. While legacy video coding standards rely almost exclusively on the standard Discrete Cosine Transfor",
+    false
+  ],
+  [
+    30,
+    "Difference-Modulated Masked Prediction in AV1",
+    "This article provides a technical overview of difference-modulated masked prediction within the AV1 video codec's inter coding framework. It examines how this advanced tool functions as part of AV1's compound prediction toolset, detailing the underlying",
+    false
+  ],
+  [
+    29,
+    "AV1 Wedge-Based Prediction Block Segmentation",
+    "Wedge-based prediction is a specialized compound inter-prediction tool in the AV1 video codec that segments rectangular coding blocks into two non-rectangular regions using predefined directional dividing lines. By moving beyond traditional horizontal an",
+    false
+  ],
+  [
+    28,
+    "Compound Prediction Modes in AV1 Explained",
+    "Compound prediction in the AV1 video codec is an advanced inter-frame compression technique that combines two distinct reference predictors to reconstruct a single image block. By blending motion-compensated signals from multiple frames—or combining te",
+    false
+  ],
+  [
+    27,
+    "How AV1 Uses Global Motion Estimation",
+    "The AV1 video codec leverages Global Motion Estimation (GME) to detect and compensate for whole-frame movement, such as camera panning, tilting, rotation, and zooming, across adjacent video frames. Instead of encoding redundant motion vectors for hundred",
+    false
+  ],
+  [
+    26,
+    "Understanding AV1 Switch Frames in Video Streaming",
+    "The Switch Frame (S-Frame) feature in the AV1 video codec is an architectural innovation designed to make adaptive bitrate (ABR) streaming significantly more bandwidth-efficient. In modern streaming protocols like HLS and DASH, video players dynamically",
+    false
+  ],
+  [
+    25,
+    "How Affine Motion Modeling Improves AV1 Compression",
+    "This article explores how the AV1 video codec leverages affine motion modeling to significantly boost compression efficiency over older standards. By moving beyond simple translational motion to account for complex movements like zoom, rotation, and shea",
+    false
+  ],
+  [
+    24,
+    "Warped Motion Compensation in AV1 Inter Coding",
+    "Warped motion compensation is an advanced inter-frame prediction technique in the AV1 video codec designed to model complex, non-translational physical movements such as camera zoom, rotation, and perspective shifts. While traditional video codecs rely a",
+    false
+  ],
+  [
+    23,
+    "How AV1 Dynamic Reference Frame Selection Works",
+    "This article provides an overview of the dynamic reference frame selection mechanism in the AV1 video codec. AV1 significantly improves compression efficiency over previous codecs by expanding the pool of available reference frames and introducing flexib",
+    false
+  ],
+  [
+    22,
+    "Maximum Reference Frames in AV1 Codec",
+    "This article provides a concise overview of the reference frame architecture in the AV1 video codec. It details the exact limits on reference frames an inter frame can access, explains how the reference buffer pool operates, and highlights how AV1 handle",
+    false
+  ],
+  [
+    21,
+    "How Intra Block Copy Enhances AV1 Screen Coding",
+    "Intra Block Copy (IBC) is a specialized coding tool in the AV1 video codec designed specifically to improve the compression efficiency of screen content, such as computer graphics, text, and user interfaces. Unlike natural camera-captured video, screen c",
+    false
+  ],
+  [
+    20,
+    "What Is AV1 Chroma from Luma Prediction?",
+    "Chroma from Luma (CfL) is an intra-prediction tool in the AV1 video codec that predicts color detail directly from reconstructed brightness information within the same block. By exploiting the strong correlation between color and brightness variations in",
+    false
+  ],
+  [
+    19,
+    "How Smooth Mode Works in AV1 Intra Coding",
+    "This article provides an overview of the Smooth intra prediction modes in the AV1 video codec, explaining how they overcome the limitations of traditional directional and DC modes. You will learn the mechanics behind these predictors, how they utilize ad",
+    false
+  ],
+  [
+    18,
+    "AV1 Intra Prediction Angle Delta Modulation Explained",
+    "This article provides an overview of angle delta modulation in the AV1 video codec, explaining its mechanics, core purpose, and benefits. In AV1 intra coding, angle delta modulation enables fine-grained directional prediction by adding small angular offs",
+    false
+  ],
+  [
+    17,
+    "AV1 Directional Intra Prediction Modes Explained",
+    "This article provides an overview of intra prediction in the AV1 video codec, focusing specifically on its directional modes. AV1 significantly expands upon older video formats by offering a total of 56 directional intra prediction modes. By utilizing a",
+    false
+  ],
+  [
+    16,
+    "Non-Square Partition Shapes in AV1 Codec",
+    "The AOMedia Video 1 (AV1) specification enhances coding efficiency by introducing a flexible block partitioning structure that departs from traditional purely square quad-tree splits. This article details the non-square partition shapes implemented in AV",
+    false
+  ],
+  [
+    15,
+    "AV1 128x128 Superblock Recursive Partitioning",
+    "This article explains how the AV1 video codec divides a 128x128 superblock into smaller transform and prediction blocks using its recursive partition tree. It covers the 10 distinct partition types available in the specification, the recursive traversal",
+    false
+  ],
+  [
+    14,
+    "AV1 Maximum Superblock Size Explained",
+    "This article explores the superblock architecture within the AV1 video codec, specifically focusing on its maximum superblock size and its role in block partitioning. By examining how AV1 handles macroblock processing compared to older standards, this gu",
+    false
+  ],
+  [
+    13,
+    "AV1 Temporal Scalability in Bitstream Framing",
+    "This article provides an overview of how the AV1 video codec natively supports temporal scalability through its bitstream syntax. By leveraging Open Bitstream Units (OBUs), hierarchical reference structures, and explicit header signaling, AV1 enables dec",
+    false
+  ],
+  [
+    12,
+    "The Role of the Sequence Header OBU in AV1",
+    "This article provides an overview of the Sequence Header Open Bitstream Unit (OBU) in the AV1 video codec, explaining its critical function as the foundational configuration block of the bitstream. It details how the Sequence Header establishes essential",
+    false
+  ],
+  [
+    11,
+    "What Are Open Bitstream Units in AV1?",
+    "Open Bitstream Units (OBUs) are the foundational structural syntax elements used to package, format, and deliver video data within the AOMedia Video 1 (AV1) codec specification. This article breaks down the architecture of OBUs in AV1, explains their int",
+    false
+  ],
+  [
+    10,
+    "AV1 vs VVC Licensing Costs: Key Differences",
+    "The ongoing transition to next-generation video compression has placed AV1 and Versatile Video Coding (VVC/H.266) at the center of industry adoption discussions, with licensing structures serving as the primary point of divergence. While AV1 was created",
+    false
+  ],
+  [
+    9,
+    "AV1 vs HEVC Bitrate Savings at High Resolutions",
+    "This article examines how the AV1 video codec compares to HEVC (H.265) in compression efficiency, focusing specifically on bitrate savings at 4K and 8K resolutions. While HEVC has long served as the industry standard for high-resolution video delivery, t",
+    false
+  ],
+  [
+    8,
+    "AV1 vs H.264: Bandwidth Savings and Efficiency",
+    "This article examines the compression efficiency of the open-source AV1 video codec compared to the legacy H.264 (AVC) standard. By analyzing standardized video quality benchmarks, it highlights the typical bandwidth savings AV1 delivers at equivalent vi",
+    false
+  ],
+  [
+    7,
+    "AV1 vs VP9: Compression Efficiency Comparison",
+    "This article explores how the AV1 video codec compares to its predecessor, VP9, in terms of compression efficiency. AV1 offers substantial bitrate savings over VP9 by delivering equivalent or superior visual fidelity at significantly lower file sizes, dr",
+    false
+  ],
+  [
+    6,
+    "Core Technologies from VP9, Daala, and Thor in AV1",
+    "The AOMedia Video 1 (AV1) codec is an open-source, royalty-free video standard developed by the Alliance for Open Media (AOMedia) to deliver superior compression efficiency for web and streaming media. Designed to succeed VP9, AV1 is a collaborative synt",
+    false
+  ],
+  [
+    5,
+    "When Was the AV1 Bitstream Specification Released?",
+    "This article provides a concise overview of the AV1 (AOMedia Video 1) video codec, focusing on its official standardization timeline and development milestones. It specifically highlights the exact year the first frozen bitstream specification was finali",
+    false
+  ],
+  [
+    4,
+    "AV1 vs HEVC Licensing: Key Differences Explained",
+    "The primary difference between AV1 and HEVC (H.265) lies in their licensing frameworks: AV1 is an open-source, royalty-free video codec developed to eliminate adoption costs, whereas HEVC is governed by a fragmented, royalty-bearing model managed by mult",
+    false
+  ],
+  [
+    3,
+    "The Primary Motivation Behind the AV1 Codec",
+    "The primary motivation behind creating the AOMedia Video 1 (AV1) codec was to provide a high-performance, royalty-free video compression format that eliminated the exorbitant licensing fees and legal complexities associated with existing standards like H",
+    false
+  ],
+  [
+    2,
+    "Who Formed the Alliance for Open Media to Develop AV1",
+    "The Alliance for Open Media (AOMedia) was established in September 2015 by seven major technology giants aiming to create a next-generation, royalty-free video coding format known as AV1. Facing complex licensing issues and high royalty fees associated w",
+    false
+  ],
+  [
+    1,
+    "Who Founded and Released the AV1 Video Format?",
+    "The AOMedia Video 1 (AV1) format is an open, royalty-free video coding format designed for efficient video streaming across the internet. This article explores the Alliance for Open Media (AOMedia), the non-profit consortium responsible for founding and",
+    false
+  ]
+]

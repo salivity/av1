@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HLS AV1 Video Fragmentation for Apple Delivery - av1</title>
+    <meta name="description" content="This article provides an overview of how HTTP Live Streaming (HLS) delivers AV1-encoded video to Apple devices using fragmented MP4 (fMP4) containers. It covers the structural requirements of Common Media Application Format (CMAF) media segments, initial">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/hls-av-1-video-fragmentation-for-apple-delivery">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HLS AV1 Video Fragmentation for Apple Delivery - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/hls-av-1-video-fragmentation-for-apple-delivery" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how HTTP Live Streaming (HLS) delivers AV1-encoded video to Apple devices using fragmented MP4 (fMP4) containers. It covers the structural requirements of Common Media Application Format (CMAF) media segments, initial" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="hls-av1-video-fragmentation-for-apple-delivery">HLS AV1 Video
+Fragmentation for Apple Delivery</h1>
+<p>This article provides an overview of how HTTP Live Streaming (HLS)
+delivers AV1-encoded video to Apple devices using fragmented MP4 (fMP4)
+containers. It covers the structural requirements of Common Media
+Application Format (CMAF) media segments, initialization box mapping,
+codec-specific playlist tagging, and how Apple’s native media framework
+(AVFoundation) parses and renders hardware-accelerated AV1 streams
+across compatible hardware like the A17 Pro and M3 chip families.</p>
+<h3 id="the-shift-to-fragmented-mp4-fmp4">The Shift to Fragmented MP4
+(fMP4)</h3>
+<p>HLS traditionally utilized MPEG-2 Transport Streams (TS) for legacy
+codecs like H.264. However, Apple’s HLS specification mandates the use
+of fragmented MP4 (ISO/IEC 14496-12) or CMAF (Common Media Application
+Format) containers for modern codecs, including AV1.</p>
+<p>AV1 video streams are encapsulated using the <code>av01</code>
+four-character code (FourCC) inside the ISO Base Media File Format
+(ISOBMFF). Legacy <code>.ts</code> containers do not support AV1;
+delivery requires splitting the video stream into an initialization
+segment and a series of discrete media fragments.</p>
+<h3 id="structure-of-av1-segments-in-hls">Structure of AV1 Segments in
+HLS</h3>
+<p>HLS delivers fragmented AV1 by separating metadata from compressed
+sample data:</p>
+<ol type="1">
+<li><strong>Initialization Segment:</strong> Contains the
+<code>ftyp</code> (File Type) and <code>moov</code> (Movie) boxes. This
+file defines the track header, color profile, and the <code>av1C</code>
+(AV1 Configuration Box) containing the Sequence Header Open Bitstream
+Unit (OBU). The initialization segment is downloaded once per stream
+variation.</li>
+<li><strong>Media Segments:</strong> Composed of paired
+<code>moof</code> (Movie Fragment) and <code>mdat</code> (Media Data)
+boxes.
+<ul>
+<li>The <code>moof</code> box contains the fragment metadata, including
+sample run parameters (<code>trun</code>) and decode timestamps.</li>
+<li>The <code>mdat</code> box carries the actual AV1 temporal units
+(OBUs containing frame headers and tile groups).</li>
+</ul></li>
+</ol>
+<p>For reliable playback in the Apple ecosystem, each fragment must
+begin with a closed Group of Pictures (GOP) starting on an AV1 Key Frame
+(IDR equivalent) to ensure independent decodability.</p>
+<h3 id="hls-multivariant-and-media-playlist-implementation">HLS
+Multivariant and Media Playlist Implementation</h3>
+<p>To properly signal AV1 content to Apple’s native player framework
+(<code>AVPlayer</code>), the HLS master and media playlists must include
+specific tags and RFC 6381-compliant codec parameters.</p>
+<h4 id="multivariant-playlist-masterm3u8">Multivariant Playlist
+(<code>master.m3u8</code>)</h4>
+<p>The multivariant playlist must declare the full AV1 codec string
+within the <code>#EXT-X-STREAM-INF</code> tag, specifying profile,
+level, and bit depth:</p>
+<pre class="m3u8"><code>#EXTM3U
+#EXT-X-VERSION:7
+
+#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080,CODECS=&quot;av01.0.08M.10&quot;
+1080p/prog_index.m3u8</code></pre>
+<ul>
+<li><code>av01</code>: AV1 codec identifier.</li>
+<li><code>0</code>: Main Profile.</li>
+<li><code>08M</code>: Level 4.0, Main Tier.</li>
+<li><code>10</code>: 10-bit color depth.</li>
+</ul>
+<h4 id="media-playlist-prog_indexm3u8">Media Playlist
+(<code>prog_index.m3u8</code>)</h4>
+<p>The media playlist maps the initialization segment and indexes the
+media fragments sequentially:</p>
+<pre class="m3u8"><code>#EXTM3U
+#EXT-X-VERSION:7
+#EXT-X-TARGETDURATION:6
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-PLAYLIST-TYPE:VOD
+
+#EXT-X-MAP:URI=&quot;init.mp4&quot;
+
+#EXTINF:6.00000,
+segment_0.m4s
+#EXTINF:6.00000,
+segment_1.m4s
+#EXT-X-ENDLIST</code></pre>
+<p>The <code>#EXT-X-MAP</code> tag points directly to the
+<code>init.mp4</code> file, ensuring <code>AVPlayer</code> configures
+the decoder pipeline before attempting to decode subsequent
+<code>.m4s</code> fragments.</p>
+<h3 id="apple-platform-compatibility-and-hardware-decoding">Apple
+Platform Compatibility and Hardware Decoding</h3>
+<p>Handling AV1 via HLS depends heavily on platform hardware. AV1
+hardware acceleration was introduced with the <strong>A17 Pro</strong>
+(iPhone 15 Pro and newer) and the <strong>M3 series</strong> chips (Mac
+and iPad).</p>
+<p>On supported devices:</p>
+<ul>
+<li><strong>AVFoundation Parsing:</strong> The system demuxes the
+fragmented MP4 container and directly forwards the AV1 OBUs from the
+<code>mdat</code> box to the hardware video decoder pipeline via
+VideoToolbox.</li>
+<li><strong>Color Representation:</strong> AV1 streams encoded in 10-bit
+High Dynamic Range (HDR10 or HLG) must declare accurate color signaling
+(<code>colr</code> box in the container and color metadata in the
+sequence OBU) for Apple's Display P3 and XDR engines to map the colors
+correctly.</li>
+<li><strong>Fallback Configurations:</strong> Devices lacking hardware
+decoders (A16 Bionic and older) do not natively decode 4K/high-bitrate
+AV1 via standard system decoders in an energy-efficient manner.
+Therefore, HLS multivariant playlists targeting broad Apple ecosystems
+should include fallback variants encoded in HEVC (<code>hvc1</code>) or
+H.264 (<code>avc1</code>).</li>
+</ul>
+<h3 id="low-latency-hls-ll-hls-with-av1">Low-Latency HLS (LL-HLS) with
+AV1</h3>
+<p>AV1 fragmentation also integrates with Low-Latency HLS. In LL-HLS
+configurations, media segments are broken down into smaller sub-segments
+called "parts" (using fragmented MP4 chunks). These parts are served
+using HTTP/2 or HTTP/3 chunked transfer encoding, allowing Apple client
+devices to begin decoding parts of an AV1 GOP before the full segment
+has finished generating on the packager.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Best AV1 Presets for Low-Latency Live Streaming - av1</title>
+    <meta name="description" content="AV1 delivers exceptional compression efficiency, but its computational complexity has traditionally made real-time processing difficult. Modern software encoders like SVT-AV1, libaom, and rav1e, alongside dedicated hardware encoders, now offer optimized">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/best-av-1-presets-for-low-latency-live-streaming">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Best AV1 Presets for Low-Latency Live Streaming - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/best-av-1-presets-for-low-latency-live-streaming" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 delivers exceptional compression efficiency, but its computational complexity has traditionally made real-time processing difficult. Modern software encoders like SVT-AV1, libaom, and rav1e, alongside dedicated hardware encoders, now offer optimized" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="best-av1-presets-for-low-latency-live-streaming">Best AV1
+Presets for Low-Latency Live Streaming</h1>
+<p>AV1 delivers exceptional compression efficiency, but its
+computational complexity has traditionally made real-time processing
+difficult. Modern software encoders like SVT-AV1, libaom, and rav1e,
+alongside dedicated hardware encoders, now offer optimized speed presets
+specifically designed for real-time, low-latency transmission. Achieving
+low latency requires balancing encoding speed against compression
+efficiency to prevent frame drops and pipeline buffering.</p>
+<h3 id="svt-av1-presets">SVT-AV1 Presets</h3>
+<p>SVT-AV1 is the most widely adopted open-source AV1 encoder for
+high-throughput production. Its speed presets range from 0 (slowest,
+highest quality) to 13 (fastest).</p>
+<ul>
+<li><strong>Preset 10 to 13:</strong> These presets are mandatory for
+real-time live streaming on standard modern multi-core CPUs (e.g., 8 to
+16 cores). They strip away heavy compute passes, like deep visual
+metrics optimization and deep partition searches, ensuring encoding
+speeds keep pace with 1080p60 or 4K30 incoming video feeds.</li>
+<li><strong>Preset 8 and 9:</strong> These are usable on high-end,
+high-core-count workstation or server processors (such as AMD
+Threadripper or EPYC). They offer significantly better quality-per-bit
+than presets 10–13, but they demand substantial processing power to
+avoid falling behind real-time playback.</li>
+</ul>
+<p>To enforce low latency in SVT-AV1 alongside these presets, you must
+also disable frame lookaheads (<code>--lookahead 0</code>) and enable
+low-delay mode (such as <code>--pred-struct 1</code> for a flat
+prediction structure).</p>
+<h3 id="libaom-av1-real-time-mode">libaom-AV1 (Real-Time Mode)</h3>
+<p>The reference encoder <code>libaom</code> provides a dedicated
+real-time mode (<code>--rt</code>) combined with the
+<code>--cpu-used</code> switch, which controls speed from 0 to 10.</p>
+<ul>
+<li><strong><code>--cpu-used</code> 7 to 10:</strong> These presets are
+engineered specifically for real-time communication protocols like
+WebRTC. In <code>--rt</code> mode, levels 7 through 10 skip exhaustive
+search algorithms, allow non-reference frame dropping if the pipeline
+stalls, and implement single-pass encoding. Level 8 is the industry
+standard for software-based WebRTC implementations, while levels 9 and
+10 are ideal for resource-constrained systems.</li>
+<li>Levels below 6 in <code>libaom</code> are unsuitable for live
+streaming, as they introduce severe latency and cannot maintain a 30fps
+or 60fps encoding rate in real time.</li>
+</ul>
+<h3 id="rav1e-presets">rav1e Presets</h3>
+<p>rav1e, the memory-safe Rust-based AV1 encoder, uses speed levels from
+0 to 10.</p>
+<ul>
+<li><strong>Speed 10:</strong> This is the only preset capable of
+sustaining live, real-time encoding for HD video on standard consumer
+hardware. It disables multi-pass decisions, complex transform units, and
+extensive RDO (Rate-Distortion Optimization).</li>
+<li><strong>Speed 8 and 9:</strong> These can achieve real-time speeds
+on dedicated server hardware with lower-resolution streams (such as
+720p), but they often struggle to maintain real-time low-latency
+compliance on standard client machines.</li>
+</ul>
+<h3 id="hardware-encoders-nvenc-quick-sync-amf">Hardware Encoders
+(NVENC, Quick Sync, AMF)</h3>
+<p>For production environments where sub-second latency is critical,
+dedicated hardware silicon bypasses CPU bottlenecks entirely:</p>
+<ul>
+<li><strong>NVIDIA NVENC (RTX 40-series and newer):</strong> Presets
+<strong>P1 (Fastest)</strong> through <strong>P4 (Medium)</strong>
+provide reliable sub-frame encoding times. For ultra-low latency, P1 to
+P3 are ideal because they minimize internal buffering while still
+outperforming older h.264 codecs in visual fidelity.</li>
+<li><strong>Intel Quick Sync Video (Arc and 11th Gen Core or
+newer):</strong> The <strong>Very Fast</strong> and
+<strong>Faster</strong> target usage presets eliminate latency overhead
+and provide stable real-time throughput up to 4K60.</li>
+<li><strong>AMD AMF (Radeon RX 7000-series):</strong> The
+<strong>Speed</strong> preset configures the hardware VCN block for
+low-delay mode, disabling lookahead buffers.</li>
+</ul>
+<h3 id="essential-low-latency-configuration-rules">Essential Low-Latency
+Configuration Rules</h3>
+<p>Regardless of the selected preset, the encoder will fail to deliver
+low latency unless associated pipeline settings are adjusted:</p>
+<ol type="1">
+<li><strong>Disable B-Frames:</strong> B-frames require future frame
+references, inherently introducing presentation delay. Set maximum
+consecutive B-frames to 0.</li>
+<li><strong>Zero Lookahead:</strong> Disable multi-frame analysis
+buffers (set lookahead to 0 or 1).</li>
+<li><strong>Strict Constant Bitrate (CBR):</strong> Use CBR with minimal
+VBV (Video Buffer Verifier) buffer sizes to prevent large frame spikes
+that cause network transmission delays.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encoding and Decoding 12-Bit Cinema Video with AV1 - av1</title>
+    <meta name="description" content="This article examines how professional 12-bit cinema formats are encoded and decoded using the AOMedia Video 1 (AV1) standard. It details the role of the AV1 Professional Profile, the end-to-end processing pipeline for mastering-grade color spaces, the c">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/encoding-and-decoding-12-bit-cinema-video-with-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Encoding and Decoding 12-Bit Cinema Video with AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/encoding-and-decoding-12-bit-cinema-video-with-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how professional 12-bit cinema formats are encoded and decoded using the AOMedia Video 1 (AV1) standard. It details the role of the AV1 Professional Profile, the end-to-end processing pipeline for mastering-grade color spaces, the c" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="encoding-and-decoding-12-bit-cinema-video-with-av1">Encoding and
+Decoding 12-Bit Cinema Video with AV1</h1>
+<p>This article examines how professional 12-bit cinema formats are
+encoded and decoded using the AOMedia Video 1 (AV1) standard. It details
+the role of the AV1 Professional Profile, the end-to-end processing
+pipeline for mastering-grade color spaces, the computational operations
+applied during compression, and the system requirements necessary for
+playback and production integration.</p>
+<h3 id="the-av1-professional-profile">The AV1 Professional Profile</h3>
+<p>AV1 defines three profiles: Main, High, and Professional. While the
+Main and High profiles are restricted to 8-bit and 10-bit depths, the
+<strong>Professional Profile</strong> natively supports 12-bit color
+depth.</p>
+<p>The Professional Profile accommodates:</p>
+<ul>
+<li>Bit depths of 8, 10, and 12 bits per sample.</li>
+<li>Chroma subsampling formats of 4:0:0 (monochrome), 4:2:0, 4:2:2, and
+4:4:4.</li>
+<li>Full-range RGB color spaces.</li>
+</ul>
+<p>This configuration allows AV1 to handle raw master captures,
+intermediate formats (such as Apple ProRes 4444 XQ or Avid DNxHR HQX),
+and uncompressed cinema sequences without forcing bit-depth
+downsampling.</p>
+<h3 id="the-12-bit-encoding-pipeline">The 12-Bit Encoding Pipeline</h3>
+<p>Encoding 12-bit cinema footage into AV1 involves a sequence of
+high-precision mathematical operations designed to preserve dynamic
+range and color accuracy:</p>
+<ol type="1">
+<li><strong>Color Space Ingestion:</strong> Professional cinema formats
+typically utilize wide color gamuts such as DCI-P3 or Rec. 2020, along
+with transfer characteristics like SMPTE ST 2084 (PQ) or hybrid
+log-gamma (HLG). The encoder reads raw camera buffers or high-bit-depth
+frame sequences (e.g., 16-bit DPX or OpenEXR) and maps them into 12-bit
+integer representations using specific signaling metadata (Color
+Primaries, Transfer Characteristics, and Matrix Coefficients).</li>
+<li><strong>Block Partitioning and Prediction:</strong> AV1 divides
+frames into superblocks (up to 128x128 pixels), which are recursively
+partitioned into smaller transform units. Intra-frame prediction
+utilizes directional and smooth predictors, while inter-frame prediction
+uses motion vectors with sub-pixel precision. At 12 bits, the prediction
+residuals retain subtle luminance and chrominance shifts, preventing
+banding artifacts in extreme shadows and bright highlights.</li>
+<li><strong>High-Precision Transforms and Quantization:</strong> The
+residuals undergo discrete cosine transforms (DCT) or asymmetric
+discrete sine transforms (ADST). The intermediate calculations for
+transforms must maintain higher register bit-widths (typically 16-bit to
+32-bit arithmetic) to prevent rounding errors. The resulting transform
+coefficients are then quantized according to the target bitrate or
+constant quality factor (CRF).</li>
+<li><strong>Entropy Encoding:</strong> AV1 uses a non-binary arithmetic
+coding engine (symbol-to-symbol entropy coder). Quantized transform
+coefficients, motion vectors, and filtering parameters are serialized
+into the output bitstream alongside Sequence Header OBU (Open Bitstream
+Unit) flags declaring <code>seq_profile = 2</code> (Professional
+Profile) and <code>BitDepth = 12</code>.</li>
+</ol>
+<h3 id="the-12-bit-decoding-pipeline">The 12-Bit Decoding Pipeline</h3>
+<p>Decoding an AV1 12-bit stream reverses the encoding process while
+maintaining precision to output a visually lossless reconstruction:</p>
+<ol type="1">
+<li><strong>Header Parsing and Resource Allocation:</strong> The decoder
+identifies the bitstream as Profile 2. Internal memory buffers are
+allocated with 16-bit storage containers per pixel to accommodate the
+12-bit values without truncation.</li>
+<li><strong>Inverse Quantization and Inverse Transform:</strong> Scaled
+coefficients are processed through inverse transforms. The calculation
+relies on SIMD-accelerated instructions (such as AVX-512 or ARM Neon)
+using wide integer registers to ensure that mathematical reconstruction
+matches the encoder’s reference frame generation precisely.</li>
+<li><strong>In-Loop Filtering:</strong> AV1 employs three consecutive
+in-loop filtering stages to clean the reconstructed frames:
+<ul>
+<li><strong>Deblocking Filter:</strong> Smooths block edges based on
+quantization levels.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+Identifies directional edges and removes ringing artifacts without
+blurring fine cinema details.</li>
+<li><strong>Loop Restoration:</strong> Applies Wiener filters or
+self-guided restoration to restore high-frequency details. At 12 bits,
+these filters operate with extended bit-depth constants to avoid
+truncation noise in flat areas.</li>
+</ul></li>
+<li><strong>Film Grain Synthesis (Optional):</strong> If film grain
+synthesis is enabled, the encoder strips analog or digital sensor grain
+and sends parametric data instead. The 12-bit decoder generates noise
+procedurally and blends it into the 12-bit picture before sending the
+frame to the output surface.</li>
+</ol>
+<h3 id="implementation-and-processing-considerations">Implementation and
+Processing Considerations</h3>
+<p>Software libraries like the reference encoder <code>libaom</code>
+support 12-bit encoding via configuration flags
+(<code>--bit-depth=12</code> and <code>--profile=2</code>). Production
+usage requires substantial computational throughput because dedicated
+hardware acceleration for AV1 Profile 2 is uncommon in consumer GPUs and
+media decoders, which typically limit fixed-function hardware pipelines
+to 8-bit and 10-bit 4:2:0 formats.</p>
+<p>Consequently, 12-bit AV1 operations rely primarily on multi-threaded
+CPU architectures, GPU compute shaders, or custom FPGA/ASIC accelerators
+capable of processing 12-bit cinema streams in post-production and
+archival environments.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

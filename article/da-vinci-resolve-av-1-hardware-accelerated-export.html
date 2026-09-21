@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaVinci Resolve AV1 Hardware-Accelerated Export - av1</title>
+    <meta name="description" content="This article examines how DaVinci Resolve utilizes modern hardware architectures to deliver high-performance AV1 video encoding. Beginning in DaVinci Resolve Studio 18.1, Blackmagic Design integrated native AV1 export pipelines that interface directly wi">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/da-vinci-resolve-av-1-hardware-accelerated-export">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="DaVinci Resolve AV1 Hardware-Accelerated Export - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/da-vinci-resolve-av-1-hardware-accelerated-export" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how DaVinci Resolve utilizes modern hardware architectures to deliver high-performance AV1 video encoding. Beginning in DaVinci Resolve Studio 18.1, Blackmagic Design integrated native AV1 export pipelines that interface directly wi" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="davinci-resolve-av1-hardware-accelerated-export">DaVinci Resolve
+AV1 Hardware-Accelerated Export</h1>
+<p>This article examines how DaVinci Resolve utilizes modern hardware
+architectures to deliver high-performance AV1 video encoding. Beginning
+in DaVinci Resolve Studio 18.1, Blackmagic Design integrated native AV1
+export pipelines that interface directly with dedicated media engines
+found on modern GPUs. By bypassing resource-heavy CPU-based encoding in
+favor of specialized hardware ASICs from NVIDIA, AMD, and Intel, DaVinci
+Resolve achieves significantly faster render times alongside the
+superior compression efficiency characteristic of the AV1 codec.</p>
+<h3 id="dedicated-hardware-integration">Dedicated Hardware
+Integration</h3>
+<p>Traditional AV1 software encoders, such as SVT-AV1 or libaom, are
+computationally expensive and struggle to achieve real-time export
+speeds on consumer workstations. DaVinci Resolve addresses this
+bottleneck by interfacing directly with the dedicated silicon built into
+current-generation graphics architectures:</p>
+<ul>
+<li><strong>NVIDIA Ada Lovelace (RTX 40-Series):</strong> Utilizes the
+8th-generation NVIDIA Encoder (NVENC), which includes dual AV1 encoders
+on high-end models that work in tandem to split encoding workloads.</li>
+<li><strong>Intel Arc and Core Ultra (Alchemist and newer):</strong>
+Leverages Intel Quick Sync Video via the Xe Media Engine, which natively
+supports AV1 encoding in microcode.</li>
+<li><strong>AMD RDNA 3 (Radeon RX 7000-Series):</strong> Employs the
+Video Codec Next (VCN 4.0) architecture to handle AV1 fixed-function
+encoding.</li>
+</ul>
+<p>DaVinci Resolve communicates with these components using low-level
+vendor software development kits (SDKs)—namely NVIDIA Video Codec SDK,
+Intel oneVPL, and AMD Advanced Media Framework (AMF).</p>
+<h3 id="the-in-vram-processing-pipeline">The In-VRAM Processing
+Pipeline</h3>
+<p>The primary efficiency gain in DaVinci Resolve’s AV1 pipeline comes
+from keeping frame processing inside GPU memory (VRAM). During
+export:</p>
+<ol type="1">
+<li><strong>Image Processing:</strong> Resolve’s image processing
+pipeline executes demosaicing, color grading, fusion effects, and
+spatial scaling entirely within GPU compute APIs (CUDA for NVIDIA, Metal
+for Apple silicon, or OpenCL).</li>
+<li><strong>Zero-Copy Frame Handoff:</strong> Once a frame is finalized
+in VRAM, Resolve passes the uncompressed frame pointer directly to the
+dedicated hardware encoder on the same GPU. This eliminates the latency
+and bandwidth overhead of copying high-resolution raw frames back across
+the PCIe bus to system RAM.</li>
+<li><strong>Bitstream Serialization:</strong> The dedicated encoder ASIC
+processes the frame using fixed-function hardware, compressing it into
+an AV1 elementary stream before passing the lightweight bitstream to the
+storage controller for disk write.</li>
+</ol>
+<h3 id="export-configuration-in-the-deliver-page">Export Configuration
+in the Deliver Page</h3>
+<p>Hardware-accelerated AV1 encoding is accessed via the
+<strong>Deliver</strong> page within DaVinci Resolve Studio. When
+configuring export settings:</p>
+<ul>
+<li><strong>Format:</strong> Select either <strong>MP4</strong> or
+<strong>MKV</strong>, both of which support AV1 containers within the
+software.</li>
+<li><strong>Codec:</strong> Choose <strong>AV1</strong>.</li>
+<li><strong>Encoder:</strong> Resolve auto-detects the host system's
+hardware. Instead of a generic CPU profile, the encoder field presents
+options such as <strong>NVIDIA</strong>, <strong>AMD</strong>, or
+<strong>Intel</strong>, depending on the installed hardware.</li>
+<li><strong>Rate Control:</strong> Users can configure CBR (Constant
+Bitrate), VBR (Variable Bitrate), or CQ (Constant Quality) modes, which
+map directly to the corresponding algorithms programmed into the GPU
+vendor's hardware encoder.</li>
+</ul>
+<h3 id="operational-advantages">Operational Advantages</h3>
+<p>Integrating AV1 into hardware-accelerated pipelines offers two clear
+production advantages:</p>
+<ol type="1">
+<li><strong>Compression Efficiency at Scale:</strong> AV1 matches or
+exceeds the quality of HEVC (H.265) while dramatically outperforming
+H.264 at lower bitrates, reducing network delivery bandwidth and storage
+requirements by roughly 30% to 50% compared to legacy codecs.</li>
+<li><strong>Real-Time and Faster-Than-Real-Time Export:</strong> By
+delegating the mathematically complex AV1 transform and entropy coding
+algorithms to dedicated hardware, system CPUs remain completely
+unburdened, allowing DaVinci Resolve to export 4K and 8K timelines at
+speeds comparable to standard H.264 hardware renders.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

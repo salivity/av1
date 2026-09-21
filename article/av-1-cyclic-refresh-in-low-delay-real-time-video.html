@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Cyclic Refresh in Low-Delay Real-Time Video - av1</title>
+    <meta name="description" content="Cyclic refresh is a rate-control and error-resilience technique used in AV1 real-time encoding to maintain video quality and prevent transmission delays without relying on full keyframes. In low-latency applications like video conferencing and cloud gami">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-cyclic-refresh-in-low-delay-real-time-video">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Cyclic Refresh in Low-Delay Real-Time Video - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-cyclic-refresh-in-low-delay-real-time-video" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Cyclic refresh is a rate-control and error-resilience technique used in AV1 real-time encoding to maintain video quality and prevent transmission delays without relying on full keyframes. In low-latency applications like video conferencing and cloud gami" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-cyclic-refresh-in-low-delay-real-time-video">AV1 Cyclic
+Refresh in Low-Delay Real-Time Video</h1>
+<p>Cyclic refresh is a rate-control and error-resilience technique used
+in AV1 real-time encoding to maintain video quality and prevent
+transmission delays without relying on full keyframes. In low-latency
+applications like video conferencing and cloud gaming, transmitting an
+entire intra-coded frame (I-frame) creates a severe bitrate spike that
+causes network jitter, packet loss, and buffer delays. Cyclic refresh
+mitigates this by incrementally updating a portion of the frame over
+consecutive frames, smoothing out bandwidth demand while keeping
+end-to-end latency minimal.</p>
+<h3 id="the-challenge-of-real-time-video-delivery">The Challenge of
+Real-Time Video Delivery</h3>
+<p>Standard video compression structures utilize periodic keyframes to
+reset the temporal prediction chain, clear transmission errors, and
+refresh overall picture fidelity. However, an I-frame typically requires
+several times the bit budget of an inter-predicted frame (P-frame).</p>
+<p>In real-time communications—such as WebRTC workflows—network buffers
+are kept extremely small to minimize lag. A sudden spike in frame size
+can instantly overwhelm these buffers, causing network congestion and
+dropped frames. Disabling keyframes entirely is equally problematic, as
+quantization errors accumulate over time and transmission losses cause
+visual artifacts to propagate indefinitely across subsequent frames.</p>
+<h3 id="how-cyclic-refresh-works-in-av1">How Cyclic Refresh Works in
+AV1</h3>
+<p>Cyclic refresh solves this trade-off by spreading the cost of an
+I-frame across a sliding window of multiple P-frames.</p>
+<p>The encoder divides the video frame into a grid of blocks or
+macroblocks. Instead of refreshing all blocks at once, the algorithm
+selects a specific percentage—typically 5% to 20%—of the frame's surface
+area to be "refreshed" in each frame. Over a designated cycle (for
+example, across 10 to 20 consecutive frames), every spatial position
+within the picture area is refreshed at least once.</p>
+<p>In AV1, this process is primarily driven through segmentation
+maps:</p>
+<ol type="1">
+<li><strong>Segmentation Tagging:</strong> AV1 supports up to eight
+distinct segments per frame, allowing specific encoding parameters to be
+assigned to arbitrary groups of blocks. The cyclic refresh module marks
+the designated refresh region as a distinct segment.</li>
+<li><strong>Targeted Quality Boost:</strong> The blocks within the
+refresh segment are encoded with a lower Quantization Parameter (lower
+QP/higher fidelity) or forced into intra-prediction mode. This makes
+them cleaner references for future frames.</li>
+<li><strong>Reference Frame Management:</strong> The encoder prioritizes
+using these newly refreshed, high-quality blocks as reference sources
+for motion estimation in subsequent frames, accelerating quality
+propagation across the entire scene.</li>
+</ol>
+<h3 id="managing-motion-and-static-content">Managing Motion and Static
+Content</h3>
+<p>A purely mechanical scan across the frame can waste bits on
+completely static backgrounds or fail to clean up fast-moving objects.
+Advanced AV1 encoders, such as the real-time pipeline in
+<code>libaom</code>, apply adaptive logic to the cyclic refresh
+process:</p>
+<ul>
+<li><strong>Static Block Skipping:</strong> If a block has virtually
+zero motion and high similarity to its reference, the encoder can skip
+boosting it. This avoids wasting bandwidth on areas of the frame that
+have not suffered from drift or compression loss.</li>
+<li><strong>Motion-Aware Selection:</strong> High-motion areas or
+complex textures are dynamically prioritized to ensure artifacts are
+resolved quickly before they compound.</li>
+<li><strong>Bit Budget Balancing:</strong> To compensate for the higher
+bit allocation given to the refresh segment, the rest of the frame (the
+non-refreshed blocks) is coded with slightly higher quantization. This
+guarantees that the overall frame size remains flat and within the
+strict target bitrate.</li>
+</ul>
+<h3 id="benefits-for-low-delay-streaming">Benefits for Low-Delay
+Streaming</h3>
+<p>By replacing discrete keyframes with a continuous intra-refresh
+cycle, AV1 achieves several critical benefits in real-time
+scenarios:</p>
+<ul>
+<li><strong>Elimination of Bitrate Spikes:</strong> Network transmission
+remains predictable, preventing queue buildup in network hardware and
+drastically reducing latency.</li>
+<li><strong>Passive Error Recovery:</strong> In the event of minor
+packet loss, the cyclical refresh of blocks naturally clears visual
+corruption over a short duration without requiring the receiver to
+request an expensive Full Intra Request (FIR) or Picture Loss Indication
+(PLI).</li>
+<li><strong>Consistent CPU and Hardware Utilization:</strong>
+Eliminating large I-frames balances the computational load per frame,
+preventing encoding bottlenecks on the sender's device and ensuring
+steady frame pacing.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

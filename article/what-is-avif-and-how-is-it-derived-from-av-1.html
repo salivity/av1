@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is AVIF and How Is It Derived from AV1? - av1</title>
+    <meta name="description" content="The AV1 Image File Format (AVIF) is an open-source, royalty-free image format engineered to provide significantly better compression efficiency than legacy formats like JPEG, PNG, and WebP while preserving high visual quality. Derived directly from the A">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/what-is-avif-and-how-is-it-derived-from-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is AVIF and How Is It Derived from AV1? - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/what-is-avif-and-how-is-it-derived-from-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 Image File Format (AVIF) is an open-source, royalty-free image format engineered to provide significantly better compression efficiency than legacy formats like JPEG, PNG, and WebP while preserving high visual quality. Derived directly from the A" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-avif-and-how-is-it-derived-from-av1">What Is AVIF and
+How Is It Derived from AV1?</h1>
+<p>The AV1 Image File Format (AVIF) is an open-source, royalty-free
+image format engineered to provide significantly better compression
+efficiency than legacy formats like JPEG, PNG, and WebP while preserving
+high visual quality. Derived directly from the Alliance for Open Media's
+(AOMedia) AV1 video codec, AVIF encapsulates AV1-compressed still image
+frames inside the standardized ISO Base Media File Format (ISOBMFF)
+container. This article explains what AVIF is, its core capabilities,
+and the exact architectural process that links it to the AV1 video
+compression standard.</p>
+<h2 id="what-is-the-av1-image-file-format-avif">What Is the AV1 Image
+File Format (AVIF)?</h2>
+<p>AVIF is a modern image format developed by the Alliance for Open
+Media—a consortium that includes tech industry leaders such as Google,
+Apple, Mozilla, Microsoft, and Netflix. Its primary goal is to minimize
+web bandwidth usage and improve digital storage efficiency by
+drastically reducing file sizes without sacrificing fidelity.</p>
+<p>Key features of AVIF include:</p>
+<ul>
+<li><strong>High Compression Efficiency:</strong> Generates file sizes
+up to 50% smaller than JPEG and noticeably smaller than WebP at
+comparable visual quality.</li>
+<li><strong>Modern Color Support:</strong> Native support for High
+Dynamic Range (HDR), Wide Color Gamut (WCG), and standard color spaces
+such as sRGB, BT.2020, and DCI-P3.</li>
+<li><strong>Higher Bit Depths:</strong> Supports 8-bit, 10-bit, and
+12-bit color depths, virtually eliminating color banding in
+gradients.</li>
+<li><strong>Advanced Visual Features:</strong> Native support for
+transparency via an alpha channel, lossless and lossy compression, and
+image sequences (animations) comparable to animated GIFs or WebPs.</li>
+</ul>
+<h2 id="how-avif-is-derived-from-av1">How AVIF Is Derived from AV1</h2>
+<p>AVIF is not an entirely new compression algorithm built from scratch;
+rather, it is a specialized application of the AV1 video codec tailored
+for still imagery.</p>
+<h3 id="1-utilizing-av1-intra-frames-i-frames">1. Utilizing AV1
+Intra-Frames (I-Frames)</h3>
+<p>In digital video encoding, video streams consist of several frame
+types:</p>
+<ul>
+<li><strong>Inter-frames (P-frames and B-frames):</strong> Rely on
+differences between previous or future frames to save data.</li>
+<li><strong>Intra-frames (I-frames or Keyframes):</strong>
+Self-contained images encoded entirely on their own, independent of any
+surrounding frames.</li>
+</ul>
+<p>AVIF extracts this intra-frame compression mechanism from AV1. A
+standard static AVIF file is essentially a single, standalone AV1
+intra-frame. Because video compression engineers spent years optimizing
+AV1's intra-coding tools—such as directional spatial prediction,
+flexible transform block sizes (from 4x4 up to 64x64), and sophisticated
+deblocking and restoration filters—these same high-efficiency tools are
+directly applied to static images.</p>
+<h3 id="2-packaging-in-the-isobmff-container">2. Packaging in the
+ISOBMFF Container</h3>
+<p>While AV1 handles the actual pixel compression, it does not define
+how image metadata, color profiles, or file structures should be saved.
+To solve this, AVIF packages the AV1-compressed bitstream within the ISO
+Base Media File Format (ISOBMFF, specified in ISO/IEC 14496-12).</p>
+<p>This structure is conceptually identical to how the High Efficiency
+Image File Format (HEIF) works:</p>
+<ul>
+<li><strong>HEIF/HEIC:</strong> Uses the ISOBMFF container with
+H.265/HEVC video compression.</li>
+<li><strong>AVIF:</strong> Uses the ISOBMFF container with AV1 video
+compression.</li>
+</ul>
+<p>By utilizing the ISOBMFF standard, an AVIF file can carry auxiliary
+image items (such as alpha masks and depth maps), Exif data, XMP
+metadata, and color profile items (ICC profiles) alongside the
+compressed AV1 payload.</p>
+<h3 id="3-image-sequences-and-animation">3. Image Sequences and
+Animation</h3>
+<p>Because AV1 is inherently a video format, AVIF naturally extends into
+multi-frame formats. An animated AVIF image, often referred to as an
+AVIFS (AVIF Sequence), utilizes short sequences of AV1 video frames
+stored within the ISOBMFF container. This allows animated graphics to
+leverage both intra-frame and inter-frame temporal compression,
+producing animated graphics that are a fraction of the size of
+equivalent animated GIFs.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

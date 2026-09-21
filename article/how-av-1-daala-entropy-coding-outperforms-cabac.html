@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Daala Entropy Coding Outperforms CABAC - av1</title>
+    <meta name="description" content="The AV1 video codec incorporates an entropy coding framework derived from the experimental Daala project rather than the traditional Context-Adaptive Binary Arithmetic Coding (CABAC) standard found in H.264 and HEVC. This article examines the architectur">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-daala-entropy-coding-outperforms-cabac">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Daala Entropy Coding Outperforms CABAC - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-daala-entropy-coding-outperforms-cabac" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec incorporates an entropy coding framework derived from the experimental Daala project rather than the traditional Context-Adaptive Binary Arithmetic Coding (CABAC) standard found in H.264 and HEVC. This article examines the architectur" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-daala-entropy-coding-outperforms-cabac">How AV1 Daala
+Entropy Coding Outperforms CABAC</h1>
+<p>The AV1 video codec incorporates an entropy coding framework derived
+from the experimental Daala project rather than the traditional
+Context-Adaptive Binary Arithmetic Coding (CABAC) standard found in
+H.264 and HEVC. This article examines the architectural shift from
+binary arithmetic coding to Daala's multi-symbol range coding,
+highlighting how it eliminates throughput bottlenecks, accelerates
+hardware and software processing, improves probability modeling, and
+enhances overall compression efficiency.</p>
+<h3 id="multi-symbol-processing-vs-binary-serialization">Multi-Symbol
+Processing vs. Binary Serialization</h3>
+<p>The fundamental distinction between CABAC and the Daala-derived coder
+in AV1 lies in the alphabet size processed during each coding step.</p>
+<p>CABAC operates strictly as a binary arithmetic coder. Before
+encoding, any syntax element with non-binary values must undergo
+"binarization"—a process that splits the value into a tree of individual
+binary decisions called bins. Each bin is then sequentially fed into the
+arithmetic coder. This introduces a severe serialization bottleneck:
+decoding a large syntax element requires multiple iterations through the
+arithmetic decoding loop, where each step depends directly on the output
+of the preceding step.</p>
+<p>AV1's Daala-based coder is a non-binary, multi-symbol arithmetic
+coder. It directly processes alphabets containing multiple symbols (up
+to 16 symbols per alphabet) in a single cycle. By evaluating complete
+syntax elements simultaneously rather than breaking them down into
+strings of individual bits, AV1 significantly reduces the number of
+coder cycles required to process a given block of data.</p>
+<h3 id="throughput-and-hardware-scaling">Throughput and Hardware
+Scaling</h3>
+<p>Entropy decoding is historically the most difficult part of a video
+pipeline to parallelize because arithmetic coding is inherently
+serial.</p>
+<p>In high-bitrate scenarios—such as 4K or 8K video playback—CABAC
+struggles because the bin rate spikes. Hardware decoders must run at
+aggressively high clock frequencies to process enough bins per second to
+sustain real-time playback. When a single syntax element generates
+dozens of bins, CABAC engines experience latency stalls.</p>
+<p>By processing multi-symbol tokens, AV1 reduces the operational cycle
+count by roughly a factor of two to three compared to CABAC. Hardware
+decoders can run at substantially lower clock speeds, directly
+translating to lower power consumption and reduced thermal throttling on
+mobile devices. For high-throughput desktop GPUs and dedicated ASICs,
+this architecture easily scales to high-bitrate 10-bit and 12-bit
+workflows.</p>
+<h3
+id="cumulative-distribution-functions-cdfs-vs-binary-state-transitions">Cumulative
+Distribution Functions (CDFs) vs. Binary State Transitions</h3>
+<p>Probability estimation directly impacts compression efficiency. The
+two systems handle context-adaptive probability updates in fundamentally
+different ways:</p>
+<ul>
+<li><strong>CABAC State Machine:</strong> CABAC maintains probability
+states using a 63-state transition table. Every time a bin is encoded or
+decoded, the probability state transitions up or down based on a
+precomputed, hardcoded curve. This fixed step size can be slow to adapt
+to sharp changes in data statistics and loses precision due to coarse
+quantization.</li>
+<li><strong>AV1 Multi-Symbol CDFs:</strong> AV1 maintains 16-bit
+Cumulative Distribution Functions (CDFs) for each context. When a symbol
+is decoded, the entire distribution curve adapts smoothly based on a
+dynamic adaptation rate. The 16-bit precision allows the entropy coder
+to track real-world probabilities far more accurately than CABAC's 6-bit
+states, improving the overall rate-distortion (RD) performance of the
+codec.</li>
+</ul>
+<p>Furthermore, AV1 introduces CDF updating modes that allow the decoder
+to periodically freeze probability updates across predictable regions,
+freeing up computational cycles without sacrificing compression
+density.</p>
+<h3 id="software-optimization-and-simd-vectorization">Software
+Optimization and SIMD Vectorization</h3>
+<p>Modern CPU architectures favor wide, vectorized instructions (such as
+AVX-512, AVX2, and ARM NEON) and predictable branch execution.</p>
+<p>CABAC's binary nature creates an execution profile plagued by
+data-dependent branch predictions and tight, sequential dependency
+chains that modern superscalar execution pipelines cannot easily
+optimize.</p>
+<p>The Daala-derived entropy coder in AV1 replaces deeply nested branch
+trees with table lookups, bit shifts, and standard multi-bit arithmetic
+operations. These operations map cleanly to modern processor registers,
+allowing software implementations (like <code>dav1d</code>) to achieve
+exceptionally fast decoding speeds in software without requiring
+dedicated hardware accelerators.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

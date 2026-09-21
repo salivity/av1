@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How SVT-AV1 Scales on High Core-Count Cloud CPUs - av1</title>
+    <meta name="description" content="Scalable Video Technology for AV1 (SVT-AV1) achieves exceptional performance on modern high-core-count cloud architectures by implementing a multi-dimensional, asynchronous parallel processing framework. Instead of relying solely on traditional spatial p">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-svt-av-1-scales-on-high-core-count-cloud-cp-us">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How SVT-AV1 Scales on High Core-Count Cloud CPUs - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-svt-av-1-scales-on-high-core-count-cloud-cp-us" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Scalable Video Technology for AV1 (SVT-AV1) achieves exceptional performance on modern high-core-count cloud architectures by implementing a multi-dimensional, asynchronous parallel processing framework. Instead of relying solely on traditional spatial p" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-svt-av1-scales-on-high-core-count-cloud-cpus">How SVT-AV1
+Scales on High Core-Count Cloud CPUs</h1>
+<p>Scalable Video Technology for AV1 (SVT-AV1) achieves exceptional
+performance on modern high-core-count cloud architectures by
+implementing a multi-dimensional, asynchronous parallel processing
+framework. Instead of relying solely on traditional spatial
+partitioning, SVT-AV1 divides encoding workloads across multiple
+granularities—including segment, picture, tile, and superblock
+levels—while decoupling pipeline stages with thread-safe queues. This
+design prevents processor stalls, maximizes hardware saturation, and
+minimizes memory latency, allowing video platforms to achieve
+near-linear scaling across instances with 64, 128, or more vCPUs without
+degrading visual quality or compression efficiency.</p>
+<h3 id="multi-stage-asynchronous-pipeline">Multi-Stage Asynchronous
+Pipeline</h3>
+<p>Traditional video encoders process frames in synchronous, lock-step
+stages, which inevitably creates thread contention and idle CPU cycles
+at high core counts. SVT-AV1 avoids this through an asynchronous,
+pipeline-based design. The core engine separates video encoding into
+distinct stages: picture analysis, motion estimation, mode decision, and
+entropy coding.</p>
+<p>Each stage operates independently, passing tasks downstream through
+lockless or low-overhead circular memory queues. Fast, lightweight tasks
+(like initial scene-change detection) run ahead of compute-heavy tasks
+(like rate-distortion optimization). This asynchronous flow keeps
+threads continuously occupied, effectively eliminating the execution
+bubbles that commonly plague synchronous architectures on servers with
+dozens of physical cores.</p>
+<h3 id="hierarchical-parallelism">Hierarchical Parallelism</h3>
+<p>To feed massive CPU pipelines, SVT-AV1 applies parallelism at four
+distinct levels of granularity:</p>
+<ul>
+<li><strong>Picture-Level Parallelism:</strong> By analyzing temporal
+dependencies across groups of pictures (GOPs), SVT-AV1 can encode
+multiple non-reference and reference frames concurrently. Independent
+frames or frames with resolved reference paths are pushed to available
+worker threads instantly.</li>
+<li><strong>Segment and Tile Parallelism:</strong> At the spatial level,
+SVT-AV1 can split large-format video frames (such as 4K and 8K) into
+standardized AV1 tiles. Each tile functions as an independently
+decodable and encodable region, allowing dozens of threads to process
+separate segments of the same image simultaneously.</li>
+<li><strong>Superblock and Wavefront Processing:</strong> Within
+individual frames and tiles, SVT-AV1 uses Wavefront Parallel Processing
+(WPP). Because superblocks (up to 128x128 pixels in AV1) depend only on
+top and left neighbors for intra-prediction and context modeling,
+workers can process rows in a staggered diagonal fashion across multiple
+threads.</li>
+<li><strong>SIMD Data Parallelism:</strong> At the instruction level,
+compute-heavy mathematical kernels—such as transform calculations,
+interpolation, and motion search—are heavily vectorized using AVX2 and
+AVX-512 instruction sets, drastically reducing the clock cycles required
+per block.</li>
+</ul>
+<h3 id="numa-and-cache-aware-memory-architecture">NUMA and Cache-Aware
+Memory Architecture</h3>
+<p>High core-count cloud instances (such as dual-socket AMD EPYC or
+Intel Xeon deployments) rely on Non-Uniform Memory Access (NUMA). If
+threads on one socket frequently fetch video buffers allocated on a
+different socket’s memory controller, interconnect bus congestion
+significantly degrades throughput.</p>
+<p>SVT-AV1 addresses this bottleneck through NUMA-aware memory
+allocation and thread pinning. Worker threads are grouped into localized
+pools that correspond directly to specific NUMA nodes and CPU core
+clusters. Reference frames and working buffers are allocated within the
+local memory node associated with that thread pool, keeping memory
+access localized, maximizing L3 cache hits, and preventing memory
+bandwidth saturation.</p>
+<h3 id="dynamic-resource-allocation-and-presets">Dynamic Resource
+Allocation and Presets</h3>
+<p>Cloud environments operate on diverse compute slices, from narrow
+8-core instances to bare-metal servers with hundreds of threads. SVT-AV1
+incorporates an algorithmic feature-scaling mechanism linked to its
+preset system (from Preset 0 for offline archiving down to Preset 13 for
+ultra-fast streaming).</p>
+<p>As core availability expands, SVT-AV1 dynamically adjusts its search
+algorithms and parallelization strategies. On high core-count systems,
+it increases the parallel search space for motion estimation and
+partition decisions rather than simply dividing frames into smaller,
+less efficient spatial chunks. This strategy maintains strong
+compression efficiency (BD-rate) while fully utilizing available compute
+capacity, making SVT-AV1 the standard choice for dense, cost-effective
+cloud transcoding workflows.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

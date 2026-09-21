@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayReady Hardware-Secured AV1 Decoding Profile - av1</title>
+    <meta name="description" content="This article provides an overview of Microsoft PlayReady's implementation profile for hardware-secured AV1 decoding, detailing how premium 4K and HDR video streams are protected within modern silicon architectures. It outlines the core architectural comp">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/play-ready-hardware-secured-av-1-decoding-profile">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PlayReady Hardware-Secured AV1 Decoding Profile - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/play-ready-hardware-secured-av-1-decoding-profile" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of Microsoft PlayReady's implementation profile for hardware-secured AV1 decoding, detailing how premium 4K and HDR video streams are protected within modern silicon architectures. It outlines the core architectural comp" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="playready-hardware-secured-av1-decoding-profile">PlayReady
+Hardware-Secured AV1 Decoding Profile</h1>
+<p>This article provides an overview of Microsoft PlayReady's
+implementation profile for hardware-secured AV1 decoding, detailing how
+premium 4K and HDR video streams are protected within modern silicon
+architectures. It outlines the core architectural components,
+cryptographic boundaries, bitstream parsing rules, and Trusted Execution
+Environment (TEE) specifications required to achieve PlayReady Security
+Level 3000 (SL3000) compliance using the AV1 codec.</p>
+<h3 id="security-level-3000-sl3000-requirement">Security Level 3000
+(SL3000) Requirement</h3>
+<p>To process high-value content such as 4K UHD, HDR, and early-window
+releases encoded in AV1, Microsoft PlayReady mandates Security Level
+3000 (SL3000). At this tier, all cryptographic operations, key
+management, video elementary stream handling, and video decoding must
+take place inside a hardware-isolated environment. Software-only
+protections (SL2000) are insufficient for hardware-secured AV1
+deployment.</p>
+<h3 id="cryptographic-boundary-and-the-tee">Cryptographic Boundary and
+the TEE</h3>
+<p>The implementation profile requires a strict hardware root of trust,
+typically implemented via a Trusted Execution Environment (TEE) or a
+dedicated Secure Processor Unit (SPU).</p>
+<ul>
+<li><strong>Key Handling:</strong> Content encryption keys (CEKs) are
+derived and unmasked strictly within the secure boundary. Keys are never
+exposed to the host operating system or non-secure memory.</li>
+<li><strong>Payload Decryption:</strong> The encrypted AV1 bitstream is
+passed directly into secure memory buffers. Decryption occurs inside the
+secure enclave using standard cryptographic accelerators supporting
+AES-128 in either Counter (<code>cenc</code>) or Cipher Block Chaining
+with 10% pattern protection (<code>cbcs</code>) mode.</li>
+</ul>
+<h3 id="av1-bitstream-parsing-and-sample-format">AV1 Bitstream Parsing
+and Sample Format</h3>
+<p>AV1 structures media into Open Bitstream Units (OBUs). Under
+PlayReady’s hardware profile:</p>
+<ol type="1">
+<li><strong>Header Parsing:</strong> Unencrypted metadata, such as
+Sequence Header OBUs and Temporal Delimiter OBUs, may be parsed outside
+the TEE depending on the platform's media framework, provided that doing
+so does not leak secure key material or compromise buffer security.</li>
+<li><strong>Encrypted OBUs:</strong> Tile Group OBUs and Frame OBUs
+containing protected media payloads must be parsed and processed
+entirely within the secure environment.</li>
+<li><strong>Subsample Mapping:</strong> PlayReady follows ISO/IEC
+23001-7 Common Encryption standards. The implementation must accurately
+process subsample encryption mappings, where clear headers (OBU headers
+and sizes) alternate with protected video data payloads.</li>
+</ol>
+<h3 id="secure-media-pipeline-and-decoding-engine">Secure Media Pipeline
+and Decoding Engine</h3>
+<p>Once decrypted, the raw AV1 elementary stream must transition
+directly to the hardware decoder without crossing into unsecured system
+memory.</p>
+<ul>
+<li><strong>Protected Video Path (PVP):</strong> The hardware AV1
+decoder must have dedicated Direct Memory Access (DMA) channels to
+protected memory regions (such as TrustZone-protected DRAM or Carveout
+memory).</li>
+<li><strong>Decoded Surface Protection:</strong> Uncompressed YUV or RGB
+frames produced by the AV1 hardware decoder must remain inside protected
+memory. Neither user-mode nor kernel-mode host operating system
+processes can read these decoded video surfaces.</li>
+<li><strong>Display Output Protection:</strong> The display pipeline
+must enforce hardware-level content protection. If an external display
+interface is used (such as HDMI or DisplayPort), HDCP 2.2 or higher must
+be engaged prior to rendering decoded frames.</li>
+</ul>
+<h3 id="silicon-and-oem-integration-considerations">Silicon and OEM
+Integration Considerations</h3>
+<p>For silicon vendors and OEMs implementing this profile:</p>
+<ul>
+<li><strong>Hardware Decoders:</strong> The integrated AV1 hardware
+decoding block must natively interface with the platform's secure memory
+firewall.</li>
+<li><strong>Firmware Validation:</strong> PlayReady Device Porting Kits
+(PK) must be compiled with hardware DRM configurations enabled, linking
+OEM-specific TEE drivers that support AV1 sample processing.</li>
+<li><strong>Revocation and Recovery:</strong> The hardware profile
+requires persistent, tamper-proof non-volatile storage for replay
+detection and revocation status checks to guard against key rollback
+attacks.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

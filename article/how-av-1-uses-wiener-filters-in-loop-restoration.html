@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Uses Wiener Filters in Loop Restoration - av1</title>
+    <meta name="description" content="The AOMedia Video 1 (AV1) codec employs a Loop Restoration tool to reverse blur and distortion introduced during the lossy transform and quantization stages. A key component of this tool is the separable Wiener filter, which models image degradation as a">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-uses-wiener-filters-in-loop-restoration">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Uses Wiener Filters in Loop Restoration - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-uses-wiener-filters-in-loop-restoration" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AOMedia Video 1 (AV1) codec employs a Loop Restoration tool to reverse blur and distortion introduced during the lossy transform and quantization stages. A key component of this tool is the separable Wiener filter, which models image degradation as a" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-uses-wiener-filters-in-loop-restoration">How AV1 Uses
+Wiener Filters in Loop Restoration</h1>
+<p>The AOMedia Video 1 (AV1) codec employs a Loop Restoration tool to
+reverse blur and distortion introduced during the lossy transform and
+quantization stages. A key component of this tool is the separable
+Wiener filter, which models image degradation as a linear blur combined
+with additive noise to reconstruct fine details. This article explains
+how the Wiener filter functions within the AV1 Loop Restoration stage,
+covering its mathematical foundation, structural optimization, and
+frame-level execution.</p>
+<h2 id="the-role-of-loop-restoration-in-av1">The Role of Loop
+Restoration in AV1</h2>
+<p>In the AV1 decoding pipeline, Loop Restoration is the final in-loop
+filtering stage, positioned directly after the Deblocking Filter and the
+Constrained Directional Enhancement Filter (CDEF). While the deblocking
+filter eliminates grid discontinuities at block edges and CDEF
+suppresses directional ringing artifacts, they often smooth out subtle
+textures.</p>
+<p>Loop Restoration compensates for this loss by acting as a
+deconvolution filter. For each designated region, the encoder can select
+between three options:</p>
+<ul>
+<li>No filtering</li>
+<li>Self-guided restoration</li>
+<li>A separable Wiener filter</li>
+</ul>
+<h2 id="mathematical-principle-of-the-wiener-filter">Mathematical
+Principle of the Wiener Filter</h2>
+<p>The Wiener filter operates under the principle of Minimum Mean
+Squared Error (MMSE). It calculates a set of linear filter coefficients
+that minimize the expected squared difference between the restored pixel
+values and the original source pixels.</p>
+<p>During encoding, the encoder analyzes both the original uncompressed
+source frame and the degraded, post-CDEF reconstructed frame. It
+computes:</p>
+<ol type="1">
+<li>The auto-correlation of the degraded frame.</li>
+<li>The cross-correlation between the original and degraded frames.</li>
+</ol>
+<p>Using these statistical matrices, the encoder solves the Wiener-Hopf
+equations to derive the optimal filter tap values. These coefficients
+are then quantized and transmitted in the bitstream to the decoder.</p>
+<h2 id="2d-separability-and-filter-symmetry">2D Separability and Filter
+Symmetry</h2>
+<p>A standard two-dimensional non-separable filter requires significant
+computation and bitstream overhead. AV1 reduces both complexity and
+transmission costs through two optimizations:</p>
+<ol type="1">
+<li><strong>Separability:</strong> The 2D filtering operation is
+decoupled into two consecutive 1D passes—a horizontal filtering pass
+followed by a vertical filtering pass. Instead of calculating an <span
+class="math inline">\(N \times N\)</span> matrix, the decoder applies an
+<span class="math inline">\(N\)</span>-tap 1D filter horizontally,
+followed by an <span class="math inline">\(M\)</span>-tap 1D filter
+vertically.</li>
+<li><strong>Symmetry:</strong> AV1 employs a 7-tap symmetric filter for
+both directions (often denoted as a <span class="math inline">\(7 \times
+7\)</span> separable filter). Due to horizontal and vertical symmetry,
+only three coefficients per direction need to be transmitted:
+<ul>
+<li>For a 7-tap filter <span class="math inline">\([h_3, h_2, h_1, h_0,
+h_1, h_2, h_3]\)</span>, the center tap <span
+class="math inline">\(h_0\)</span> is constrained to maintain unity gain
+(<span class="math inline">\(\sum h_i = 1\)</span>).</li>
+<li>Consequently, the filter only requires signaling three independent
+parameters (<span class="math inline">\(h_1, h_2, h_3\)</span>) per
+dimension.</li>
+</ul></li>
+</ol>
+<p>This reduces the total signaled parameters for a <span
+class="math inline">\(7 \times 7\)</span> filter from 49 down to just 6
+values (3 horizontal and 3 vertical).</p>
+<h2 id="restoration-units-and-bitstream-signaling">Restoration Units and
+Bitstream Signaling</h2>
+<p>Filtering is not applied uniformly across an entire frame. Instead,
+frames are partitioned into Restoration Units (RUs), which are
+independent square areas typically sized at <span
+class="math inline">\(64 \times 64\)</span>, <span
+class="math inline">\(128 \times 128\)</span>, or <span
+class="math inline">\(256 \times 256\)</span> pixels, depending on frame
+resolution.</p>
+<ul>
+<li><strong>Coefficient Sharing:</strong> Filter coefficients can be
+signaled globally for the entire frame, or individual coefficients can
+be assigned to different restoration units using entropy-coded
+deltas.</li>
+<li><strong>Switching Mechanism:</strong> Each RU indicates whether it
+applies the Wiener filter, switches to the self-guided filter, or
+disables restoration entirely based on Rate-Distortion Optimization
+(RDO) at the encoder.</li>
+</ul>
+<h2 id="fixed-point-implementation-and-boundary-handling">Fixed-Point
+Implementation and Boundary Handling</h2>
+<p>To ensure deterministic output across all hardware architectures, AV1
+defines Wiener filtering using fixed-point integer arithmetic rather
+than floating-point math:</p>
+<ul>
+<li>Filter coefficients are quantized into 7-bit signed integers.</li>
+<li>Intermediate results from the horizontal pass are rounded and
+clamped to a defined bit-depth before entering the vertical pass.</li>
+<li>Pixel boundaries at the edges of frames or tiles are handled via
+edge extension (padding by repeating the boundary pixels) to prevent
+visual artifacts and avoid accessing undefined memory locations.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

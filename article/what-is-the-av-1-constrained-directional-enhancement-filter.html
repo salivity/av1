@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is the AV1 Constrained Directional Enhancement Filter? - av1</title>
+    <meta name="description" content="The Constrained Directional Enhancement Filter (CDEF) is a key in-loop filtering tool in the AV1 video codec designed to eliminate ringing artifacts and edge noise while preserving sharp visual details. Positioned directly after the deblocking filter and">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/what-is-the-av-1-constrained-directional-enhancement-filter">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is the AV1 Constrained Directional Enhancement Filter? - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/what-is-the-av-1-constrained-directional-enhancement-filter" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Constrained Directional Enhancement Filter (CDEF) is a key in-loop filtering tool in the AV1 video codec designed to eliminate ringing artifacts and edge noise while preserving sharp visual details. Positioned directly after the deblocking filter and" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-the-av1-constrained-directional-enhancement-filter">What
+Is the AV1 Constrained Directional Enhancement Filter?</h1>
+<p>The Constrained Directional Enhancement Filter (CDEF) is a key
+in-loop filtering tool in the AV1 video codec designed to eliminate
+ringing artifacts and edge noise while preserving sharp visual details.
+Positioned directly after the deblocking filter and before loop
+restoration in the decoding pipeline, CDEF detects the primary direction
+of edges within small pixel blocks and applies a non-linear low-pass
+filter along those edges. By smoothing along edge contours rather than
+across them and clamping changes to prevent detail loss, CDEF
+significantly improves visual quality and coding efficiency without
+introducing heavy computational overhead.</p>
+<h3 id="role-in-the-av1-decoding-pipeline">Role in the AV1 Decoding
+Pipeline</h3>
+<p>Video compression often introduces high-frequency noise near sharp
+edges—an artifact known as "ringing"—due to coarse quantization in the
+frequency domain. Traditional deblocking filters smooth out block
+boundary discontinuities but do not resolve ringing occurring inside
+block interiors.</p>
+<p>To resolve this, AV1 places CDEF as the second stage in its
+three-step in-loop restoration pipeline:</p>
+<ol type="1">
+<li><strong>Deblocking Filter:</strong> Smoothes unnatural boundaries
+formed between transform and prediction blocks.</li>
+<li><strong>CDEF:</strong> Targets and suppresses ringing artifacts
+around complex edges.</li>
+<li><strong>Loop Restoration Filter:</strong> Applies Wiener or
+self-guided restoration filters to recover fine textures and reduce
+overall distortion compared to the original frame.</li>
+</ol>
+<h3 id="how-cdef-works">How CDEF Works</h3>
+<p>CDEF combines the principles of two earlier experimental filters: the
+Directional Deringing Filter from the Daala project and the Constrained
+Low-Pass Filter (CLPF) from the Thor project. The filter processes
+frames in two primary phases: direction search and constrained
+directional filtering.</p>
+<h4 id="1-direction-search">1. Direction Search</h4>
+<p>The filter divides a frame into small blocks, typically 8x8 pixels.
+For each block, CDEF tests eight possible directions (spanning angles
+from 0 to 180 degrees) by calculating the variance of pixels along each
+line. The direction that minimizes the variance along its path is
+selected as the dominant edge direction for that block. Because this
+search relies on reconstructed pixel values, both the encoder and
+decoder can determine the direction independently without spending
+bitstream overhead to signal it.</p>
+<h4 id="2-directional-filtering">2. Directional Filtering</h4>
+<p>Once the primary direction is established, CDEF applies a
+one-dimensional filter aligned with that specific angle. A primary
+filter acts along the detected edge, followed by a secondary
+cross-filter aligned at a 45-degree angle to the primary axis to capture
+residual noise. Because the smoothing is oriented along the edge rather
+than across it, the edge retains its sharpness and high contrast.</p>
+<h4 id="3-constrained-clamping">3. Constrained Clamping</h4>
+<p>To prevent the filter from accidentally blurring genuine image
+details, CDEF uses a non-linear constraint function. The difference
+between the original pixel value and the filtered value is strictly
+clamped based on adjustable threshold parameters (primary and secondary
+strengths). If a surrounding pixel differs drastically from the target
+pixel, its influence is capped or ignored entirely, ensuring that only
+small ringing artifacts are removed while true textures remain
+intact.</p>
+<h3 id="key-benefits-of-cdef">Key Benefits of CDEF</h3>
+<ul>
+<li><strong>Artifact Reduction:</strong> Effectively eliminates halo and
+mosquito noise around high-contrast edges, such as text overlays,
+subtitles, and sharp outlines.</li>
+<li><strong>Detail Preservation:</strong> Edge-aware filtering and
+threshold clamping prevent the muddy or over-softened appearance typical
+of standard low-pass filters.</li>
+<li><strong>Bitstream Efficiency:</strong> By cleaning reference frames
+during the encoding loop, subsequent frames require fewer bits to
+predict, boosting overall compression efficiency (BD-rate).</li>
+<li><strong>Low Complexity:</strong> The mathematical operations used in
+CDEF are simple additions, subtractions, and bit shifts, making it
+highly suitable for hardware implementation and SIMD parallelization in
+software decoders.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 vs VP9: Compression Efficiency Comparison - av1</title>
+    <meta name="description" content="This article explores how the AV1 video codec compares to its predecessor, VP9, in terms of compression efficiency. AV1 offers substantial bitrate savings over VP9 by delivering equivalent or superior visual fidelity at significantly lower file sizes, dr">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-vs-vp-9-compression-efficiency-comparison">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 vs VP9: Compression Efficiency Comparison - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-vs-vp-9-compression-efficiency-comparison" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the AV1 video codec compares to its predecessor, VP9, in terms of compression efficiency. AV1 offers substantial bitrate savings over VP9 by delivering equivalent or superior visual fidelity at significantly lower file sizes, dr" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-vs-vp9-compression-efficiency-comparison">AV1 vs VP9:
+Compression Efficiency Comparison</h1>
+<p>This article explores how the AV1 video codec compares to its
+predecessor, VP9, in terms of compression efficiency. AV1 offers
+substantial bitrate savings over VP9 by delivering equivalent or
+superior visual fidelity at significantly lower file sizes, driven by
+architectural upgrades in block partitioning, prediction tools, and
+in-loop filtering.</p>
+<h3 id="bitrate-savings-and-quality-metrics">Bitrate Savings and Quality
+Metrics</h3>
+<p>AV1 demonstrates a substantial leap in data compression compared to
+VP9. On average, AV1 achieves roughly a 30% reduction in bitrate while
+maintaining the same objective visual quality, as measured by standard
+metrics like VMAF (Video Multi-Method Assessment Fusion) and PSNR (Peak
+Signal-to-Noise Ratio). Under specific test conditions, particularly
+with high-motion content and higher resolutions like 4K and 8K, AV1's
+data savings can reach up to 40% over VP9. This enables content
+distributors to deliver high-resolution video over lower-bandwidth
+connections without noticeable visual degradation.</p>
+<h3 id="key-architectural-improvements">Key Architectural
+Improvements</h3>
+<p>The primary driver behind AV1's compression advantage is its
+modernized coding toolset:</p>
+<ul>
+<li><strong>Superblock Flexibility:</strong> While VP9 caps its block
+partitioning at 64x64 pixels, AV1 supports 128x128 superblocks. This
+allows the encoder to compress flat or uniform areas (such as skies or
+solid backgrounds) much more efficiently with fewer overhead bits.</li>
+<li><strong>Enhanced Prediction Modes:</strong> AV1 expands
+intra-prediction to 56 directional angles (compared to VP9's 8) and
+introduces smooth and recursive intra-prediction. For inter-prediction,
+AV1 adds advanced motion vector reference selection and compound
+prediction modes (such as wedge-based prediction), vastly improving
+movement tracking between frames.</li>
+<li><strong>Advanced In-Loop Filtering:</strong> AV1 incorporates a
+Constrained Directional Enhancement Filter (CDEF) and a loop restoration
+filter. These tools reduce ringing artifacts, blur, and blocking
+distortions before the frame is stored as a reference, providing cleaner
+source images for subsequent predictions.</li>
+</ul>
+<h3 id="computational-trade-offs">Computational Trade-Offs</h3>
+<p>The primary compromise for AV1's heightened compression efficiency is
+computational complexity. Encoding AV1 video requires significantly more
+processing power and time compared to VP9—often several times more
+demanding depending on the encoder preset used. However, rapid advances
+in hardware-accelerated encoding/decoding on modern GPUs, mobile SoCs,
+and smart TVs have largely mitigated playback bottlenecks, making AV1
+the standard successor to VP9 for high-efficiency internet
+streaming.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

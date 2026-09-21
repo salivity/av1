@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Frame Resizing Enables Dynamic Resolution - av1</title>
+    <meta name="description" content="AV1 introduces native support for frame resizing directly within the encoded bitstream, allowing the video resolution to change dynamically on a frame-by-frame basis without inserting a keyframe. By enabling inter-frames to reference reconstructed frames">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-frame-resizing-enables-dynamic-resolution">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Frame Resizing Enables Dynamic Resolution - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-frame-resizing-enables-dynamic-resolution" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 introduces native support for frame resizing directly within the encoded bitstream, allowing the video resolution to change dynamically on a frame-by-frame basis without inserting a keyframe. By enabling inter-frames to reference reconstructed frames" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-frame-resizing-enables-dynamic-resolution">How AV1 Frame
+Resizing Enables Dynamic Resolution</h1>
+<p>AV1 introduces native support for frame resizing directly within the
+encoded bitstream, allowing the video resolution to change dynamically
+on a frame-by-frame basis without inserting a keyframe. By enabling
+inter-frames to reference reconstructed frames of differing dimensions,
+the encoder can rapidly scale resolution up or down to manage bitrate
+fluctuations and network congestion smoothly. This article explains the
+technical mechanics of AV1's reference frame resampling, why it
+eliminates the need for expensive Intra (I-frame) resets, and how it
+optimizes modern real-time streaming workflows.</p>
+<h3 id="the-problem-with-traditional-codecs">The Problem with
+Traditional Codecs</h3>
+<p>In legacy video formats such as H.264 (AVC) and standard
+implementations of H.265 (HEVC), the spatial resolution of a video
+sequence is strictly tied to the sequence parameter set. Changing the
+resolution requires the encoder to emit an Instantaneous Decoder Refresh
+(IDR) frame, also known as a keyframe.</p>
+<p>Keyframes do not rely on previous frames for temporal prediction;
+they contain complete image data, making them significantly larger—often
+5 to 10 times the size of a standard inter-frame (P-frame or B-frame).
+In scenarios with sudden network degradation, sending a massive keyframe
+to downscale the resolution worsens congestion, increases latency, and
+frequently leads to playback buffering or dropped frames.</p>
+<h3 id="reference-frame-resampling-in-av1">Reference Frame Resampling in
+AV1</h3>
+<p>AV1 overcomes this limitation through a feature known as Reference
+Frame Resampling (or frame resizing). In AV1, individual inter-frames
+can be encoded at a different resolution than the frames stored in the
+reference buffer.</p>
+<p>Instead of resetting the decoder buffer with a keyframe, AV1 allows
+an inter-frame to directly use a previously decoded frame of a different
+size as its motion-compensated predictor. The bitstream signals the new
+spatial dimensions at the frame header level, instructing the decoder to
+adapt without breaking the temporal prediction chain.</p>
+<h3 id="the-rescaling-process-during-decoding">The Rescaling Process
+During Decoding</h3>
+<p>When an AV1 decoder encounters an inter-frame with dimensions that
+differ from its reference frame, it performs the following steps:</p>
+<ol type="1">
+<li><strong>Header Parsing:</strong> The decoder reads the new frame
+width and height signaled in the frame header.</li>
+<li><strong>Internal Upscaling/Downscaling:</strong> Before calculating
+motion vectors, the decoder uses standardized, normative polyphase
+scaling filters to resample the stored reference picture to match the
+current frame’s spatial dimensions.</li>
+<li><strong>Motion Compensation:</strong> Once the reference frame is
+scaled, the decoder proceeds with normal motion vector prediction and
+residual reconstruction.</li>
+</ol>
+<p>Because the scaling algorithm is strictly standardized in the AV1
+specification, both the encoder and decoder generate mathematically
+identical references, preventing visual drift between different decoder
+implementations.</p>
+<h3
+id="strategic-advantages-for-real-time-and-adaptive-streaming">Strategic
+Advantages for Real-Time and Adaptive Streaming</h3>
+<p>Dynamic frame resizing provides distinct operational advantages
+across various video delivery environments:</p>
+<ul>
+<li><strong>Instantaneous Rate Control in WebRTC:</strong> In real-time
+communications, encoders can immediately downscale a frame to preserve
+target framerates during sudden bandwidth drops, then scale it back up
+when conditions improve—all without transmitting bandwidth-heavy
+keyframes.</li>
+<li><strong>Seamless ABR Transitions:</strong> For video-on-demand and
+live streaming (DASH/HLS), switching between bitrate rungs traditionally
+causes visible transitions or requires tight keyframe alignment. Dynamic
+resolution changes allow a stream to transition smoothly across varying
+network conditions without waiting for fixed segment boundaries.</li>
+<li><strong>Super-Resolution Modes:</strong> Encoders can intentionally
+downscale frames prior to encoding and signal the decoder to upscale
+them back to native resolution for final display. This preserves
+structural coherence in high-motion scenes where full-resolution
+encoding would otherwise introduce severe compression artifacts.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

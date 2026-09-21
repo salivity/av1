@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate-Distortion Optimized Quantization in AV1 - av1</title>
+    <meta name="description" content="Rate-distortion optimized quantization (RDOQ) in the AV1 video codec is an advanced decision-making process that optimizes transform coefficient levels to achieve the best possible balance between compression efficiency and visual quality. Rather than re">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/rate-distortion-optimized-quantization-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Rate-Distortion Optimized Quantization in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/rate-distortion-optimized-quantization-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Rate-distortion optimized quantization (RDOQ) in the AV1 video codec is an advanced decision-making process that optimizes transform coefficient levels to achieve the best possible balance between compression efficiency and visual quality. Rather than re" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="rate-distortion-optimized-quantization-in-av1">Rate-Distortion
+Optimized Quantization in AV1</h1>
+<p>Rate-distortion optimized quantization (RDOQ) in the AV1 video codec
+is an advanced decision-making process that optimizes transform
+coefficient levels to achieve the best possible balance between
+compression efficiency and visual quality. Rather than relying on static
+scalar rounding during quantization, RDOQ treats quantization as an
+optimization problem, testing multiple candidate values for each
+transform coefficient against a mathematical cost function. This
+overview explains how AV1 formulates rate-distortion costs, evaluates
+candidate levels, optimizes coefficient runs, and integrates entropy
+modeling to maximize coding performance.</p>
+<h3 id="the-objective-minimizing-lagrangian-cost">The Objective:
+Minimizing Lagrangian Cost</h3>
+<p>Standard quantization scales transformed frequency coefficients by a
+quantization step size and rounds them to the nearest integer. While
+computationally fast, this scalar rounding ignores the exact bit cost
+required to signal the resulting value.</p>
+<p>RDOQ overcomes this limitation by minimizing the Lagrangian cost
+function:</p>
+<p><span class="math display">\[J = D + \lambda R\]</span></p>
+<ul>
+<li><strong><span class="math inline">\(J\)</span> (Cost):</strong> The
+overall cost to be minimized.</li>
+<li><strong><span class="math inline">\(D\)</span>
+(Distortion):</strong> The reconstruction error introduced by
+quantization, typically calculated as the Sum of Squared Errors (SSE)
+between the original and reconstructed coefficients in either the
+frequency or spatial domain.</li>
+<li><strong><span class="math inline">\(R\)</span> (Rate):</strong> The
+exact number of bits required by the entropy coder to signal the
+quantized coefficient, sign, and structural flags.</li>
+<li><strong><span class="math inline">\(\lambda\)</span>
+(Lambda):</strong> The Lagrange multiplier, which determines the
+trade-off between bitrate and distortion based on the frame's
+quantization parameter (QP).</li>
+</ul>
+<h3 id="candidate-selection-and-trellis-search">Candidate Selection and
+Trellis Search</h3>
+<p>AV1 applies RDOQ across its diverse transform set, which includes
+traditional Discrete Cosine Transforms (DCT), Asymmetric Discrete Sine
+Transforms (ADST), and Identity transforms in block sizes ranging from
+4x4 up to 64x64.</p>
+<p>For each transform coefficient, RDOQ evaluates a small set of
+candidate integer levels rather than accepting a fixed rounded
+value:</p>
+<ol type="1">
+<li>The floor value <span class="math inline">\(\lfloor x
+\rfloor\)</span></li>
+<li>The ceiling value <span class="math inline">\(\lceil x
+\rceil\)</span></li>
+<li>Zero (testing whether completely dropping the coefficient reduces
+the bit cost enough to justify the added distortion)</li>
+</ol>
+<p>Because the bit cost of a given coefficient depends on surrounding
+coefficients and the end-of-block (EOB) position, AV1 uses dynamic
+programming (trellis coding) or a reverse-scan search. The algorithm
+typically processes coefficients in reverse scan order (from
+high-frequency to low-frequency components). This reverse pass allows
+the encoder to accurately evaluate the impact of shifting the EOB marker
+earlier in the block, which can save substantial bit overhead by
+truncating trailing zeros.</p>
+<h3 id="entropy-coding-integration">Entropy Coding Integration</h3>
+<p>AV1 uses a multi-symbol arithmetic coding engine. The bit cost <span
+class="math inline">\(R\)</span> cannot be accurately estimated using
+fixed-length tables; it depends heavily on context models. During RDOQ,
+the encoder tracks:</p>
+<ul>
+<li><strong>EOB Position:</strong> The bit savings achieved if all
+subsequent coefficients in the scan order are set to zero.</li>
+<li><strong>Coefficient Magnitude:</strong> The probabilities associated
+with specific syntax elements, including <code>base_eob_extra</code>,
+<code>coeff_base</code>, and <code>coeff_br</code> (base ranges for
+absolute values).</li>
+<li><strong>Sign Bits:</strong> The cost of coding the sign of non-zero
+coefficients.</li>
+<li><strong>Context Modeling:</strong> How choosing a specific level for
+one coefficient updates the context for neighboring and subsequent
+coefficients.</li>
+</ul>
+<p>By evaluating the arithmetic coder's probabilities during the search,
+the algorithm calculates the exact bit penalty <span
+class="math inline">\(R\)</span> for each candidate level.</p>
+<h3 id="decision-and-coefficient-updating">Decision and Coefficient
+Updating</h3>
+<p>Once distortion <span class="math inline">\(D\)</span> and rate <span
+class="math inline">\(R\)</span> are computed for each candidate level,
+the encoder computes <span class="math inline">\(J\)</span>. The
+candidate that produces the lowest cost <span
+class="math inline">\(J\)</span> is selected as the final quantized
+coefficient.</p>
+<p>Common outcomes of this optimization include:</p>
+<ul>
+<li><strong>Coefficient Dropping:</strong> High-frequency coefficients
+with high bit costs but minimal visual impact are rounded down to
+zero.</li>
+<li><strong>Level Adjustment:</strong> Coefficients are shifted by <span
+class="math inline">\(\pm 1\)</span> if the lower rate cost outweighs
+the minor increase in distortion.</li>
+<li><strong>Early Truncation:</strong> Entire high-frequency tails of
+transform blocks are zeroed out, substantially lowering block
+overhead.</li>
+</ul>
+<h3 id="complexity-management-in-av1-encoders">Complexity Management in
+AV1 Encoders</h3>
+<p>Full trellis-based RDOQ is computationally demanding. Production AV1
+encoders, such as <code>libaom</code> and <code>SVT-AV1</code>, employ
+selective RDOQ strategies based on preset speeds:</p>
+<ul>
+<li><strong>Full RDOQ:</strong> Evaluates all candidate levels and
+accurate entropy contexts across all transform blocks, typically
+reserved for slow, archival-quality presets.</li>
+<li><strong>Fast/Pruned RDOQ:</strong> Skips candidates based on
+early-termination heuristics, limits RDOQ to luma channels or
+lower-frequency coefficients, or uses look-up tables to approximate bit
+costs instead of querying the arithmetic coder directly.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

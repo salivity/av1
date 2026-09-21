@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive 360 Video Metadata Tracks in AV1 - av1</title>
+    <meta name="description" content="Delivering immersive 360-degree video using the AV1 video codec relies heavily on auxiliary metadata tracks embedded within the container format—predominantly ISOBMFF (MP4) aligned with MPEG-OMAF (Omnidirectional Media Format) specifications or Matrosk">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/immersive-360-video-metadata-tracks-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Immersive 360 Video Metadata Tracks in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/immersive-360-video-metadata-tracks-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Delivering immersive 360-degree video using the AV1 video codec relies heavily on auxiliary metadata tracks embedded within the container format—predominantly ISOBMFF (MP4) aligned with MPEG-OMAF (Omnidirectional Media Format) specifications or Matrosk" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="immersive-360-video-metadata-tracks-in-av1">Immersive 360 Video
+Metadata Tracks in AV1</h1>
+<p>Delivering immersive 360-degree video using the AV1 video codec
+relies heavily on auxiliary metadata tracks embedded within the
+container format—predominantly ISOBMFF (MP4) aligned with MPEG-OMAF
+(Omnidirectional Media Format) specifications or Matroska/WebM. These
+auxiliary tracks provide the rendering client with precise,
+time-synchronized spatial context necessary to display, orient, and
+optimize high-resolution spherical media. This article outlines the
+primary auxiliary and timed metadata tracks defined for immersive AV1
+video pipelines, including camera orientation, viewport guidance,
+region-wise packing, and depth information.</p>
+<h3 id="dynamic-camera-orientation-tracks">Dynamic Camera Orientation
+Tracks</h3>
+<p>In dynamic captures, such as those shot from moving vehicles, drones,
+or handheld rigs, the horizon and camera orientation frequently shift.
+The dynamic camera orientation track carries timed rotational data (yaw,
+pitch, and roll) to compensate for camera movement over time. By reading
+this auxiliary track, the playback client can apply rotation matrices to
+stabilize the sphere independently from the user’s viewport, preventing
+motion sickness and maintaining a stable real-world horizon.</p>
+<h3 id="timed-viewport-guidance-tracks">Timed Viewport Guidance
+Tracks</h3>
+<p>Also known as recommended viewport or director's cut tracks, these
+auxiliary metadata streams define the intended focal point of a scene
+over time. Specified within MPEG-OMAF as timed viewport information,
+this metadata guides client viewports toward primary points of interest
+when the viewer is not actively interacting with the display, or it
+provides a baseline for viewport-dependent adaptive streaming
+optimizations.</p>
+<h3 id="region-wise-packing-metadata-tracks">Region-Wise Packing
+Metadata Tracks</h3>
+<p>High-resolution 360-degree AV1 streaming often utilizes region-wise
+packing, where transformed surfaces (such as cubemaps or segmented
+equirectangular frames) are rearranged into a single rectangular video
+frame to optimize compression efficiency and reduce edge distortion.
+When region-wise packing varies across scenes or requires dynamic tile
+mapping, a region-wise packing metadata track carries the spatial
+mapping matrices. This timed metadata informs the decoder and rendering
+pipeline how to extract, reposition, and stitch rectangular subsets back
+into their proper spherical positions.</p>
+<h3 id="depth-and-disparity-timed-tracks">Depth and Disparity Timed
+Tracks</h3>
+<p>For stereoscopic and degrees-of-freedom (DoF) extended video
+experiences, auxiliary depth streams can be linked to the primary AV1
+video track. These tracks provide per-frame depth maps or disparity
+vectors encoded as monochrome video or specialized timed data. The
+client uses this depth metadata to generate parallax, perform
+reprojection for head motion compensation, and correct for stereoscopic
+convergence.</p>
+<h3 id="spherical-projection-metadata">Spherical Projection
+Metadata</h3>
+<p>While often delivered as static track-level sample entry boxes (such
+as equirectangular projection or cubemap projection descriptors),
+dynamic variations in projection models can be delivered via timed
+metadata tracks. These tracks specify changes in projection geometry,
+field of view boundaries, and mesh mappings throughout playback,
+ensuring the rendering engine dynamically adapts its tessellation and
+projection shaders to match the incoming AV1 video frames.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Multi-Frame Entropy Probability Backward Update - av1</title>
+    <meta name="description" content="This article explains the operation of backward entropy probability updates across multi-frame contexts in the AV1 video codec. In AV1, entropy coding relies on Cumulative Distribution Functions (CDFs) that adapt dynamically to the statistics of syntax e">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-multi-frame-entropy-probability-backward-update">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Multi-Frame Entropy Probability Backward Update - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-multi-frame-entropy-probability-backward-update" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains the operation of backward entropy probability updates across multi-frame contexts in the AV1 video codec. In AV1, entropy coding relies on Cumulative Distribution Functions (CDFs) that adapt dynamically to the statistics of syntax e" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-multi-frame-entropy-probability-backward-update">AV1
+Multi-Frame Entropy Probability Backward Update</h1>
+<p>This article explains the operation of backward entropy probability
+updates across multi-frame contexts in the AV1 video codec. In AV1,
+entropy coding relies on Cumulative Distribution Functions (CDFs) that
+adapt dynamically to the statistics of syntax elements. While
+intra-frame adaptation updates these probabilities symbol-by-symbol in
+the forward direction, multi-frame context mechanisms allow the
+accumulated probability states from previously decoded frames to be
+stored, updated, and propagated backward into reference buffers to
+initialize future frames.</p>
+<h2 id="multi-symbol-cdf-adaptation-mechanics">Multi-Symbol CDF
+Adaptation Mechanics</h2>
+<p>AV1 uses a multi-symbol arithmetic coder where probability
+distributions are represented as Cumulative Distribution Functions
+(CDFs) instead of single binary probabilities. As syntax elements (such
+as transform coefficients, motion vector differences, and intra
+prediction modes) are coded, the local CDFs adaptively shift toward the
+observed symbol frequencies.</p>
+<p>Throughout the decoding or encoding of a frame, the codec tracks
+symbol occurrences. An internal adaptation factor determines how
+aggressively the distribution adapts to incoming data:</p>
+<ul>
+<li>Early occurrences shift the distribution with higher adaptation
+rates to rapidly fit local characteristics.</li>
+<li>As the symbol count increases, the adaptation rate decreases to
+stabilize the distribution.</li>
+</ul>
+<h2 id="multi-frame-context-inheritance-and-reference-slots">Multi-Frame
+Context Inheritance and Reference Slots</h2>
+<p>AV1 does not reset its entropy contexts to flat or uniform priors at
+the start of every frame. Instead, it utilizes reference frame context
+buffers:</p>
+<ol type="1">
+<li><strong>Context Initialization:</strong> When a frame header is
+parsed, the bitstream specifies a <code>primary_ref_frame</code>. The
+newly initialized frame copies the base CDF tables directly from the
+context buffer associated with that specific reference frame.</li>
+<li><strong>Context Persistence:</strong> Up to eight reference frame
+context models can be maintained concurrently in memory, corresponding
+to the reference picture buffer slots.</li>
+</ol>
+<p>If a frame is marked as an intra-only keyframe or explicitly disables
+context inheritance via <code>error_resilient_mode</code>, the entropy
+tables are initialized from static default tables stored in the
+specification. Otherwise, the frame inherits the state left behind by
+its chosen reference.</p>
+<h2 id="backward-context-updating">Backward Context Updating</h2>
+<p>The backward update process governs how the learned symbol statistics
+of a processed frame are consolidated and saved back into the reference
+context buffers for subsequent frames to use.</p>
+<h3 id="frame-context-refresh-flag">Frame Context Refresh Flag</h3>
+<p>At the frame level, the syntax element
+<code>refresh_frame_context</code> determines whether the final state of
+the entropy models will be written back to the multi-frame storage:</p>
+<ul>
+<li>If <code>refresh_frame_context</code> is set to <code>1</code>, the
+entire set of adapted CDFs at the end of the frame is saved into the
+context slot assigned to that frame's reference buffer index.</li>
+<li>If <code>refresh_frame_context</code> is set to <code>0</code>, the
+frame uses and adapts CDFs internally for its own syntax decoding, but
+its final state is discarded upon completion, leaving the stored
+reference contexts unchanged.</li>
+</ul>
+<h3 id="tile-level-handling-and-context-aggregation">Tile-Level Handling
+and Context Aggregation</h3>
+<p>AV1 supports parallel execution via independent tiles. Because tiles
+are decoded in parallel, they cannot sequentially update a single shared
+CDF model without causing race conditions.</p>
+<p>When multi-tile decoding is utilized alongside multi-frame context
+updates:</p>
+<ul>
+<li>Each tile begins execution with a copy of the base frame
+context.</li>
+<li>During decoding, each tile maintains its own local CDF states.</li>
+<li>AV1 dictates a deterministic resolution: only the CDF state from a
+predetermined tile (typically the context output of Tile 0, or the
+designated context-update tile specified in the bitstream) is saved back
+to update the frame context buffer. This preserves parallelism while
+maintaining deterministic multi-frame updates across decoders.</li>
+</ul>
+<h2 id="impact-on-inter-frame-compression">Impact on Inter-Frame
+Compression</h2>
+<p>By allowing entropy models to propagate backward into reference
+buffers and forward into future dependent frames, AV1 ensures that
+non-stationary statistics spanning multiple temporal frames are
+preserved. Frames showing similar motion, lighting, or scene complexity
+benefit from already-trained CDFs, avoiding the bit-overhead required to
+re-adapt the entropy coder from generic prior distributions at the start
+of each frame.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

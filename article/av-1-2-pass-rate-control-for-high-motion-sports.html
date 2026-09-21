@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 2-Pass Rate Control for High-Motion Sports - av1</title>
+    <meta name="description" content="AV1’s two-pass temporal rate control manages high-motion sports content by splitting encoding into an initial statistical analysis phase and a finalized optimization phase. By inspecting motion vectors, scene transitions, and temporal dependencies acro">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-2-pass-rate-control-for-high-motion-sports">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 2-Pass Rate Control for High-Motion Sports - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-2-pass-rate-control-for-high-motion-sports" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1’s two-pass temporal rate control manages high-motion sports content by splitting encoding into an initial statistical analysis phase and a finalized optimization phase. By inspecting motion vectors, scene transitions, and temporal dependencies acro" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-2-pass-rate-control-for-high-motion-sports">AV1 2-Pass Rate
+Control for High-Motion Sports</h1>
+<p>AV1’s two-pass temporal rate control manages high-motion sports
+content by splitting encoding into an initial statistical analysis phase
+and a finalized optimization phase. By inspecting motion vectors, scene
+transitions, and temporal dependencies across a wide lookahead buffer
+during the first pass, the encoder intelligently redistributes bitrate
+to intense action sequences, mitigates motion blur, and preserves fine
+visual details like grass textures and fast-moving balls in the second
+pass.</p>
+<h3 id="first-pass-global-statistical-analysis">First Pass: Global
+Statistical Analysis</h3>
+<p>During the first pass, the AV1 encoder evaluates the entire sequence
+using a fast, low-complexity profile. It collects critical temporal and
+spatial metrics rather than producing a finalized bitstream. For
+high-motion sports, this phase focuses on:</p>
+<ul>
+<li><strong>Motion Complexity:</strong> Detecting rapid global camera
+movements (pans, tilts, zooms) and chaotic local motion (multiple
+players crossing paths).</li>
+<li><strong>Temporal Predictability:</strong> Measuring inter-frame
+prediction errors to identify frames where standard motion compensation
+fails due to high acceleration or occlusion.</li>
+<li><strong>Scene Dynamics:</strong> Flagging rapid camera angle cuts
+and high-entropy periods, such as celebratory crowd shots or sudden
+sprint breaks.</li>
+</ul>
+<p>These statistics are compiled into a comprehensive log file that
+provides the second pass with complete foreknowledge of the video's
+temporal complexity.</p>
+<h3 id="temporal-allocation-and-lookahead-planning">Temporal Allocation
+and Lookahead Planning</h3>
+<p>Armed with the first-pass data, the second-pass temporal rate
+controller constructs a long-term bit budget plan. Sports content
+frequently stresses encoders because uniform bit distribution leads to
+blockiness during fast play and wasted bits during static moments.</p>
+<p>AV1's rate controller utilizes a sliding temporal window to
+dynamically shift bits from low-motion periods—such as huddles,
+free-throw preparations, or commentary intervals—to explosive action
+bursts. By preemptively calculating the difficulty of upcoming motion
+sequences, the temporal rate controller adjusts the visual buffer
+verifier (VBV) limits, preventing buffer underflows during peak motion
+while ensuring that strict target bitrates are respected.</p>
+<h3 id="hierarchical-gops-and-multi-reference-frames">Hierarchical GOPs
+and Multi-Reference Frames</h3>
+<p>High-motion sports heavily rely on AV1’s advanced temporal reference
+architecture:</p>
+<ul>
+<li><strong>Golden and Alternate Reference (AltRef) Frames:</strong> The
+rate controller prioritizes higher bit allocations for AltRef frames.
+These non-displayable, temporally filtered synthetic frames serve as
+high-quality reference points for neighboring high-motion frames,
+significantly boosting prediction efficiency.</li>
+<li><strong>Hierarchical Prediction Structures:</strong> By arranging
+frames in multi-level pyramidal structures, lower-tier frames can
+reference multiple temporal directions. The rate controller assigns
+finer quantization parameters (lower QP) to the root reference frames,
+ensuring that subsequent high-motion frames inherit cleaner baseline
+details.</li>
+</ul>
+<h3 id="global-motion-estimation-and-warped-motion">Global Motion
+Estimation and Warped Motion</h3>
+<p>Sports footage frequently features continuous, high-speed camera
+tracking. AV1’s temporal rate controller coordinates with its Global
+Motion Estimation (GME) engine to detect affine transformations such as
+camera pans and zooms.</p>
+<p>Instead of exhausting bits on thousands of individual block-level
+motion vectors, the encoder represents the camera sweep using global
+parametric models. This dramatic reduction in overhead allows the
+temporal rate controller to spend the saved bits on preserving fine
+spatial detail, such as athlete jersey numbers, court markings, and
+equipment edges.</p>
+<h3 id="perceptual-quantization-and-delta-qp-tuning">Perceptual
+Quantization and Delta-QP Tuning</h3>
+<p>In high-velocity scenes, human visual perception tolerates minor
+degradation in fast-moving, motion-blurred background regions while
+remaining sensitive to sharp, tracking objects. AV1 uses adaptive
+Delta-QP at the block level within its temporal control loop. The
+encoder strategically reduces precision on high-frequency noise and
+motion-blurred peripheries, funneling the available bit budget directly
+into maintaining sharp focus on focal subjects throughout the play.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

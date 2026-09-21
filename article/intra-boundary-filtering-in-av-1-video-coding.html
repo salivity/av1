@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intra-Boundary Filtering in AV1 Video Coding - av1</title>
+    <meta name="description" content="Intra-boundary filtering in the AV1 video codec is a prediction refinement technique designed to reduce edge artifacts and improve compression efficiency during intra-frame coding. By conditioning the reference samples along the top and left boundaries o">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/intra-boundary-filtering-in-av-1-video-coding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Intra-Boundary Filtering in AV1 Video Coding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/intra-boundary-filtering-in-av-1-video-coding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Intra-boundary filtering in the AV1 video codec is a prediction refinement technique designed to reduce edge artifacts and improve compression efficiency during intra-frame coding. By conditioning the reference samples along the top and left boundaries o" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="intra-boundary-filtering-in-av1-video-coding">Intra-Boundary
+Filtering in AV1 Video Coding</h1>
+<p>Intra-boundary filtering in the AV1 video codec is a prediction
+refinement technique designed to reduce edge artifacts and improve
+compression efficiency during intra-frame coding. By conditioning the
+reference samples along the top and left boundaries of a block before or
+during prediction, AV1 prevents artificial sharp edges and
+high-frequency discrepancies from propagating into the predicted block.
+This article explains how intra-boundary filtering functions, the
+mechanisms it uses to smooth reference edges, and why it is vital for
+modern video compression.</p>
+<h3 id="the-purpose-of-intra-boundary-filtering">The Purpose of
+Intra-Boundary Filtering</h3>
+<p>In intra-frame prediction, a video codec predicts the contents of a
+target block using the reconstructed pixels from immediately adjacent,
+previously decoded blocks—specifically those above and to the left.
+Because these reference pixels contain quantization noise and abrupt
+transitions, using them raw can cause unnatural directional banding,
+ringing artifacts, or visible block boundaries. Intra-boundary filtering
+resolves this issue by applying filtering algorithms directly to the
+reference samples or blending boundary pixels smoothly into the
+predicted area.</p>
+<h3 id="pre-prediction-reference-smoothing">Pre-Prediction Reference
+Smoothing</h3>
+<p>Before directional intra prediction angles are projected across a
+block, AV1 evaluates the reference sample arrays (the row above and the
+column to the left). To prevent noise propagation, AV1 employs adaptive
+reference smoothing:</p>
+<ol type="1">
+<li><strong>Variance and Smoothness Detection:</strong> The encoder
+evaluates whether the boundary reference pixels form a smooth gradient
+or contain genuine high-contrast edges. If a natural, sharp texture is
+detected, heavy filtering is bypassed to preserve detail.</li>
+<li><strong>Low-Pass Filtering:</strong> When smoothing is beneficial, a
+low-pass filter—typically a 3-tap filter with coefficients like
+<code>[1, 2, 1] / 4</code> or a 5-tap filter for larger block sizes—is
+applied to the reference arrays. This eliminates high-frequency noise
+from the reference line prior to sample projection.</li>
+</ol>
+<h3
+id="position-dependent-prediction-combination-pdpc">Position-Dependent
+Prediction Combination (PDPC)</h3>
+<p>Beyond standard pre-filtering of reference arrays, AV1 incorporates
+Position-Dependent Prediction Combination (PDPC). PDPC operates directly
+at the boundary interface by blending the directional intra prediction
+with the neighboring reconstructed boundary samples.</p>
+<ul>
+<li><strong>Distance-Weighted Blending:</strong> For every pixel inside
+the current block, PDPC calculates a weighted average between the
+directional predictor and the boundary pixels located directly above and
+to the left.</li>
+<li><strong>Decay Function:</strong> The influence of the boundary
+pixels decays exponentially as the distance from the block boundary
+increases. Pixels in the first row or column receive the strongest
+boundary correction, while interior pixels rely almost entirely on the
+directional prediction.</li>
+<li><strong>Transition Softening:</strong> This mechanism smooths the
+abrupt boundary step between the newly predicted block and its already
+reconstructed neighbors, ensuring continuity across block borders.</li>
+</ul>
+<h3 id="benefits-on-coding-efficiency">Benefits on Coding
+Efficiency</h3>
+<p>Smoothing reference edges directly affects the residual signal—the
+difference between the original video frame and the predicted block.
+Discontinuities and noisy reference borders introduce high-frequency
+components that require a substantial bitrate to encode via discrete
+cosine transforms (DCT) or asymmetric discrete sine transforms (ADST).
+By smoothing reference edges and boundary interfaces, intra-boundary
+filtering minimizes residual energy, allowing AV1 to preserve higher
+visual fidelity at significantly lower bitrates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

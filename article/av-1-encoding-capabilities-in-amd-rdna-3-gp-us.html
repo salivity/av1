@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Encoding Capabilities in AMD RDNA 3 GPUs - av1</title>
+    <meta name="description" content="AMD’s RDNA 3 architecture introduced dedicated hardware acceleration for AV1 encoding and decoding, significantly improving compression efficiency and video quality over older standards like H.264. This article breaks down the specific AV1 encoding cap">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-encoding-capabilities-in-amd-rdna-3-gp-us">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Encoding Capabilities in AMD RDNA 3 GPUs - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-encoding-capabilities-in-amd-rdna-3-gp-us" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AMD’s RDNA 3 architecture introduced dedicated hardware acceleration for AV1 encoding and decoding, significantly improving compression efficiency and video quality over older standards like H.264. This article breaks down the specific AV1 encoding cap" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-encoding-capabilities-in-amd-rdna-3-gpus">AV1 Encoding
+Capabilities in AMD RDNA 3 GPUs</h1>
+<p>AMD’s RDNA 3 architecture introduced dedicated hardware acceleration
+for AV1 encoding and decoding, significantly improving compression
+efficiency and video quality over older standards like H.264. This
+article breaks down the specific AV1 encoding capabilities found in AMD
+Radeon RX 7000 series desktop and mobile graphics cards, detailing
+resolution support, performance enhancements, and software
+compatibility.</p>
+<h2 id="the-dual-media-engine">The Dual Media Engine</h2>
+<p>At the core of RDNA 3’s video processing is the upgraded Video Codec
+Next (VCN 4.0) architecture, marketed as the Dual Media Engine. This
+system features two independent hardware pipelines that handle video
+processing simultaneously.</p>
+<p>Key architectural highlights include:</p>
+<ul>
+<li><strong>Dual-Stream Capability:</strong> The engine can encode two
+video streams at once, or encode one stream while decoding another. This
+enables users to stream live in one format while archiving a
+high-bitrate recording in another.</li>
+<li><strong>Frequency Scaling:</strong> The media engine runs up to 1.8
+times faster than previous RDNA generations, ensuring minimal latency
+and preventing encoding overhead from impacting in-game frame
+rates.</li>
+</ul>
+<h2 id="resolution-framerate-and-color-support">Resolution, Framerate,
+and Color Support</h2>
+<p>The AV1 hardware encoder in RDNA 3 supports modern, high-bandwidth
+display standards for streaming, recording, and professional video
+editing:</p>
+<ul>
+<li><strong>Maximum Resolution:</strong> Hardware-accelerated AV1 encode
+supports up to 8K (7680x4320) at 60 frames per second (FPS).</li>
+<li><strong>High Refresh Rates:</strong> At lower resolutions, such as
+4K and 1440p, the encoder can process high framerates suitable for
+fast-paced gameplay capture.</li>
+<li><strong>Color Depth:</strong> It supports both 8-bit and 10-bit
+color depths, enabling full High Dynamic Range (HDR) workflows using the
+AV1 format.</li>
+</ul>
+<h2 id="efficiency-and-visual-quality">Efficiency and Visual
+Quality</h2>
+<p>AV1 provides roughly 50% better compression efficiency compared to
+H.264 (AVC) and improves upon HEVC (H.265) at equivalent bitrates. For
+RDNA 3 users, this yields specific advantages:</p>
+<ul>
+<li><strong>Lower Bandwidth for Live Streaming:</strong> Streamers can
+output crisp 1080p or 1440p video at lower bitrates, bypassing standard
+platform bandwidth limits while avoiding macroblocking and
+artifacting.</li>
+<li><strong>Smaller File Sizes:</strong> Local recordings take up
+significantly less storage space compared to traditional H.264
+recordings at identical visual quality.</li>
+<li><strong>AI-Enhanced Pre-Filtering:</strong> RDNA 3 leverages
+internal machine learning components to improve text clarity and scene
+detail during real-time encoding.</li>
+</ul>
+<h2 id="software-ecosystem-and-compatibility">Software Ecosystem and
+Compatibility</h2>
+<p>Hardware AV1 encoding on RDNA 3 is supported natively across key
+content creation and broadcasting applications:</p>
+<ul>
+<li><strong>Streaming and Recording:</strong> OBS Studio natively
+supports AMD AV1 hardware encoding via the Advanced Media Framework
+(AMF).</li>
+<li><strong>Video Editing:</strong> Applications such as DaVinci
+Resolve, Adobe Premiere Pro, and HandBrake utilize RDNA 3's AV1 encoder
+for rendering and file conversion.</li>
+<li><strong>AMD Software: Adrenalin Edition:</strong> Built-in capture
+and streaming utilities allow users to record or broadcast directly
+using AV1 without third-party tools.</li>
+</ul>
+<h2 id="eligible-hardware">Eligible Hardware</h2>
+<p>AV1 encoding is present on all discrete and integrated graphics
+processors built on the RDNA 3 architecture. This includes discrete
+desktop graphics cards ranging from the Radeon RX 7600 up to the
+flagship RX 7900 XTX, Radeon RX 7000M/S mobile series GPUs, and Ryzen
+7040/8040 series mobile processors featuring integrated Radeon
+700M-series graphics.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

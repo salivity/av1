@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Intra Block Copy Enhances AV1 Screen Coding - av1</title>
+    <meta name="description" content="Intra Block Copy (IBC) is a specialized coding tool in the AV1 video codec designed specifically to improve the compression efficiency of screen content, such as computer graphics, text, and user interfaces. Unlike natural camera-captured video, screen c">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-intra-block-copy-enhances-av-1-screen-coding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Intra Block Copy Enhances AV1 Screen Coding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-intra-block-copy-enhances-av-1-screen-coding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Intra Block Copy (IBC) is a specialized coding tool in the AV1 video codec designed specifically to improve the compression efficiency of screen content, such as computer graphics, text, and user interfaces. Unlike natural camera-captured video, screen c" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-intra-block-copy-enhances-av1-screen-coding">How Intra Block
+Copy Enhances AV1 Screen Coding</h1>
+<p>Intra Block Copy (IBC) is a specialized coding tool in the AV1 video
+codec designed specifically to improve the compression efficiency of
+screen content, such as computer graphics, text, and user interfaces.
+Unlike natural camera-captured video, screen content contains sharp
+edges, uniform color patches, and frequent repetitive patterns across a
+single frame. This article explains how IBC adapts motion compensation
+techniques for use within the current picture, significantly reducing
+bitrate requirements and preserving visual clarity for screen sharing,
+gaming overlays, and desktop applications.</p>
+<h2 id="the-challenge-of-screen-content">The Challenge of Screen
+Content</h2>
+<p>Traditional intra-frame prediction tools in video codecs are
+optimized for continuous tones, subtle gradients, and soft edges typical
+of real-world photography. These tools predict pixels along directional
+angles or generate smooth DC/planar fills.</p>
+<p>When applied to screen content, standard intra prediction struggles.
+Text, icons, and interface elements have sharp, high-contrast
+transitions without gradients. Standard tools often blur these sharp
+boundaries or generate large residual errors that require significant
+bit budgets to encode, resulting in ringing artifacts, smearing, and
+overall inefficiency.</p>
+<h2 id="how-intra-block-copy-works">How Intra Block Copy Works</h2>
+<p>Intra Block Copy treats the current frame similarly to a reference
+frame in standard motion estimation. While conventional inter-prediction
+searches for matching pixel blocks in previously decoded frames, IBC
+searches for matching patterns within the reconstructed areas of the
+<em>current</em> frame.</p>
+<p>When an encoder processes a block of screen content—such as a
+repeated letter, an icon, or a menu bar pattern—IBC performs the
+following steps:</p>
+<ol type="1">
+<li><strong>Pattern Matching:</strong> The encoder searches the already
+reconstructed portion of the current frame to find an identical or
+near-identical block of pixels.</li>
+<li><strong>Displacement Vector Signaling:</strong> Instead of
+recalculating pixels or applying complex transforms, the encoder stores
+a 2D displacement vector, commonly referred to as a block vector (BV).
+This vector points directly from the current block to the reference
+block in the same picture.</li>
+<li><strong>Residual Coding:</strong> If the match is exact, the
+residual data is zero, requiring minimal bits. If minor differences
+exist, only a small residual error is encoded alongside the block
+vector.</li>
+</ol>
+<h2 id="key-advantages-in-av1">Key Advantages in AV1</h2>
+<h3 id="exact-pattern-duplication">Exact Pattern Duplication</h3>
+<p>Screen content frequently duplicates identical elements across the
+display, such as fonts, buttons, logos, and window borders. IBC enables
+the codec to reference an existing instance of a character or icon
+rather than re-encoding it from scratch, yielding massive compression
+gains.</p>
+<h3 id="preservation-of-sharp-edges">Preservation of Sharp Edges</h3>
+<p>Because IBC copies pixel data directly via integer block vectors, it
+avoids the smoothing and interpolation filters commonly used in
+sub-pixel motion compensation or angular intra prediction. This keeps
+high-frequency details, such as small text fonts and pixel art, crisp
+and artifact-free.</p>
+<h3 id="bitrate-reduction">Bitrate Reduction</h3>
+<p>By transforming complex spatial patterns into simple vector
+coordinates, IBC dramatically reduces the amount of transform and
+quantization data needed. In typical screen-sharing and remote-desktop
+scenarios, enabling IBC can reduce the overall bitrate by 20% to 50%
+without any loss in subjective visual quality.</p>
+<h2 id="ideal-applications">Ideal Applications</h2>
+<p>Within the AV1 ecosystem, IBC automatically activates or gains higher
+priority when the encoder detects screen content or when a dedicated
+screen-content mode is selected. It is essential for:</p>
+<ul>
+<li><strong>Remote Desktop and Screen Sharing:</strong> Real-time
+transmission of desktop environments featuring dense text and static
+windows.</li>
+<li><strong>Cloud Gaming and Game Streaming:</strong> Compressing
+heads-up displays (HUDs), mini-maps, and user interface overlays
+superimposed on 3D scenes.</li>
+<li><strong>Software Tutorials and Presentations:</strong> Maintaining
+crisp slides, code editors, and software interfaces at low
+bandwidths.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

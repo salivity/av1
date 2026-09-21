@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame-Parallel Decoding in AV1 Video Codec - av1</title>
+    <meta name="description" content="Frame-parallel decoding is an architectural approach that enables a video decoder to process multiple frames simultaneously across different processor cores to maximize throughput. While traditional decoders parse and reconstruct video frames sequentiall">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/frame-parallel-decoding-in-av-1-video-codec">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Frame-Parallel Decoding in AV1 Video Codec - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/frame-parallel-decoding-in-av-1-video-codec" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Frame-parallel decoding is an architectural approach that enables a video decoder to process multiple frames simultaneously across different processor cores to maximize throughput. While traditional decoders parse and reconstruct video frames sequentiall" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="frame-parallel-decoding-in-av1-video-codec">Frame-Parallel
+Decoding in AV1 Video Codec</h1>
+<p>Frame-parallel decoding is an architectural approach that enables a
+video decoder to process multiple frames simultaneously across different
+processor cores to maximize throughput. While traditional decoders parse
+and reconstruct video frames sequentially, modern high-resolution
+formats require parallelism to achieve real-time playback. The AOMedia
+Video 1 (AV1) bitstream syntax provides specific mechanisms to
+facilitate frame-level concurrency, while simultaneously imposing
+structural constraints governed by temporal reference dependencies and
+in-loop filtering.</p>
+<h3 id="what-is-frame-parallel-decoding">What is Frame-Parallel
+Decoding?</h3>
+<p>Frame-parallel decoding allows a video player or hardware decoder to
+assign distinct, consecutive frames to separate worker threads. Unlike
+tile-based or slice-based parallelism—which splits a single frame into
+independent spatial regions—frame-parallel decoding distributes the
+processing of entire frames across time.</p>
+<p>The primary challenge in frame-parallel processing is temporal
+dependency. Inter-predicted frames rely on pixel data from previously
+decoded reference frames. Consequently, a worker thread decoding Frame
+<span class="math inline">\(N+1\)</span> cannot complete its
+reconstruction until the reference data from Frame <span
+class="math inline">\(N\)</span> is available. Effective frame-parallel
+decoders manage this by overlapping operations: entropy decoding, motion
+vector parsing, and partial reconstruction occur concurrently across
+threads, resolving pixel dependencies dynamically as reference data
+finishes rendering.</p>
+<h3 id="av1-syntax-features-supporting-frame-parallel-decoding">AV1
+Syntax Features Supporting Frame-Parallel Decoding</h3>
+<p>AV1 incorporates several syntax-level elements designed to make
+parallel processing efficient and computationally deterministic:</p>
+<ul>
+<li><strong>CDF Updates Decoupling
+(<code>disable_frame_end_update_cdf</code>):</strong> In entropy coding,
+symbol probabilities are tracked using Cumulative Distribution Functions
+(CDFs). If each frame inherits the final adapted CDF state from the
+preceding frame, entropy decoding must remain strictly sequential. AV1
+includes the <code>disable_frame_end_update_cdf</code> flag in the
+uncompressed frame header. When enabled, it prevents the frame from
+updating the base CDF state for subsequent frames, allowing multiple
+threads to entropy-decode frame headers and payloads in parallel without
+waiting for preceding frames to finish symbol parsing.</li>
+<li><strong>Decoupled Decode and Display
+(<code>show_existing_frame</code>):</strong> AV1 separates frame
+decoding from frame presentation. A frame can be decoded into a
+reference buffer without being rendered immediately, or an existing
+buffer can be output without decoding new sample data using
+<code>show_existing_frame</code>. This explicit buffer-management syntax
+allows decoders to build lookahead graphs, decode out-of-order reference
+structures (such as hierarchical B-frames), and schedule worker threads
+efficiently.</li>
+<li><strong>Explicit Reference Frame Refresh Signaling:</strong> The
+bitstream syntax explicitly declares which slots in the eight-frame
+reference buffer will be overwritten via the
+<code>refresh_frame_flags</code>. Because this is signaled at the very
+beginning of the frame header, worker threads know immediately which
+buffers will be occupied or released, avoiding race conditions among
+concurrent threads.</li>
+<li><strong>Temporal Delimitation and Tile Groups:</strong> AV1
+organizes bitstreams into Open Bitstream Units (OBUs). Temporal
+Delimiter OBUs distinctly mark time intervals, enabling a demuxer or
+parser thread to quickly slice the compressed bitstream into separate
+frame-level payloads and distribute them to idle worker threads before
+pixel decoding even begins.</li>
+</ul>
+<h3 id="syntax-restrictions-and-bottlenecks-in-av1">Syntax Restrictions
+and Bottlenecks in AV1</h3>
+<p>While AV1 accommodates parallel designs, certain elements of its
+syntax restrict frame-level parallelism and introduce synchronization
+barriers:</p>
+<ul>
+<li><strong>In-Loop Filtering Dependencies:</strong> AV1 employs three
+sequential in-loop filters: the Deblocking Filter, the Constrained
+Directional Enhancement Filter (CDEF), and the Loop Restoration filter.
+A reference frame is not legally valid for inter-prediction until all
+three filters have fully processed the boundary and inner pixels.
+Because Loop Restoration requires wider spatial pixel neighborhoods (up
+to <span class="math inline">\(64\times64\)</span> or <span
+class="math inline">\(128\times128\)</span> units), inter-dependent
+frames must wait for this intensive reconstruction step to finish before
+accessing reconstructed samples.</li>
+<li><strong>Global and Warped Motion:</strong> AV1 supports complex
+inter-frame transformations, including affine and warped motion
+projection. These prediction modes depend on accurate reconstruction of
+previous frame boundaries and motion trajectories. This increases the
+complexity of reference frame availability tracking, forcing downstream
+threads to wait for exact sub-pixel boundaries to be fully
+calculated.</li>
+<li><strong>CDF Synchronization Penalties:</strong> If an encoder does
+not set <code>disable_frame_end_update_cdf</code>, the decoder cannot
+parse the compressed data tokens of Frame <span
+class="math inline">\(N+1\)</span> until Frame <span
+class="math inline">\(N\)</span> has completely finished parsing all of
+its tiles and updated its CDF state. This re-serializes the front-end
+entropy parsing stage of the pipeline.</li>
+<li><strong>Primary Reference Frame Selection:</strong> AV1 allows
+frames to select a <code>primary_ref_frame</code> from which to inherit
+initial probability states and motion vector references. If this
+reference is not yet available, the dependent frame's setup phase
+stalls, introducing thread latency.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

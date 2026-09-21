@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco Thor Features in the AV1 Video Codec - av1</title>
+    <meta name="description" content="When the Alliance for Open Media (AOMedia) developed the AV1 video standard, it synthesized core technologies from three major predecessor codecs: Google’s VP9/VP10, Mozilla/Xiph’s Daala, and Cisco’s Thor. Cisco designed Thor specifically for royal">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/cisco-thor-features-in-the-av-1-video-codec">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Cisco Thor Features in the AV1 Video Codec - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/cisco-thor-features-in-the-av-1-video-codec" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When the Alliance for Open Media (AOMedia) developed the AV1 video standard, it synthesized core technologies from three major predecessor codecs: Google’s VP9/VP10, Mozilla/Xiph’s Daala, and Cisco’s Thor. Cisco designed Thor specifically for royal" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="cisco-thor-features-in-the-av1-video-codec">Cisco Thor Features
+in the AV1 Video Codec</h1>
+<p>When the Alliance for Open Media (AOMedia) developed the AV1 video
+standard, it synthesized core technologies from three major predecessor
+codecs: Google’s VP9/VP10, Mozilla/Xiph’s Daala, and Cisco’s Thor. Cisco
+designed Thor specifically for royalty-free, real-time video
+conferencing, contributing several vital tools to the unified standard.
+This article examines the specific features and concepts from Cisco's
+Thor that directly shaped the AV1 specification, most notably the
+Constrained Directional Enhancement Filter (CDEF), motion vector
+prediction enhancements, and low-latency architectural
+optimizations.</p>
+<h3 id="constrained-directional-enhancement-filter-cdef">Constrained
+Directional Enhancement Filter (CDEF)</h3>
+<p>The most prominent and direct contribution from Thor to AV1 is the
+Constrained Directional Enhancement Filter (CDEF). During the AV1
+standardization process, engineers merged Cisco’s Constrained Low-Pass
+Filter (CLPF) from Thor with Daala's directional deringing filter.</p>
+<p>Thor's CLPF was originally designed to remove ringing artifacts
+around sharp edges without blurring image details. It achieved this by
+applying a non-linear low-pass filter whose threshold restricted pixel
+adjustments to small values, ensuring that true edges were preserved. In
+AV1, Daala's technique first identifies the direction of primary edges
+within an 8x8 block, and Thor's constrained filtering approach is then
+applied along that detected direction. CDEF operates as an in-loop
+filter immediately after inverse transformation and deblocking,
+significantly improving subjective visual quality and coding
+efficiency.</p>
+<h3 id="motion-vector-prediction-improvements">Motion Vector Prediction
+Improvements</h3>
+<p>Thor introduced sophisticated spatial and temporal motion vector
+derivation techniques tailored for high-motion and conversational video.
+AOMedia incorporated several of Thor’s motion vector prediction ideas
+into AV1's advanced motion compensation pipeline, including:</p>
+<ul>
+<li><strong>Temporal Motion Vector Candidates:</strong> Thor contributed
+refined methods for scanning co-located reference blocks across previous
+frames to build reliable candidate lists for temporal motion
+prediction.</li>
+<li><strong>Spatial Neighbor Sampling:</strong> Thor’s strategies for
+deriving motion vectors from surrounding blocks helped expand AV1’s
+spatial motion vector candidate list, allowing the codec to represent
+complex motion fields with minimal signaling overhead.</li>
+</ul>
+<h3 id="transform-and-partitioning-flexibility">Transform and
+Partitioning Flexibility</h3>
+<p>While AV1's core partitioning framework was primarily derived from
+VP9’s quadtree structure, Thor’s experimentation with multi-level
+recursive partitioning influenced AV1’s support for more varied block
+sizes. Thor demonstrated the utility of dynamic transform
+selection—applying variations of the Discrete Cosine Transform (DCT) and
+Discrete Sine Transform (DST) depending on the directional properties of
+the residual data—which directly supported AV1's hybrid transform
+engine.</p>
+<h3 id="real-time-communications-and-error-resilience">Real-Time
+Communications and Error Resilience</h3>
+<p>Because Cisco developed Thor primarily for Webex and video
+conferencing, the codec included mechanisms to handle packet loss,
+jitter, and low-latency encoding constraints. Several operational
+concepts from Thor influenced AV1's real-time profiles:</p>
+<ul>
+<li><strong>Frame-Level Scalability:</strong> Thor implemented
+straightforward reference frame management optimized for temporal
+scalability (hierarchical P-frames), facilitating dynamic bit-rate
+adaptation in live streaming.</li>
+<li><strong>Low-Complexity Modes:</strong> Algorithmic shortcuts
+developed for Thor to reduce encoder complexity on consumer hardware
+helped inform the faster encoding presets and low-latency operational
+modes standardized in AV1.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

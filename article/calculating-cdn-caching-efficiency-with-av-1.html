@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculating CDN Caching Efficiency with AV1 - av1</title>
+    <meta name="description" content="Large-scale Content Delivery Networks (CDNs) quantify the caching benefits of the AV1 video codec by analyzing how its superior compression ratio—typically yielding 30% to 50% smaller file sizes than H.264—alters data footprint dynamics at the edge.">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/calculating-cdn-caching-efficiency-with-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Calculating CDN Caching Efficiency with AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/calculating-cdn-caching-efficiency-with-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Large-scale Content Delivery Networks (CDNs) quantify the caching benefits of the AV1 video codec by analyzing how its superior compression ratio—typically yielding 30% to 50% smaller file sizes than H.264—alters data footprint dynamics at the edge." />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="calculating-cdn-caching-efficiency-with-av1">Calculating CDN
+Caching Efficiency with AV1</h1>
+<p>Large-scale Content Delivery Networks (CDNs) quantify the caching
+benefits of the AV1 video codec by analyzing how its superior
+compression ratio—typically yielding 30% to 50% smaller file sizes than
+H.264—alters data footprint dynamics at the edge. By evaluating metrics
+such as the Byte Hit Ratio (BHR), the Working Set Size (WSS), Mean Time
+to Eviction (MTTE), and origin offload percentages, CDNs mathematically
+determine how smaller payload sizes expand effective cache capacity,
+reduce origin egress, and lower operational overhead.</p>
+<h3 id="1-working-set-size-compression">1. Working Set Size
+Compression</h3>
+<p>The foundational variable in caching efficiency is the Working Set
+Size (WSS)—the total volume of unique data requested by users within a
+designated observation window. When a library is encoded in AV1 rather
+than legacy codecs like H.264 (AVC) or H.265 (HEVC), the aggregate bytes
+needed to represent the video streams decrease.</p>
+<p>CDNs model the AV1 working set size reduction as:</p>
+<p><span class="math display">\[WSS_{\text{AV1}} = WSS_{\text{legacy}}
+\times (1 - \delta)\]</span></p>
+<p>Where <span class="math inline">\(\delta\)</span> represents the
+bitrate savings percentage (typically <span class="math inline">\(0.20
+\le \delta \le 0.40\)</span> against HEVC, and up to <span
+class="math inline">\(0.50\)</span> against AVC).</p>
+<p>Because edge storage (RAM and NVMe drives) is finite, shrinking the
+physical footprint of each video segment directly reduces the overall
+footprint of the active catalogue.</p>
+<h3 id="2-cache-retention-and-mean-time-to-eviction-mtte">2. Cache
+Retention and Mean Time to Eviction (MTTE)</h3>
+<p>Cache eviction policies (typically variations of Least Recently Used
+[LRU] or Segmented LRU [SLRU]) drop segments when cache capacity is
+exceeded. CDNs calculate the lifespan of an asset in cache using the
+Mean Time to Eviction (MTTE).</p>
+<p>Because edge nodes operate on fixed-capacity boundaries:</p>
+<p><span class="math display">\[\text{Cache Shelf-Life} \approx
+\frac{\text{Edge Storage Capacity (Bytes)}}{\text{Unique Byte Ingress
+Rate (Bytes/Second)}}\]</span></p>
+<p>Because AV1 reduces the byte ingress rate of unique video chunks,
+content remains in the cache longer without requiring hardware
+expansion. CDNs calculate the retention gain by observing the
+displacement velocity of objects. A 30% reduction in file footprint
+results in an effective capacity increase of approximately 43%, allowing
+more distinct catalog titles (particularly the "long-tail" content) to
+persist at edge tiers instead of midgress or origin tiers.</p>
+<h3 id="3-shift-from-request-hit-ratio-to-byte-hit-ratio-bhr">3. Shift
+from Request Hit Ratio to Byte Hit Ratio (BHR)</h3>
+<p>While Request Hit Ratio (RHR) measures whether an asset was served
+from cache, large-scale networks prioritize Byte Hit Ratio (BHR) when
+calculating infrastructure economics. BHR directly maps to bandwidth
+utilization and egress transit billing.</p>
+<p><span class="math display">\[\text{BHR} = \frac{\sum \text{Bytes
+Served from Cache}}{\sum \text{Total Bytes Requested}}\]</span></p>
+<p>When migrating to AV1, CDNs separate their telemetry into request
+cohorts. Even if RHR remains constant across codecs, BHR shifts because
+cache misses on AV1 files incur smaller penalty payloads from the
+origin.</p>
+<p>To determine the net efficiency gain (<span
+class="math inline">\(G_{\text{BHR}}\)</span>), CDNs measure the
+difference in bytes backhauled to the origin tier (<span
+class="math inline">\(B_{\text{origin}}\)</span>) per million video
+requests:</p>
+<p><span class="math display">\[G_{\text{BHR}} = 1 -
+\frac{B_{\text{origin, AV1}}}{B_{\text{origin, Legacy}}}\]</span></p>
+<h3 id="4-mathematical-modeling-using-ches-approximation">4.
+Mathematical Modeling Using Che’s Approximation</h3>
+<p>For predictive capacity planning, CDNs apply Che's approximation
+under Zipf-distributed video popularity. In a Zipfian distribution, a
+small fraction of files represents the majority of requests, while the
+long tail represents lower individual request frequencies.</p>
+<p>Che's approximation calculates the hit probability <span
+class="math inline">\(P_i\)</span> of an object <span
+class="math inline">\(i\)</span> with size <span
+class="math inline">\(s_i\)</span> and request rate <span
+class="math inline">\(\lambda_i\)</span> in an LRU cache of size <span
+class="math inline">\(C\)</span>:</p>
+<p><span class="math display">\[P_i = 1 - e^{-\lambda_i
+t_C}\]</span></p>
+<p>Where <span class="math inline">\(t_C\)</span> is the characteristic
+time it takes for <span class="math inline">\(C\)</span> bytes of unique
+data to enter the cache:</p>
+<p><span class="math display">\[\sum_{j} s_j (1 - e^{-\lambda_j t_C}) =
+C\]</span></p>
+<p>When AV1 reduces every individual segment size <span
+class="math inline">\(s_j\)</span>, the characteristic time <span
+class="math inline">\(t_C\)</span> increases significantly. CDNs measure
+this extended time parameter to predict how deeply into the long-tail
+catalog the edge cache can serve requests before a miss occurs.</p>
+<h3 id="5-multi-codec-fragmentation-overhead-analysis">5. Multi-Codec
+Fragmentation Overhead Analysis</h3>
+<p>To calculate the <em>net</em> efficiency gain, CDNs subtract the
+performance penalty caused by storage fragmentation. Serving AV1
+concurrently with H.264 and HEVC temporarily splits the cache into
+separate asset variants for the same media title.</p>
+<p>Engineers model this using an asset replication penalty:</p>
+<p><span class="math display">\[\text{Net Efficiency} = \text{Footprint
+Savings} - \text{Variant Duplication Factor}\]</span></p>
+<p>The CDN tracks the percentage of AV1-capable client traffic. The
+financial and cache-efficiency tipping point occurs when AV1 client
+density exceeds the ratio needed to offset the storage of coexisting
+legacy variants, after which the net reduction in global ingress
+immediately yields higher origin offload efficiency.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

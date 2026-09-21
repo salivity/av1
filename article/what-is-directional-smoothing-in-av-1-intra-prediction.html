@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is Directional Smoothing in AV1 Intra Prediction? - av1</title>
+    <meta name="description" content="Directional smoothing in AV1 intra prediction is an adaptive reference-filtering technique designed to enhance the quality of spatially predicted video blocks. This article breaks down how AV1 uses directional smoothing, the specific artifacts it prevent">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/what-is-directional-smoothing-in-av-1-intra-prediction">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is Directional Smoothing in AV1 Intra Prediction? - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/what-is-directional-smoothing-in-av-1-intra-prediction" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Directional smoothing in AV1 intra prediction is an adaptive reference-filtering technique designed to enhance the quality of spatially predicted video blocks. This article breaks down how AV1 uses directional smoothing, the specific artifacts it prevent" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-directional-smoothing-in-av1-intra-prediction">What Is
+Directional Smoothing in AV1 Intra Prediction?</h1>
+<p>Directional smoothing in AV1 intra prediction is an adaptive
+reference-filtering technique designed to enhance the quality of
+spatially predicted video blocks. This article breaks down how AV1 uses
+directional smoothing, the specific artifacts it prevents, how the
+filtering mechanism operates on reference samples, and its impact on
+overall video compression efficiency.</p>
+<h3 id="intra-prediction-in-av1">Intra Prediction in AV1</h3>
+<p>Intra prediction compresses video frames by predicting pixel values
+within a target block using previously decoded pixels from adjacent
+blocks (typically above and to the left). While older codecs like VP9
+supported only 8 directional modes, AV1 significantly expands this
+capability to 56 directional intra prediction angles. These angles allow
+the encoder to project boundary pixels across the block with high
+geometric precision.</p>
+<h3 id="the-role-of-directional-smoothing">The Role of Directional
+Smoothing</h3>
+<p>When reference pixels are projected across a block at arbitrary
+angles, sharp discontinuities, noise, or step-like patterns in the
+reference boundary can propagate through the entire predicted block.
+This propagation leads to visual artifacts such as aliasing, false
+edges, or unnatural banding.</p>
+<p>Directional smoothing solves this problem by applying a low-pass
+filter to the reference samples before they are projected along the
+prediction path. By smoothing out high-frequency noise and sudden pixel
+transitions in the reference line, the codec generates a continuous,
+natural gradient across the block.</p>
+<h3 id="how-directional-smoothing-works">How Directional Smoothing
+Works</h3>
+<p>Directional smoothing operates conditionally based on the chosen
+prediction mode and block characteristics:</p>
+<ol type="1">
+<li><strong>Angle and Mode Evaluation:</strong> The encoder determines
+whether smoothing is beneficial based on the prediction angle and block
+dimensions. Steeper or non-orthogonal angles often require stronger
+filtering because fractional pixel interpolation can amplify boundary
+discontinuities.</li>
+<li><strong>Filter Selection:</strong> AV1 employs distinct smoothing
+filters, typically utilizing 2-tap or 3-tap low-pass filters (such as a
+<code>[1, 2, 1] / 4</code> filter). The choice of filter depends on the
+degree of smoothing required.</li>
+<li><strong>Adaptive Enablement:</strong> Directional smoothing is not
+applied uniformly. If a boundary edge contains legitimate, sharp
+structural information that matches the prediction angle, excessive
+smoothing could blur the edge. AV1 therefore uses thresholding to decide
+whether smoothing will reduce the prediction residual or degrade edge
+sharpness.</li>
+</ol>
+<h3 id="impact-on-compression-performance">Impact on Compression
+Performance</h3>
+<p>By eliminating artificial edges in the prediction signal, directional
+smoothing reduces the energy contained in the residual data—the
+difference between the original block and the predicted block. Smaller
+residual values require fewer bits to encode during the transform and
+quantization stages, directly translating to improved rate-distortion
+(RD) performance and higher visual quality at lower bitrates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

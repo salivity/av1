@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How SMPTE Evaluates AV1 for Contribution Links - av1</title>
+    <meta name="description" content="The Society of Motion Picture and Television Engineers (SMPTE) evaluates the AOMedia Video 1 (AV1) codec for contribution links by rigorously testing its compression efficiency, picture quality preservation, latency performance, and resilience across mul">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-smpte-evaluates-av-1-for-contribution-links">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How SMPTE Evaluates AV1 for Contribution Links - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-smpte-evaluates-av-1-for-contribution-links" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Society of Motion Picture and Television Engineers (SMPTE) evaluates the AOMedia Video 1 (AV1) codec for contribution links by rigorously testing its compression efficiency, picture quality preservation, latency performance, and resilience across mul" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-smpte-evaluates-av1-for-contribution-links">How SMPTE
+Evaluates AV1 for Contribution Links</h1>
+<p>The Society of Motion Picture and Television Engineers (SMPTE)
+evaluates the AOMedia Video 1 (AV1) codec for contribution links by
+rigorously testing its compression efficiency, picture quality
+preservation, latency performance, and resilience across
+multi-generation encoding cycles. While AV1 was originally designed
+primarily for internet distribution, professional broadcast
+contribution—transmitting pristine video from live venues or studios to
+production facilities—demands distinct operational standards. SMPTE’s
+assessment framework determines whether AV1 can meet these demanding
+broadcast mezzanine requirements compared to established contribution
+codecs like JPEG XS, AVC-Intra, and HEVC.</p>
+<h2 id="profile-and-chroma-subsampling-compliance">Profile and Chroma
+Subsampling Compliance</h2>
+<p>Broadcast contribution environments require high color fidelity to
+survive downstream post-production, color grading, and chroma keying.
+SMPTE focuses its evaluation on AV1’s <strong>Professional
+Profile</strong>, which supports:</p>
+<ul>
+<li><strong>10-bit and 12-bit depth:</strong> Preserving dynamic range
+and preventing banding in High Dynamic Range (HDR) workflows.</li>
+<li><strong>4:2:2 and 4:4:4 Chroma Subsampling:</strong> Standard
+broadcast contribution relies heavily on 4:2:2 color representation.
+SMPTE evaluates how effectively AV1 encoders process 4:2:2 content
+without downsampling artifacts or color bleeding.</li>
+</ul>
+<h2 id="multi-generation-concatenation-resilience">Multi-Generation
+Concatenation Resilience</h2>
+<p>A critical requirement for contribution links is multi-generation
+robustness. Footage sent over a contribution link is frequently decoded,
+edited, composited, and re-encoded several times before reaching the
+viewer. SMPTE assesses AV1 by running concatenation tests:</p>
+<ol type="1">
+<li>A pristine master clip is encoded with AV1 at a target contribution
+bitrate.</li>
+<li>The stream is decoded to uncompressed video.</li>
+<li>The process is repeated over multiple generations (typically 3 to 7
+passes).</li>
+<li>The final output is measured against the original to evaluate
+generational loss, checking for compounding compression artifacts such
+as edge ringing, blocking, or texture smoothing.</li>
+</ol>
+<h2 id="latency-and-processing-complexity">Latency and Processing
+Complexity</h2>
+<p>Contribution feeds for live sports, news, and remote production
+(REMI) demand low-latency workflows. SMPTE analyzes AV1's encoding
+profiles under strict real-time constraints:</p>
+<ul>
+<li><strong>Intra-Only Coding:</strong> Testing AV1 in intra-frame-only
+modes to eliminate inter-frame dependencies, reducing encoding/decoding
+buffer latency to sub-frame or single-frame levels.</li>
+<li><strong>Hardware Implementation Viability:</strong> AV1 is
+computationally complex. SMPTE tracks hardware encoder acceleration and
+FPGA implementations to verify that real-time 4K and 8K 60fps
+contribution can be achieved with manageable power and thermal envelopes
+in outside broadcast (OB) trucks and field transmitters.</li>
+</ul>
+<h2 id="objective-and-subjective-quality-methodologies">Objective and
+Subjective Quality Methodologies</h2>
+<p>SMPTE employs standardized measurement procedures to benchmark AV1
+against codecs such as HEVC, AVC, and JPEG XS:</p>
+<ul>
+<li><strong>Subjective Assessment:</strong> Utilizing ITU-R BT.500
+methodologies, expert panels evaluate clips under controlled lighting
+and display environments using Double Stimulus Continuous Quality Scale
+(DSCQS) testing.</li>
+<li><strong>Objective Metrics:</strong> Analysis using peak
+signal-to-noise ratio (PSNR), structural similarity index (SSIM), and
+Video Multi-Method Assessment Fusion (VMAF) across standardized
+broadcast test sequences featuring high grain, fast motion, and complex
+textures.</li>
+<li><strong>Bjøntegaard Delta (BD-Rate):</strong> Calculating the
+average bitrate savings of AV1 relative to reference contribution codecs
+at equivalent visual quality levels.</li>
+</ul>
+<h2 id="standards-interoperability-and-transport-mapping">Standards
+Interoperability and Transport Mapping</h2>
+<p>For AV1 to function in professional contribution workflows, it must
+integrate into standardized broadcast infrastructure. SMPTE evaluates
+how AV1 bitstreams map into existing transmission standards,
+including:</p>
+<ul>
+<li><strong>SMPTE ST 2110:</strong> Encapsulation of compressed video
+over professional IP networks (specifically SMPTE ST 2110-22 for
+constant bitrate compressed streams).</li>
+<li><strong>Material Exchange Format (MXF):</strong> Defining
+descriptive metadata and standardizing AV1 payload wrapping in MXF
+containers for broadcast storage, exchange, and playout servers.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid AV1 and Deep Learning Post-Filter Methods - av1</title>
+    <meta name="description" content="This article examines hybrid video compression frameworks that combine the classical AOMedia Video 1 (AV1) codec with deep-learning-based post-filters. It covers the architectural designs of these hybrid systems, including convolutional artifact reductio">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/hybrid-av-1-and-deep-learning-post-filter-methods">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Hybrid AV1 and Deep Learning Post-Filter Methods - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/hybrid-av-1-and-deep-learning-post-filter-methods" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines hybrid video compression frameworks that combine the classical AOMedia Video 1 (AV1) codec with deep-learning-based post-filters. It covers the architectural designs of these hybrid systems, including convolutional artifact reductio" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="hybrid-av1-and-deep-learning-post-filter-methods">Hybrid AV1 and
+Deep Learning Post-Filter Methods</h1>
+<p>This article examines hybrid video compression frameworks that
+combine the classical AOMedia Video 1 (AV1) codec with
+deep-learning-based post-filters. It covers the architectural designs of
+these hybrid systems, including convolutional artifact reduction
+networks, neural super-resolution pipelines, and side-information-guided
+models. Additionally, the article addresses the coding efficiency
+benefits, subjective quality improvements, and practical implementation
+challenges—such as inference complexity and latency—associated with
+deploying neural post-processing alongside standard AV1 decoders.</p>
+<h3 id="the-rationale-for-hybrid-av1-frameworks">The Rationale for
+Hybrid AV1 Frameworks</h3>
+<p>The AV1 video codec uses traditional block-based hybrid coding tools,
+including intra/inter prediction, transform coding, and normative
+in-loop filtering stages such as the Deblocking Filter, Constrained
+Directional Enhancement Filter (CDEF), and Loop Restoration. While
+highly optimized, high-compression scenarios (high Quantization
+Parameters or QP) still introduce visible compression artifacts,
+including blocking, ringing, and texture loss.</p>
+<p>Deep-learning post-filters operate outside the normative decoding
+loop, meaning they process decoded frames without altering the
+underlying bitstream standard. This preserves full backward
+compatibility with standard AV1 decoders while leveraging deep neural
+networks to reconstruct high-frequency details and suppress lingering
+artifacts.</p>
+<h3 id="key-architectural-approaches">Key Architectural Approaches</h3>
+<p>Hybrid systems combining AV1 and deep-learning filters generally fall
+into three architectural categories:</p>
+<h4 id="1-frame-level-quality-enhancement-networks">1. Frame-Level
+Quality Enhancement Networks</h4>
+<p>These models treat the decoded AV1 frame as a degraded image and
+apply end-to-end convolutional neural networks (CNNs) or lightweight
+Vision Transformers (ViTs) to restore perceptual fidelity.</p>
+<ul>
+<li><strong>Residual Architectures:</strong> Networks such as customized
+Residual Dense Networks (RDNs) or deep residual U-Nets learn the
+residual difference between compressed frames and ground-truth
+references.</li>
+<li><strong>QP-Conditioned Filtering:</strong> Because AV1 artifact
+severity correlates with the Quantization Parameter, modern enhancement
+networks accept the frame-level or block-level QP as an auxiliary input
+scalar or map. This enables a single model to adapt its filtering
+intensity dynamically across various bitrates.</li>
+</ul>
+<h4 id="2-downsampling-and-neural-super-resolution">2. Downsampling and
+Neural Super-Resolution</h4>
+<p>A prevalent hybrid paradigm involves pre-downsampling video prior to
+AV1 encoding and upscaling the output using a deep-learning
+super-resolution (SR) model at the receiver end.</p>
+<ul>
+<li><strong>Spatial Super-Resolution:</strong> The source video is
+downscaled (e.g., from 4K to 1080p), compressed with AV1, and
+reconstructed using lightweight single-image super-resolution (SISR)
+models or video super-resolution (VSR) architectures.</li>
+<li><strong>Bandwidth Optimization:</strong> This approach drastically
+reduces the bitrate needed for high-resolution content in
+bandwidth-constrained environments, relying on temporal recurrent
+networks to synthesize crisp edges and textures that standard upscalers
+blur.</li>
+</ul>
+<h4 id="3-side-information-guided-post-processing">3.
+Side-Information-Guided Post-Processing</h4>
+<p>Rather than functioning purely as blind post-processors, advanced
+hybrid filters extract syntax elements directly from the AV1 bitstream
+to guide the neural network.</p>
+<ul>
+<li><strong>Coding Tool Metadata:</strong> Parsed data such as motion
+vectors, prediction modes, transform block partitions, and CDEF
+parameters are converted into feature maps.</li>
+<li><strong>Guided Reconstruction:</strong> By feeding these metadata
+maps alongside decoded pixel arrays into the network, the filter gains
+explicit context regarding where prediction boundaries and motion
+discontinuities lie, yielding more accurate edge preservation and
+temporal stability.</li>
+</ul>
+<h3 id="benefits-and-trade-offs">Benefits and Trade-offs</h3>
+<p>Integrating deep-learning post-filters with AV1 achieves notable
+Bjøntegaard Delta (BD) rate improvements, frequently demonstrating an 8%
+to 15% reduction in equivalent bitrate for both objective metrics (PSNR,
+VMAF) and subjective human evaluations. The primary advantage is
+compliance: streaming providers can deploy these models on consumer
+client devices via software updates without needing hardware redesigns
+for standard-compliant AV1 silicon.</p>
+<p>The primary limitation remains computational complexity. Deep
+post-filters require substantial FLOPs per pixel, creating bottlenecks
+for real-time 4K/60fps playback on resource-constrained devices.
+Consequently, modern implementations rely heavily on model quantization
+(INT8/FP16), structured pruning, and dedicated Neural Processing Units
+(NPUs) to balance reconstructive capability with viable battery
+consumption and decoding latency.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

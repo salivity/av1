@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Key Frames vs Intra-Only Frames Explained - av1</title>
+    <meta name="description" content="In the AV1 video codec, both Key Frames and Intra-only Frames are decoded independently without relying on temporal information from other frames, but they serve fundamentally different roles in stream management. The core difference lies in how they han">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-key-frames-vs-intra-only-frames-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Key Frames vs Intra-Only Frames Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-key-frames-vs-intra-only-frames-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the AV1 video codec, both Key Frames and Intra-only Frames are decoded independently without relying on temporal information from other frames, but they serve fundamentally different roles in stream management. The core difference lies in how they han" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-key-frames-vs-intra-only-frames-explained">AV1 Key Frames vs
+Intra-Only Frames Explained</h1>
+<p>In the AV1 video codec, both Key Frames and Intra-only Frames are
+decoded independently without relying on temporal information from other
+frames, but they serve fundamentally different roles in stream
+management. The core difference lies in how they handle reference
+buffers: a Key Frame completely resets the decoder state and reference
+buffers to provide a safe random access point, whereas an Intra-only
+Frame encodes an image using solely spatial prediction while allowing
+subsequent frames to retain and utilize previously stored reference
+frames.</p>
+<h3 id="what-is-a-key-frame-in-av1">What is a Key Frame in AV1?</h3>
+<p>A Key Frame (similar to an IDR frame in H.264 and HEVC) serves as a
+definitive starting point in an AV1 bitstream. When a decoder encounters
+a Key Frame:</p>
+<ul>
+<li><strong>Buffer Invalidation:</strong> It forces a complete reset of
+all reference frame buffers. Any frame decoded prior to the Key Frame is
+wiped from memory.</li>
+<li><strong>Random Access:</strong> Because it requires no prior data
+and clears past history, it acts as a true seek point. Video playback
+can begin immediately at any Key Frame without visual artifacts.</li>
+<li><strong>Header Configuration:</strong> Key Frames contain full
+sequence-level configuration data (Sequence Headers), ensuring the
+decoder knows dimensions, profile, color space, and operating parameters
+from that moment forward.</li>
+<li><strong>Error Resilience:</strong> It halts error propagation caused
+by lost packets in streaming environments.</li>
+</ul>
+<h3 id="what-is-an-intra-only-frame-in-av1">What is an Intra-Only Frame
+in AV1?</h3>
+<p>An Intra-only Frame uses intra-frame prediction techniques
+exclusively, meaning its pixels are predicted only from adjacent pixels
+within the same frame. However, its behavioral differences from a Key
+Frame are significant:</p>
+<ul>
+<li><strong>Preserved Buffer Context:</strong> An Intra-only Frame does
+not clear the reference frame buffers. While it updates one or more
+buffer slots with its newly reconstructed image, other existing
+reference frames remain available in memory.</li>
+<li><strong>Inter-Frame Dependencies:</strong> Subsequent frames
+(P-frames or B-frames) appearing after an Intra-only Frame can continue
+to reference frames that were decoded <em>before</em> that Intra-only
+Frame.</li>
+<li><strong>Seeking Limitations:</strong> Because subsequent frames may
+rely on context predating the Intra-only Frame, an Intra-only Frame does
+not reliably function as an independent seek or random access
+point.</li>
+</ul>
+<h3 id="primary-differences">Primary Differences</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Key Frame</th>
+<th style="text-align: left;">Intra-Only Frame</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Prediction Type</strong></td>
+<td style="text-align: left;">Intra-prediction only</td>
+<td style="text-align: left;">Intra-prediction only</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reference Buffers</strong></td>
+<td style="text-align: left;">Completely cleared and reset</td>
+<td style="text-align: left;">Partially updated; existing buffers
+preserved</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Random Access</strong></td>
+<td style="text-align: left;">Yes; safe for seeking and stream
+switching</td>
+<td style="text-align: left;">No; subsequent frames may need earlier
+references</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Decoder State</strong></td>
+<td style="text-align: left;">Fully reinitialized</td>
+<td style="text-align: left;">Maintained</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Use Case</strong></td>
+<td style="text-align: left;">Scene cuts, seek points, keyframe
+intervals</td>
+<td style="text-align: left;">Periodic visual refresh, dynamic
+background updates</td>
+</tr>
+</tbody>
+</table>
+<h3 id="practical-implications-in-av1-encoding">Practical Implications
+in AV1 Encoding</h3>
+<p>Key Frames require more bitrate overhead due to resetting historical
+prediction models, but they are mandatory for seeking, streaming
+adaptation (e.g., DASH or HLS quality switching), and scene changes.</p>
+<p>Intra-only Frames provide encoders with a tool to inject a clean,
+high-fidelity visual refresh without breaking the temporal prediction
+chains of surrounding frames. This allows the encoder to refresh visual
+quality or update background reference buffers without bearing the full
+bitrate penalty associated with a complete decoder reset.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

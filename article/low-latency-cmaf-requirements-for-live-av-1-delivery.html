@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low-Latency CMAF Requirements for Live AV1 Delivery - av1</title>
+    <meta name="description" content="Delivering live video using the AV1 codec over Common Media Application Format (CMAF) with low latency requires a coordinated setup across encoding, packaging, distribution, and playback. This article outlines the essential technical requirements for imp">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/low-latency-cmaf-requirements-for-live-av-1-delivery">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Low-Latency CMAF Requirements for Live AV1 Delivery - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/low-latency-cmaf-requirements-for-live-av-1-delivery" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Delivering live video using the AV1 codec over Common Media Application Format (CMAF) with low latency requires a coordinated setup across encoding, packaging, distribution, and playback. This article outlines the essential technical requirements for imp" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="low-latency-cmaf-requirements-for-live-av1-delivery">Low-Latency
+CMAF Requirements for Live AV1 Delivery</h1>
+<p>Delivering live video using the AV1 codec over Common Media
+Application Format (CMAF) with low latency requires a coordinated setup
+across encoding, packaging, distribution, and playback. This article
+outlines the essential technical requirements for implementing
+low-latency CMAF for live AV1 streaming, focusing on chunked transfer
+encoding, precise GOP configurations, AV1 real-time profiles, packaging
+standards, and manifest signaling for sub-three-second glass-to-glass
+latency.</p>
+<h3 id="1-cmaf-chunking-and-segment-structure">1. CMAF Chunking and
+Segment Structure</h3>
+<p>CMAF achieves low latency by breaking standard media segments into
+smaller, independently addressable units called chunks.</p>
+<ul>
+<li><strong>Fragmented MP4 (fMP4):</strong> Media must be packaged using
+fMP4 structures consisting of consecutive <code>moof</code> (Movie
+Fragment) and <code>mdat</code> (Media Data) box pairs.</li>
+<li><strong>Chunk Duration:</strong> Chunks typically range from 200 to
+500 milliseconds, allowing the player to decode and render frames before
+an entire multi-second segment is fully generated.</li>
+<li><strong>Segment Duration:</strong> Segments should generally be 1 to
+2 seconds long, composed of multiple consecutive CMAF chunks, ending
+with an independent boundary.</li>
+</ul>
+<h3 id="2-live-av1-encoding-parameters">2. Live AV1 Encoding
+Parameters</h3>
+<p>AV1 is computationally demanding, making proper encoder configuration
+critical for real-time delivery without introducing ingest latency or
+frame drops.</p>
+<ul>
+<li><strong>Real-Time Mode:</strong> The encoder (such as SVT-AV1 in
+real-time mode or libaom with <code>usage=realtime</code>) must operate
+at speed presets optimized for live streaming (typically presets 7
+through 10 in SVT-AV1).</li>
+<li><strong>GOP (Group of Pictures) Configuration:</strong> Closed GOP
+structures with a fixed duration (1 to 2 seconds) are required. Random
+Access Points (RAP) must align precisely with the start of each CMAF
+segment.</li>
+<li><strong>Reference Frames and B-Frames:</strong> To prevent encoding
+delay, lookahead buffers must be minimized (zero or few frames), and
+deep hierarchical B-frame structures must be constrained or
+disabled.</li>
+<li><strong>Rate Control:</strong> Constant Bitrate (CBR) or strictly
+constrained Variable Bitrate (VBR) with a tight Video Buffer Verifier
+(VBV) prevents bitrate spikes that could stall low-latency playback
+buffers.</li>
+</ul>
+<h3 id="3-isobmff-and-av1-cmaf-binding">3. ISOBMFF and AV1 CMAF
+Binding</h3>
+<p>The stream must conform to the official CMAF specifications for AV1
+encapsulation.</p>
+<ul>
+<li><strong>CMAF Brand:</strong> Media tracks should indicate compliance
+using the appropriate CMAF profile brand.</li>
+<li><strong>Track Initialization:</strong> The CMAF Header must contain
+an <code>ftyp</code> box and an <code>moov</code> box with an
+<code>av01</code> sample entry inside the <code>stsd</code> box.</li>
+<li><strong>OBU Encapsulation:</strong> The AV1 bitstream, structured as
+Open Bitstream Units (OBUs), must be properly encapsulated. Crucially,
+the AV1 Sequence Header OBU must reside within the <code>av1C</code>
+configuration box in the CMAF track header, while Frame OBUs are carried
+in the <code>mdat</code> boxes.</li>
+</ul>
+<h3 id="4-manifest-signaling-ll-dash-and-ll-hls">4. Manifest Signaling
+(LL-DASH and LL-HLS)</h3>
+<p>Packaging must expose the chunk-level structure to clients via modern
+streaming protocols.</p>
+<ul>
+<li><strong>Low-Latency DASH (LL-DASH):</strong>
+<ul>
+<li>Uses the <code>@availabilityTimeOffset</code> (ATO) attribute to
+signal that chunks are accessible before the complete segment is
+finalized.</li>
+<li>Employs <code>UTCTiming</code> elements to synchronize client and
+server clocks.</li>
+<li>Uses the <code>ServiceDescription</code> element to define target
+latency, minimum latency, and maximum latency boundaries.</li>
+</ul></li>
+<li><strong>Low-Latency HLS (LL-HLS):</strong>
+<ul>
+<li>Uses partial segments (<code>EXT-X-PART</code>) referencing
+individual CMAF chunks.</li>
+<li>Implements delta updates (<code>EXT-X-SKIP</code>) and blocking
+playlist reloads to reduce signaling overhead.</li>
+<li>Injects pre-announcements (<code>EXT-X-PRELOAD-HINT</code>) for the
+next anticipated media part.</li>
+</ul></li>
+</ul>
+<h3 id="5-transport-and-cdn-infrastructure">5. Transport and CDN
+Infrastructure</h3>
+<p>The network layer must support immediate frame propagation through
+the delivery chain.</p>
+<ul>
+<li><strong>Chunked Transfer Encoding (CTE):</strong> Origin servers and
+CDNs must support HTTP/1.1 Chunked Transfer Encoding or HTTP/2/3 framing
+to push CMAF chunks down the connection as they are generated.</li>
+<li><strong>Persistent Connections:</strong> HTTP/2 or HTTP/3 should be
+utilized to eliminate TCP handshake latency and head-of-line blocking
+across parallel segment and manifest requests.</li>
+<li><strong>Zero-Delay Caching:</strong> CDN edge nodes must be
+configured to pass incomplete chunks directly to clients rather than
+buffering entire segments before egress.</li>
+</ul>
+<h3 id="6-client-player-requirements">6. Client Player Requirements</h3>
+<p>The receiving client must be capable of processing fragmented data in
+near-real-time.</p>
+<ul>
+<li><strong>Decoder Performance:</strong> Software decoders (such as
+dav1d) or dedicated AV1 hardware decoders must sustain playback at
+target resolutions without causing frame rendering stalls.</li>
+<li><strong>Buffer Management:</strong> Player algorithms must maintain
+shallow playback buffers (often between 1 and 2 seconds) and implement
+rate-adjusting catch-up mechanisms to correct for network fluctuations
+without rebuffering.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

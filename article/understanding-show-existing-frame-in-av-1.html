@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Show Existing Frame in AV1 - av1</title>
+    <meta name="description" content="This article provides an overview of the showexistingframe syntax element in the AV1 video codec, explaining its core function, structural mechanics, and operational benefits. Readers will learn how this flag instructs decoders to display previously deco">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/understanding-show-existing-frame-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Understanding Show Existing Frame in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/understanding-show-existing-frame-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the showexistingframe syntax element in the AV1 video codec, explaining its core function, structural mechanics, and operational benefits. Readers will learn how this flag instructs decoders to display previously deco" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="understanding-show-existing-frame-in-av1">Understanding Show
+Existing Frame in AV1</h1>
+<p>This article provides an overview of the
+<code>show_existing_frame</code> syntax element in the AV1 video codec,
+explaining its core function, structural mechanics, and operational
+benefits. Readers will learn how this flag instructs decoders to display
+previously decoded reference frames without transmitting new picture
+data, and how this mechanism facilitates advanced video compression
+techniques such as non-displayed frames, temporal scalability, and film
+grain synthesis.</p>
+<h2 id="what-is-show-existing-frame">What is Show Existing Frame?</h2>
+<p>In the AV1 bitstream specification, <code>show_existing_frame</code>
+is a 1-bit flag located in the uncompressed frame header. Its primary
+function is to instruct the video decoder to immediately output a frame
+that is already stored in the decoder's reference frame buffer, rather
+than decoding a new frame from residual data and transform
+coefficients.</p>
+<p>When a frame header contains <code>show_existing_frame = 1</code>,
+the bitstream does not contain typical frame components such as tile
+data, transform blocks, motion vectors, or intra-prediction modes.
+Instead, the frame header terminates early after identifying which
+stored frame to output.</p>
+<h2 id="how-the-syntax-element-works">How the Syntax Element Works</h2>
+<p>The mechanism operates through a simple indexing workflow:</p>
+<ol type="1">
+<li><strong>Flag Evaluation</strong>: The decoder reads
+<code>show_existing_frame</code>. If the value is <code>1</code>, the
+decoder knows that no new pixel payload follows.</li>
+<li><strong>Buffer Selection
+(<code>frame_to_show_map_idx</code>)</strong>: The bitstream provides an
+index (typically 3 bits) pointing to one of the eight reference frame
+slots in the AV1 reference picture buffer.</li>
+<li><strong>Display Output</strong>: The decoder retrieves the image
+data from the designated buffer slot, updates the display timing and
+frame counter, and outputs the frame for presentation.</li>
+<li><strong>Metadata Updates</strong>: Depending on the stream
+configuration, the header may still carry metadata such as presentation
+timestamps (PTS) or film grain synthesis parameters to be applied to the
+output.</li>
+</ol>
+<h2 id="key-applications-in-av1-encoding">Key Applications in AV1
+Encoding</h2>
+<p>The <code>show_existing_frame</code> element enables several
+foundational features of AV1 compression:</p>
+<h3 id="1-alternate-reference-frames-non-displayed-frames">1. Alternate
+Reference Frames (Non-Displayed Frames)</h3>
+<p>AV1 decoders can decode frames that are not immediately shown to the
+viewer. This is controlled by setting the <code>show_frame</code> flag
+to <code>0</code>. These "hidden" or "alternate reference frames"
+(altrefs) are constructed using high-quality coding passes to serve as
+references for future frames. Once the presentation timeline reaches the
+intended moment for that frame, an encoder transmits a tiny frame header
+with <code>show_existing_frame = 1</code> to show the stored
+picture.</p>
+<h3 id="2-temporal-scalability">2. Temporal Scalability</h3>
+<p>In scalable video coding scenarios (such as video conferencing or
+adaptive streaming), bitstreams are organized into hierarchical temporal
+layers. The <code>show_existing_frame</code> syntax allows higher-rate
+layers to pull forward base-layer frames or display reference frames at
+different timestamps, maintaining flexible framerates without
+transmitting redundant visual data.</p>
+<h3 id="3-emulating-complex-b-frame-hierarchies">3. Emulating Complex
+B-Frame Hierarchies</h3>
+<p>Decoders often decode forward-reference frames out of chronological
+order. With <code>show_existing_frame</code>, an encoder can process a
+frame early, use it to predict intermediate bidirectional frames, and
+then formally output it at its scheduled display time with near-zero
+bitrate overhead.</p>
+<h3 id="4-film-grain-synthesis">4. Film Grain Synthesis</h3>
+<p>AV1 separates synthetic film grain from the underlying compressed
+frame to save bandwidth. When showing an existing frame, an encoder can
+signal new film grain parameters to change or refresh the grain noise
+pattern applied to the retrieved reference frame before it is rendered
+on screen.</p>
+<h2 id="efficiency-impact">Efficiency Impact</h2>
+<p>By allowing complete frames to be referenced and displayed using only
+a few bytes of header syntax, <code>show_existing_frame</code>
+drastically reduces bitrate overhead in complex GOP (Group of Pictures)
+structures. It ensures that the display pipeline remains decoupled from
+the decoding order, maximizing compression efficiency across diverse
+streaming and playback scenarios.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

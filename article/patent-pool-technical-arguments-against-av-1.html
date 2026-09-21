@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patent Pool Technical Arguments Against AV1 - av1</title>
+    <meta name="description" content="The Alliance for Open Media designed the AV1 video codec to deliver high-efficiency video compression under a royalty-free license, yet patent pools such as Sisvel have formed licensing programs claiming that AV1 infringes upon hundreds of essential pate">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/patent-pool-technical-arguments-against-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Patent Pool Technical Arguments Against AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/patent-pool-technical-arguments-against-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Alliance for Open Media designed the AV1 video codec to deliver high-efficiency video compression under a royalty-free license, yet patent pools such as Sisvel have formed licensing programs claiming that AV1 infringes upon hundreds of essential pate" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="patent-pool-technical-arguments-against-av1">Patent Pool
+Technical Arguments Against AV1</h1>
+<p>The Alliance for Open Media designed the AV1 video codec to deliver
+high-efficiency video compression under a royalty-free license, yet
+patent pools such as Sisvel have formed licensing programs claiming that
+AV1 infringes upon hundreds of essential patents. Patent pools challenge
+AV1’s royalty-free status by asserting that modern video compression
+relies on a universally shared technical foundation, making it virtually
+impossible to achieve high compression ratios without using patented
+technologies. This article breaks down the primary technical arguments
+and specific codec subsystems where patent pools allege
+infringement.</p>
+<h3 id="structural-reliance-on-the-hybrid-video-coding-model">Structural
+Reliance on the Hybrid Video Coding Model</h3>
+<p>Patent pools argue that AV1 does not fundamentally diverge from the
+foundational architecture used in standardized codecs like AVC (H.264),
+HEVC (H.265), and VVC (H.266). AV1 operates as a traditional hybrid
+block-based video codec using a sequence of:</p>
+<ul>
+<li>Spatial and temporal prediction</li>
+<li>Residual transform and quantization</li>
+<li>In-loop filtering</li>
+<li>Entropy coding</li>
+</ul>
+<p>Because AV1 uses this classical pipeline, patent pools contend that
+baseline operational principles—such as residual data signaling, syntax
+layout, and reconstruction pipelines—overlap directly with broad,
+foundational patent claims protecting the mechanics of hybrid video
+coding.</p>
+<h3 id="advanced-block-partitioning-and-superblock-hierarchies">Advanced
+Block Partitioning and Superblock Hierarchies</h3>
+<p>A major source of coding efficiency in AV1 is its flexible
+partitioning framework, which starts with a 128x128 or 64x64 superblock
+and recursively divides it into smaller blocks down to 4x4. AV1 supports
+recursive quad-tree, horizontal/vertical splits, and 1:4/4:1 non-square
+rectangular partitions.</p>
+<p>Patent pools assert that these partitioning schemes infringe upon
+patent portfolios developed during the HEVC standardization process. The
+core technical arguments center on:</p>
+<ul>
+<li>Signaling mechanisms used to communicate block partition trees
+within the bitstream.</li>
+<li>Boundary-handling processes for blocks overlapping picture
+boundaries.</li>
+<li>Partition size restrictions and contextual decision logic applied
+during recursive splitting.</li>
+</ul>
+<h3 id="intra-and-inter-prediction-mechanisms">Intra and Inter
+Prediction Mechanisms</h3>
+<p>Patent licensors argue that AV1’s high compression gains rely on
+predictive algorithms that closely mimic techniques patented during the
+development of ISO/IEC and ITU-T standards.</p>
+<h4 id="directional-intra-prediction">Directional Intra Prediction</h4>
+<p>AV1 expands directional intra prediction to 56 directional angles
+along with angle offsets to model complex textures. Patent holders claim
+infringement regarding the specific mathematical interpolation methods
+used to generate reference samples at fractional pixel positions and the
+methods used to filter reference boundaries prior to intra
+estimation.</p>
+<h4 id="advanced-inter-prediction">Advanced Inter Prediction</h4>
+<p>To minimize motion vector overhead, AV1 employs sophisticated
+temporal prediction tools that patent pools heavily scrutinize:</p>
+<ul>
+<li><strong>Compound and Dual Prediction:</strong> Combining multiple
+motion vectors with spatial weighting to predict a single block.</li>
+<li><strong>Overlapped Block Motion Compensation (OBMC):</strong>
+Blending predictions using neighboring motion vectors to reduce boundary
+artifacts.</li>
+<li><strong>Warped and Affine Motion Compensation:</strong> Modeling
+non-translational motion like zooming, rotation, and shear.</li>
+</ul>
+<p>Patent pools hold extensive portfolios covering the mathematical
+derivation, rounding operations, and reference frame index signaling
+methods necessary to perform these advanced motion compensation
+operations.</p>
+<h3 id="in-loop-filtering-subsystems">In-Loop Filtering Subsystems</h3>
+<p>AV1 employs a three-stage in-loop filtering process to eliminate
+compression artifacts before using reconstructed frames as reference
+images: the Deblocking Filter, the Constrained Directional Enhancement
+Filter (CDEF), and the Loop Restoration Filter (Wiener and self-guided
+restoration).</p>
+<p>Patent pools argue that:</p>
+<ul>
+<li><strong>CDEF Edge Detection:</strong> The directional search
+algorithm within CDEF analyzes local pixel variance and determines edge
+direction using mathematical formulations patented by legacy codec
+contributors.</li>
+<li><strong>Filter Parameter Signaling:</strong> The syntax and
+conditional criteria used to enable, disable, and transmit filter
+coefficients across tile- and frame-level boundaries infringe on patents
+regarding adaptive filtering signaling.</li>
+</ul>
+<h3 id="entropy-coding-and-context-adaptation">Entropy Coding and
+Context Adaptation</h3>
+<p>AV1 utilizes a multi-symbol arithmetic coder known as the Daala
+entropy coder, designed to bypass the binary arithmetic coding patents
+covering CABAC (Context-Adaptive Binary Arithmetic Coding).</p>
+<p>Despite architectural differences from CABAC, patent pools argue that
+AV1’s context modeling—specifically how the codec updates probabilities,
+determines context neighborhoods from neighboring transform blocks, and
+dynamically tracks symbol probabilities across frames—infringes on
+broader intellectual property covering adaptive entropy estimation and
+probability-state transitions.</p>
+<h3 id="broad-functional-claim-scope">Broad Functional Claim Scope</h3>
+<p>Beyond specific algorithm-level overlaps, patent pools leverage
+broadly drafted functional claims. These patents describe the technical
+objective or high-level functional step (such as identifying a motion
+vector candidate from a spatial neighbor under defined conditions)
+rather than a rigid, single-codec implementation. Patent licensors argue
+that by implementing features essential for competitive 4K and 8K
+compression efficiency, AV1 inevitably executes operations claimed
+within their extensive patent catalogs.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

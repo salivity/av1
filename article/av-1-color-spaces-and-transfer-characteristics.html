@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Color Spaces and Transfer Characteristics - av1</title>
+    <meta name="description" content="The AOMedia Video 1 (AV1) specification standardizes color representations by adopting the ITU-T H.273 and ISO/IEC 23091-2 Coding-Independent Code Points (CICP) system. Through this architecture, AV1 officially supports a broad spectrum of color spaces,">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-color-spaces-and-transfer-characteristics">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Color Spaces and Transfer Characteristics - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-color-spaces-and-transfer-characteristics" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AOMedia Video 1 (AV1) specification standardizes color representations by adopting the ITU-T H.273 and ISO/IEC 23091-2 Coding-Independent Code Points (CICP) system. Through this architecture, AV1 officially supports a broad spectrum of color spaces," />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-color-spaces-and-transfer-characteristics">AV1 Color Spaces
+and Transfer Characteristics</h1>
+<p>The AOMedia Video 1 (AV1) specification standardizes color
+representations by adopting the ITU-T H.273 and ISO/IEC 23091-2
+Coding-Independent Code Points (CICP) system. Through this architecture,
+AV1 officially supports a broad spectrum of color spaces, color
+primaries, transfer characteristics (gamma and HDR curves), and matrix
+coefficients, allowing seamless delivery of Standard Dynamic Range
+(SDR), Wide Color Gamut (WCG), and High Dynamic Range (HDR) content.</p>
+<h2 id="how-av1-signals-color-metadata">How AV1 Signals Color
+Metadata</h2>
+<p>AV1 signals color parameters directly in the sequence header within
+the <code>color_config()</code> syntax structure. It defines three
+primary 8-bit integer parameters corresponding directly to ITU-T
+H.273:</p>
+<ul>
+<li><strong>Color Primaries:</strong> Defines the chromaticity
+coordinates of the source color gamut.</li>
+<li><strong>Transfer Characteristics:</strong> Specifies the
+opto-electronic or electro-optical transfer function (OETF/EOTF).</li>
+<li><strong>Matrix Coefficients:</strong> Defines the transformation
+matrix used to derive luma and chroma signals from red, green, and blue
+primaries.</li>
+</ul>
+<h2 id="standardized-color-primaries">Standardized Color Primaries</h2>
+<p>AV1 supports the following standardized color primaries (CICP
+values):</p>
+<ul>
+<li><strong>BT.709 (Value 1):</strong> Standard gamut for HDTV, sRGB,
+and web SDR video.</li>
+<li><strong>BT.470 System M (Value 4):</strong> Historical NTSC
+standard.</li>
+<li><strong>BT.470 System B, G (Value 5):</strong> Historical PAL/SECAM
+standard.</li>
+<li><strong>BT.601 / SMPTE 170M (Value 6):</strong> Standard definition
+NTSC.</li>
+<li><strong>SMPTE 240M (Value 7):</strong> Early HDTV standard.</li>
+<li><strong>Generic Film (Value 8):</strong> Traditional color film
+using standard illuminant C.</li>
+<li><strong>BT.2020 / BT.2100 (Value 9):</strong> Ultra HD and Wide
+Color Gamut (WCG) standard.</li>
+<li><strong>SMPTE ST 428-1 (Value 10):</strong> CIE 1931 XYZ
+standard.</li>
+<li><strong>SMPTE ST 431-2 / DCI-P3 (Value 11):</strong> Digital Cinema
+Initiatives P3 with DCI white point.</li>
+<li><strong>SMPTE ST 432-1 / Display P3 (Value 12):</strong> DCI-P3
+primaries with a D65 white point, widely used on modern mobile and
+computer displays.</li>
+<li><strong>EBU Tech. 3213-E (Value 22):</strong> Standard European
+broadcasting monitor phosphors.</li>
+</ul>
+<h2 id="standardized-transfer-characteristics">Standardized Transfer
+Characteristics</h2>
+<p>The AV1 specification standardizes electro-optical and
+opto-electronic curves across legacy and modern HDR workflows:</p>
+<ul>
+<li><strong>BT.709 (Value 1):</strong> Standard SDR curve for HDTV
+broadcasts.</li>
+<li><strong>BT.470 System M (Value 4):</strong> Assumed gamma 2.2
+curve.</li>
+<li><strong>BT.470 System B, G (Value 5):</strong> Assumed gamma 2.8
+curve.</li>
+<li><strong>BT.601 / SMPTE 170M (Value 6):</strong> Standard SDR OETF
+for SDTV.</li>
+<li><strong>SMPTE 240M (Value 7):</strong> Interim HDTV transfer
+characteristic.</li>
+<li><strong>Linear (Value 8):</strong> Linear transfer function (gamma
+1.0), used in raw VFX and computer-generated imagery.</li>
+<li><strong>Logarithmic (Values 9 &amp; 10):</strong> Log 100:1 and Log
+100*Sqrt(10):1 dynamic range curves.</li>
+<li><strong>IEC 61966-2-4 / xvYCC (Value 11):</strong> Extended gamut
+SDR function.</li>
+<li><strong>BT.1361 (Value 12):</strong> Extended color gamut OETF.</li>
+<li><strong>IEC 61966-2-1 / sRGB (Value 13):</strong> Standard transfer
+function for web and computer graphics.</li>
+<li><strong>BT.2020 10-bit and 12-bit (Values 14 &amp; 15):</strong>
+Standard SDR functions designed for UHDTV broadcast pipelines.</li>
+<li><strong>SMPTE ST 2084 / PQ (Value 16):</strong> Perceptual Quantizer
+curve designed for HDR displays mastering up to 10,000 nits (standard
+for HDR10 and Dolby Vision).</li>
+<li><strong>SMPTE ST 428-1 (Value 17):</strong> D-Cinema transfer
+function.</li>
+<li><strong>BT.2100 / ARIB STD-B67 / HLG (Value 18):</strong> Hybrid
+Log-Gamma function, standard for HDR broadcast television.</li>
+</ul>
+<h2 id="standardized-matrix-coefficients">Standardized Matrix
+Coefficients</h2>
+<p>To convert RGB image data into YCbCr or other representations, AV1
+standardizes the following matrix coefficients:</p>
+<ul>
+<li><strong>Identity (Value 0):</strong> Full-range RGB or GBR color
+representations.</li>
+<li><strong>BT.709 (Value 1):</strong> Standard HD YCbCr
+conversion.</li>
+<li><strong>FCC (Value 4):</strong> Historical broadcast standard.</li>
+<li><strong>BT.601 / SMPTE 170M (Value 5 &amp; 6):</strong> Standard
+definition YCbCr.</li>
+<li><strong>SMPTE 240M (Value 7):</strong> Early HD luma
+conversion.</li>
+<li><strong>YCgCo (Value 8):</strong> Highly efficient, lossless
+integer-reversible color model.</li>
+<li><strong>BT.2020 Non-Constant Luminance (Value 9):</strong> Standard
+YCbCr conversion for UHD, HDR10, and HLG workflows.</li>
+<li><strong>BT.2020 Constant Luminance (Value 10):</strong> Alternative
+broadcast model preserving luminance fidelity across chroma
+subsampling.</li>
+<li><strong>SMPTE ST 2085 (Value 11):</strong> Specific matrix used with
+D-Cinema setups.</li>
+<li><strong>BT.2100 ICtCp (Value 14):</strong> Constant luminance color
+representation optimized for HDR and Wide Color Gamut encoding.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

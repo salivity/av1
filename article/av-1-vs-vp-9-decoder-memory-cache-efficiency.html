@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 vs VP9 Decoder Memory Cache Efficiency - av1</title>
+    <meta name="description" content="This article examines the distinct differences in memory cache efficiency between AV1 and VP9 decoders, detailing how their architectural features impact hardware caching subsystems. While AV1 delivers significantly higher compression efficiency than VP9">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-vs-vp-9-decoder-memory-cache-efficiency">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 vs VP9 Decoder Memory Cache Efficiency - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-vs-vp-9-decoder-memory-cache-efficiency" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the distinct differences in memory cache efficiency between AV1 and VP9 decoders, detailing how their architectural features impact hardware caching subsystems. While AV1 delivers significantly higher compression efficiency than VP9" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-vs-vp9-decoder-memory-cache-efficiency">AV1 vs VP9 Decoder
+Memory Cache Efficiency</h1>
+<p>This article examines the distinct differences in memory cache
+efficiency between AV1 and VP9 decoders, detailing how their
+architectural features impact hardware caching subsystems. While AV1
+delivers significantly higher compression efficiency than VP9, its
+advanced toolset—including multi-symbol entropy coding, extended
+reference frames, warped motion compensation, and multi-stage in-loop
+filtering—introduces irregular memory access patterns, larger working
+sets, and increased pressure on L1, L2, and L3 caches compared to the
+simpler pipeline of VP9.</p>
+<h3 id="reference-frame-buffering-and-inter-prediction">Reference Frame
+Buffering and Inter-Prediction</h3>
+<p>VP9 maintains a pool of eight reference frames in memory but
+restricts inter-prediction to selecting from only three frames per
+predicted inter-picture: Last, Golden, and AltRef. Because fewer
+reference pictures are actively sampled simultaneously, VP9 decoders
+exhibit strong temporal and spatial locality, allowing reference block
+data to fit comfortably within modern L2 and L3 caches.</p>
+<p>AV1 expands this capability, allowing a single frame to reference up
+to seven active reference pictures simultaneously from its buffer.
+Querying up to seven distinct reference planes during block
+reconstruction scatters read requests across wider memory boundaries.
+This higher working-set footprint substantially increases the likelihood
+of L2 cache evictions, forcing the decoder to fall back to
+higher-latency L3 cache reads or system DRAM.</p>
+<h3 id="motion-compensation-and-access-patterns">Motion Compensation and
+Access Patterns</h3>
+<p>VP9 relies on standard translational motion vectors with sub-pixel
+interpolation filters. Its memory access patterns during motion
+compensation are regular and predictable, which aligns well with
+hardware prefetchers that pre-load consecutive cache lines.</p>
+<p>AV1 introduces Warped Motion Compensation (affine transformation) and
+Global Motion. Warped motion creates non-axis-aligned, arbitrary affine
+sampling grids. When calculating sub-pixel interpolation across these
+sheared or rotated areas, the decoder must fetch non-contiguous memory
+locations across multiple cache lines to decode a single block. This
+non-linear access pattern impairs hardware prefetchers, leading to
+elevated L1 data (L1D) cache miss rates and pipeline stalls.</p>
+<h3 id="superblocks-and-partitioning-granularity">Superblocks and
+Partitioning Granularity</h3>
+<p>VP9 utilizes a quadtree partition structure with a maximum superblock
+size of 64x64 down to 4x4. The relatively uniform quadtree layout
+facilitates predictable, sequential block processing across memory
+rows.</p>
+<p>AV1 raises the maximum superblock size to 128x128 and incorporates
+complex, non-quadtree partition types, including 1:4 and 4:1 rectangular
+splits. Processing a 128x128 superblock demands larger internal buffers
+for intermediate prediction and transform coefficients. If an
+implementation processes an entire 128x128 block pipeline in-place, the
+intermediate state can exceed the capacity of fast L1D caches, requiring
+frequent spills into the slower L2 cache.</p>
+<h3 id="in-loop-filtering-and-line-buffer-footprint">In-Loop Filtering
+and Line Buffer Footprint</h3>
+<p>The in-loop filtering pipeline is one of the most cache-sensitive
+stages in video decoding:</p>
+<ul>
+<li><strong>VP9 Loop Filter:</strong> VP9 employs a single-stage,
+edge-directed deblocking filter. Because only adjacent boundary pixels
+are modified, the vertical and horizontal line-buffer requirements
+remain compact. The filter operations demonstrate high spatial locality
+and are easily kept within L1 and L2 caches.</li>
+<li><strong>AV1 Multi-Stage Filtering:</strong> AV1 chains three
+distinct filters: the standard Deblocking Filter, the Constrained
+Directional Enhancement Filter (CDEF), and the Loop Restoration filter
+(Wiener or Self-Guided). CDEF requires analyzing 8x8 blocks along
+directional edges, and Loop Restoration applies large-kernel filtering
+(up to 7x7). Stacking these filters requires the decoder to store
+several rows of pixel data (line buffers) across multiple pipeline
+stages. If the cumulative line-buffer size exceeds the capacity of the
+local L1 or L2 cache, intermediate pixel rows must be repeatedly flushed
+to and retrieved from external memory, degrading overall memory
+bandwidth efficiency.</li>
+</ul>
+<h3 id="entropy-decoding-and-context-modeling">Entropy Decoding and
+Context Modeling</h3>
+<p>VP9 utilizes a binary arithmetic coding engine with static and
+dynamically adapted 8-bit probabilities. The context models are small,
+allowing the entire probability state to remain permanently resident in
+L1D cache during frame parsing.</p>
+<p>AV1 uses a multi-symbol arithmetic coder operating on Cumulative
+Distribution Functions (CDFs) with 15-bit precision. AV1 tracks a vastly
+larger number of syntax contexts, and its CDF tables occupy
+significantly more memory. Updating and reading these larger CDF arrays
+during bitstream parsing increases L1D cache footprint, occasionally
+evicting other critical decoding parameters from the cache during
+bitstream ingest.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How SVT-AV1 VMAF Tuning Modifies RDO Curves - av1</title>
+    <meta name="description" content="This article provides an overview of how the VMAF (Video Multi-Method Assessment Fusion) tuning mode in the SVT-AV1 encoder shifts traditional rate-distortion optimization (RDO). By replacing standard mathematical error metrics with perceptually weighted">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-svt-av-1-vmaf-tuning-modifies-rdo-curves">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How SVT-AV1 VMAF Tuning Modifies RDO Curves - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-svt-av-1-vmaf-tuning-modifies-rdo-curves" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the VMAF (Video Multi-Method Assessment Fusion) tuning mode in the SVT-AV1 encoder shifts traditional rate-distortion optimization (RDO). By replacing standard mathematical error metrics with perceptually weighted" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-svt-av1-vmaf-tuning-modifies-rdo-curves">How SVT-AV1 VMAF
+Tuning Modifies RDO Curves</h1>
+<p>This article provides an overview of how the VMAF (Video Multi-Method
+Assessment Fusion) tuning mode in the SVT-AV1 encoder shifts traditional
+rate-distortion optimization (RDO). By replacing standard mathematical
+error metrics with perceptually weighted calculations, SVT-AV1 adjusts
+the cost function, reshapes the operational Lagrangian multipliers, and
+modifies spatial-temporal quantization offsets. These mechanics alter
+the shape and slope of the encoder's rate-distortion curves, favoring
+visual and metric-specific efficiencies over raw mathematical
+fidelity.</p>
+<h3 id="the-baseline-rdo-model">The Baseline RDO Model</h3>
+<p>In standard encoding modes, rate-distortion optimization relies on a
+Lagrangian cost function:</p>
+<p><span class="math display">\[J = D + \lambda R\]</span></p>
+<p>Here, <span class="math inline">\(J\)</span> is the cost to minimize,
+<span class="math inline">\(R\)</span> is the rate (bit count), <span
+class="math inline">\(D\)</span> is the distortion, and <span
+class="math inline">\(\lambda\)</span> (lambda) is the Lagrange
+multiplier that governs the trade-off between quality loss and
+bitrate.</p>
+<p>By default, SVT-AV1 measures distortion (<span
+class="math inline">\(D\)</span>) using Sum of Squared Errors (SSE) or
+Mean Squared Error (MSE). While mathematically straightforward, SSE
+treats all pixel errors equally regardless of human visual perception or
+the specific algorithmic biases of perceptual quality models like
+VMAF.</p>
+<h3 id="distortion-metric-replacement-in-vmaf-tuning">Distortion Metric
+Replacement in VMAF Tuning</h3>
+<p>When VMAF tuning is enabled in SVT-AV1 (typically using
+<code>--tune 2</code>), the encoder alters the calculation of <span
+class="math inline">\(D\)</span>. VMAF measures quality through a
+combination of Visual Information Fidelity (VIF), Detail Loss Metric
+(DLM), and temporal motion features.</p>
+<p>To align with VMAF:</p>
+<ul>
+<li><strong>High-Frequency Preservation:</strong> VIF rewards the
+preservation of texture and edge contrast. SVT-AV1 scales down the
+distortion penalty for high-frequency residual loss if that loss does
+not degrade the structural integrity assessed by VIF.</li>
+<li><strong>Luminance and Contrast Weighting:</strong> VMAF exhibits
+non-linear sensitivity to contrast changes across different luminance
+bands. SVT-AV1 adjusts the error penalty per block based on local
+variance, penalizing blurriness more heavily than high-frequency
+noise.</li>
+</ul>
+<p>Because the distortion calculation <span
+class="math inline">\(D\)</span> changes at the transform and
+mode-decision stages, decisions that look suboptimal to an SSE-based
+metric are chosen if they yield higher predicted VMAF scores.</p>
+<h3 id="modification-of-the-lagrange-multiplier-lambda">Modification of
+the Lagrange Multiplier (<span
+class="math inline">\(\lambda\)</span>)</h3>
+<p>The Lagrange multiplier <span class="math inline">\(\lambda\)</span>
+dictates the slope of the rate-distortion curve at any given operating
+point:</p>
+<p><span class="math display">\[\lambda = -\frac{dD}{dR}\]</span></p>
+<p>In SSE mode, <span class="math inline">\(\lambda\)</span> is strictly
+derived from the base Quantization Parameter (QP) using an exponential
+relationship tailored to minimize square error across frames.</p>
+<p>In VMAF tuning mode, SVT-AV1 modifies the base <span
+class="math inline">\(\lambda\)</span> tables:</p>
+<ol type="1">
+<li><strong>Slope Adjustment:</strong> The encoder steepens or flattens
+<span class="math inline">\(\lambda\)</span> dynamically depending on
+the temporal and spatial complexity of the frame.</li>
+<li><strong>Diminishing Returns Threshold:</strong> VMAF saturates near
+100 at higher bitrates faster than PSNR does. To prevent wasting bits
+where VMAF gains plateau, SVT-AV1 inflates <span
+class="math inline">\(\lambda\)</span> at lower QPs (higher bitrates),
+pricing additional bits more expensively and shifting the
+rate-distortion trade-off toward rate savings.</li>
+</ol>
+<h3 id="perceptual-quantization-and-dynamic-qp-offsets">Perceptual
+Quantization and Dynamic QP Offsets</h3>
+<p>SVT-AV1’s VMAF tuning directly influences delta-QP assignments and
+quantization matrix application:</p>
+<ul>
+<li><strong>Spatial Modulation:</strong> Flat areas, where artifacting
+might lower VMAF scores via visible distortion, receive lower local QPs.
+Complex textures, which mask errors both to the human eye and within
+VMAF’s feature extractors, are assigned higher local QPs to conserve
+bits.</li>
+<li><strong>Temporal Hierarchy Adjustments:</strong> Lower-layer
+reference frames (such as base keyframes and golden frames) receive
+higher fidelity investments because VMAF tracks temporal consistency. An
+error introduced in a base reference degrades the VMAF score across
+multiple frames, prompting SVT-AV1's RDO logic to assign lower <span
+class="math inline">\(\lambda\)</span> values to these temporal
+anchors.</li>
+</ul>
+<h3 id="impact-on-the-resulting-r-d-curves">Impact on the Resulting R-D
+Curves</h3>
+<p>These modifications alter the graphical representation of
+rate-distortion curves:</p>
+<ul>
+<li><strong>VMAF vs. Bitrate:</strong> The VMAF-rate curve shifts upward
+and to the left in the low-to-medium bitrate regions. The encoder
+reaches higher VMAF scores with fewer bits because the RDO specifically
+optimizes for VMAF's feature metrics.</li>
+<li><strong>PSNR vs. Bitrate Degradation:</strong> If the resulting
+bitstream is evaluated on a PSNR-rate curve, the curve shifts downward.
+By departing from SSE-based RDO, the encoder accepts higher raw
+mathematical error to optimize for the targeted perceptual score.</li>
+<li><strong>Saturation Plateau:</strong> At higher bitrates, the
+VMAF-rate curve flattens earlier than in standard tuning, as SVT-AV1
+actively prevents over-allocation to regions where VMAF shows
+diminishing returns.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Dynamic Reference Frame Selection Works - av1</title>
+    <meta name="description" content="This article provides an overview of the dynamic reference frame selection mechanism in the AV1 video codec. AV1 significantly improves compression efficiency over previous codecs by expanding the pool of available reference frames and introducing flexib">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-dynamic-reference-frame-selection-works">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Dynamic Reference Frame Selection Works - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-dynamic-reference-frame-selection-works" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the dynamic reference frame selection mechanism in the AV1 video codec. AV1 significantly improves compression efficiency over previous codecs by expanding the pool of available reference frames and introducing flexib" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-dynamic-reference-frame-selection-works">How AV1 Dynamic
+Reference Frame Selection Works</h1>
+<p>This article provides an overview of the dynamic reference frame
+selection mechanism in the AV1 video codec. AV1 significantly improves
+compression efficiency over previous codecs by expanding the pool of
+available reference frames and introducing flexible, frame-level and
+block-level mechanisms to select them. The following sections explain
+the architecture of AV1's frame buffers, how the encoder evaluates
+reference candidates, how motion vectors adapt dynamically, and how
+reference updates are signaled.</p>
+<h3 id="the-8-slot-buffer-and-7-reference-structure">The 8-Slot Buffer
+and 7-Reference Structure</h3>
+<p>Unlike older codecs like VP9 (which allowed up to three reference
+frames) or standard configurations of H.264, AV1 maintains a Decoded
+Picture Buffer (DPB) storing up to eight candidate frames. For
+predicting any given inter-frame, AV1 can select up to seven different
+reference frames from this pool:</p>
+<ul>
+<li><strong>Past references:</strong> <code>LAST</code>,
+<code>LAST2</code>, <code>LAST3</code>, and <code>GOLDEN</code></li>
+<li><strong>Future/Alternative references:</strong> <code>BWDREF</code>
+(Backward Reference), <code>ALTREF2</code> (Alternative Reference 2),
+and <code>ALTREF</code> (Alternative Reference)</li>
+</ul>
+<p>The terms "past" and "future" refer to display order. In coding
+order, future frames are encoded in advance (using hierarchical
+prediction structures) and placed in the reference buffer to serve as
+backward reference targets for bidirectional prediction.</p>
+<h3 id="frame-level-buffer-assignment">Frame-Level Buffer
+Assignment</h3>
+<p>Before individual blocks are encoded, AV1 dynamically updates its
+virtual reference frame slots at the frame header level. An encoder
+decides:</p>
+<ol type="1">
+<li><strong>Which slots to assign to the active references:</strong> The
+encoder maps the seven logical reference names (<code>LAST</code>
+through <code>ALTREF</code>) to specific physical slots in the 8-frame
+buffer.</li>
+<li><strong>Which slots to refresh:</strong> After a frame is decoded,
+the encoder uses a bitmask (<code>refresh_frame_flags</code>) to
+dynamically determine which buffer slot will be overwritten by the newly
+reconstructed frame.</li>
+</ol>
+<p>This dynamic reassignment allows the encoder to keep key background
+frames (such as <code>GOLDEN</code> or <code>ALTREF</code>) in memory
+across long temporal distances without re-encoding them.</p>
+<h3 id="block-level-candidate-evaluation-and-rdo">Block-Level Candidate
+Evaluation and RDO</h3>
+<p>At the coding unit (block) level, the encoder uses Rate-Distortion
+Optimization (RDO) to determine the best reference frame.</p>
+<p>Because testing all seven references for every partition size would
+cause high computational complexity, AV1 encoders use pruning strategies
+during the dynamic selection process:</p>
+<ul>
+<li><strong>Early Skip Detection:</strong> If a reference frame produces
+a negligible residual error with minimal motion vectors, further
+reference searches are skipped.</li>
+<li><strong>Spatial Correlation:</strong> Neighboring blocks provide an
+initial list of most-likely references.</li>
+<li><strong>Motion Search Hierarchy:</strong> A fast motion estimation
+pass tests prospective references; only references showing low
+distortion continue to full sub-pixel and transform evaluation.</li>
+</ul>
+<h3 id="single-and-compound-prediction-modes">Single and Compound
+Prediction Modes</h3>
+<p>AV1 dynamically allows blocks to use either single reference
+prediction or compound reference prediction (combining two references
+simultaneously).</p>
+<p>In compound mode, references are grouped dynamically into valid
+pairs:</p>
+<ul>
+<li><strong>Bidirectional Compound:</strong> Pairs one past reference
+(<code>LAST</code>–<code>GOLDEN</code>) with one future reference
+(<code>BWDREF</code>–<code>ALTREF</code>).</li>
+<li><strong>Unidirectional Compound:</strong> Pairs two past frames or
+two future frames to account for sudden lighting changes, zooms, or
+partial occlusions.</li>
+</ul>
+<p>AV1 computes a weighted average or uses mask-based blending (wedge
+prediction) between the two chosen reference frames, dynamically
+optimizing how information from each reference is blended into the final
+predictor.</p>
+<h3 id="motion-field-motion-vector-mfmv-projection">Motion Field Motion
+Vector (MFMV) Projection</h3>
+<p>To improve the accuracy of dynamic reference selection, AV1 uses
+Motion Field Motion Vector (MFMV) projection. The codec projects motion
+vectors from previously decoded frames onto the current frame's temporal
+plane based on the exact temporal distance (display order distance)
+between the current frame and its references.</p>
+<p>This temporal scaling ensures that even if a block selects a
+reference frame that is temporally distant, the initial motion vector
+predictor is accurately scaled to match the speed and direction of
+moving objects.</p>
+<h3 id="entropy-coded-signaling">Entropy-Coded Signaling</h3>
+<p>Dynamic selections must be transmitted efficiently. AV1 minimizes the
+bit overhead of referencing up to seven frames by using context-adaptive
+binary arithmetic coding (CABAC).</p>
+<p>The reference frame syntax uses a binary tree signaling structure
+conditioned on the references selected by spatial neighbors (left and
+above blocks). If a block's neighbors frequently select
+<code>LAST</code> or <code>BWDREF</code>, the probability model assigns
+fewer bits to those indices, dynamically adapting the bitstream overhead
+to local video content.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

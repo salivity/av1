@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Golden Frames and AltRef Frames Explained - av1</title>
+    <meta name="description" content="This article explores the roles of Golden Frames and Alternative Reference (AltRef) frames within the AV1 video codec's architectural hierarchy. While traditional codecs rely heavily on rigid I-, P-, and B-frame sequences, AV1 uses a flexible reference f">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-golden-frames-and-alt-ref-frames-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Golden Frames and AltRef Frames Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-golden-frames-and-alt-ref-frames-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores the roles of Golden Frames and Alternative Reference (AltRef) frames within the AV1 video codec's architectural hierarchy. While traditional codecs rely heavily on rigid I-, P-, and B-frame sequences, AV1 uses a flexible reference f" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-golden-frames-and-altref-frames-explained">AV1 Golden Frames
+and AltRef Frames Explained</h1>
+<p>This article explores the roles of Golden Frames and Alternative
+Reference (AltRef) frames within the AV1 video codec's architectural
+hierarchy. While traditional codecs rely heavily on rigid I-, P-, and
+B-frame sequences, AV1 uses a flexible reference frame buffer system to
+boost compression efficiency and visual fidelity. Understanding how
+Golden Frames provide long-term visual anchors and how AltRef frames act
+as synthetic, invisible reference targets reveals the core mechanics
+behind AV1's high compression performance.</p>
+<h3 id="the-av1-reference-buffer-hierarchy">The AV1 Reference Buffer
+Hierarchy</h3>
+<p>Unlike older video standards that restrict motion compensation to
+immediately preceding or succeeding frames, the AV1 architecture
+maintains a dynamic buffer pool of up to eight reference frame slots.
+For any given inter-coded frame, an encoder can select from up to seven
+reference frames: <code>LAST</code>, <code>LAST2</code>,
+<code>LAST3</code>, <code>GOLDEN</code>, <code>BWDREF</code>,
+<code>ALTREF2</code>, and <code>ALTREF</code>.</p>
+<p>This pool allows the encoder to decouple the decode order from the
+presentation order, enabling multi-directional and non-consecutive
+temporal prediction. Golden Frames and AltRef frames are the two most
+critical components of this extended reference system.</p>
+<h3 id="what-is-a-golden-frame">What Is a Golden Frame?</h3>
+<p>The concept of the Golden Frame originated in VP8 and VP9 and remains
+a core feature in AV1. A Golden Frame is typically a displayed frame
+that serves as an anchor for long-term reference.</p>
+<ul>
+<li><strong>Temporal Stability:</strong> While <code>LAST</code> frames
+point to recently decoded images, a Golden Frame is maintained in the
+buffer over a longer temporal window. It often captures static
+background elements that may be temporarily occluded by moving
+foreground objects.</li>
+<li><strong>Scene Recovery:</strong> When an object moves out of view to
+reveal a previously seen background, the encoder can reference the
+Golden Frame directly instead of expending bits to re-encode the
+background textures.</li>
+<li><strong>Update Frequency:</strong> Golden Frames are refreshed
+periodically, either by promoting a newly decoded frame to the golden
+slot or by updating specific background regions using refresh
+flags.</li>
+</ul>
+<h3 id="what-is-an-altref-frame">What Is an AltRef Frame?</h3>
+<p>An Alternative Reference (AltRef) frame is an invisible,
+non-displayed reference frame that AV1 uses exclusively for
+motion-compensated prediction. In the stream headers, an AltRef frame
+has its <code>show_frame</code> flag set to zero, meaning the decoder
+decodes and buffers the frame without rendering it to the display.</p>
+<ul>
+<li><strong>Temporal Filtering:</strong> Encoders typically create an
+AltRef frame by taking a lookahead window of several future frames and
+applying a temporal filter (such as a weighted average motion
+blur/denoise algorithm). This creates a high-quality, noise-free
+composite of the upcoming scene.</li>
+<li><strong>Prediction Target:</strong> Subsequent frames are then coded
+by predicting against this optimized, synthetic frame. Because the
+AltRef frame is denoised and represents the true structural essence of
+the scene, predicting from it requires significantly fewer bits.</li>
+<li><strong>Hierarchical B-Frame Alternative:</strong> While traditional
+H.264/H.265 codecs use bidirectional B-frames that are eventually
+displayed, AV1 uses AltRef frames as the apex of a hierarchical temporal
+pyramid. A later frame can display the actual scene data, while the
+earlier invisible AltRef frame acts strictly as a predictive
+baseline.</li>
+</ul>
+<h3 id="how-they-differ-in-the-architecture">How They Differ in the
+Architecture</h3>
+<p>The fundamental difference between the two frame types lies in their
+visibility and generation:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Golden Frame</th>
+<th style="text-align: left;">AltRef Frame</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Visibility</strong></td>
+<td style="text-align: left;">Displayed
+(<code>show_frame = 1</code>)</td>
+<td style="text-align: left;">Invisible
+(<code>show_frame = 0</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Origin</strong></td>
+<td style="text-align: left;">Actual scene frame chosen as an
+anchor</td>
+<td style="text-align: left;">Synthetically filtered composite from
+lookahead</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Primary Role</strong></td>
+<td style="text-align: left;">Long-term background and occlusion
+reference</td>
+<td style="text-align: left;">Denoised, high-fidelity target for
+bidirectional prediction</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Position in Pyramid</strong></td>
+<td style="text-align: left;">Base or intermediate reference layer</td>
+<td style="text-align: left;">Apex of temporal prediction
+sub-groups</td>
+</tr>
+</tbody>
+</table>
+<p>By combining Golden Frames for background persistence and AltRef
+frames for synthetic lookahead estimation, AV1 achieves superior
+rate-distortion performance, minimizing bandwidth while preserving
+structural sharpness across complex motion sequences.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

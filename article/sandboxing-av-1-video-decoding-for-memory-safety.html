@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandboxing AV1 Video Decoding for Memory Safety - av1</title>
+    <meta name="description" content="Modern web browsers handle massive volumes of untrusted multimedia, making complex formats like AV1 a prime target for exploitation. Because high-performance AV1 decoders are traditionally written in memory-unsafe languages like C or C++, parsing untrust">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/sandboxing-av-1-video-decoding-for-memory-safety">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sandboxing AV1 Video Decoding for Memory Safety - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/sandboxing-av-1-video-decoding-for-memory-safety" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Modern web browsers handle massive volumes of untrusted multimedia, making complex formats like AV1 a prime target for exploitation. Because high-performance AV1 decoders are traditionally written in memory-unsafe languages like C or C++, parsing untrust" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="sandboxing-av1-video-decoding-for-memory-safety">Sandboxing AV1
+Video Decoding for Memory Safety</h1>
+<p>Modern web browsers handle massive volumes of untrusted multimedia,
+making complex formats like AV1 a prime target for exploitation. Because
+high-performance AV1 decoders are traditionally written in memory-unsafe
+languages like C or C++, parsing untrusted bitstreams poses severe
+security risks, including buffer overflows and arbitrary code execution.
+Sandboxing addresses this threat by isolating the AV1 decoding pipeline
+within heavily restricted execution boundaries, ensuring that any memory
+corruption triggered by malicious video data is contained and cannot
+compromise the underlying operating system or host application.</p>
+<h3 id="the-memory-safety-risks-in-av1-decoding">The Memory Safety Risks
+in AV1 Decoding</h3>
+<p>Video decoding is an inherently complex task involving entropy
+decoding, inverse quantization, transform operations, and loop
+filtering. Decoders such as libaom or dav1d are optimized for
+performance, utilizing low-level memory operations and assembly
+instructions to process frames in real time.</p>
+<p>When a browser encounters untrusted AV1 content from the internet, an
+attacker can craft malformed bitstreams designed to exploit edge cases
+in the parsing logic. Common memory safety vulnerabilities resulting
+from this include:</p>
+<ul>
+<li><strong>Out-of-bounds writes:</strong> Malformed transform block
+dimensions can cause the decoder to write pixel or state data past
+allocated buffer limits, corrupting adjacent heap structures.</li>
+<li><strong>Use-after-free (UAF):</strong> Flawed state transitions
+between reference frames can allow pointers to access deallocated
+memory.</li>
+<li><strong>Integer overflows:</strong> Manipulated frame sizes can wrap
+integer values during memory allocation calculations, leading to
+undersized buffers.</li>
+</ul>
+<p>In an unsandboxed architecture, exploiting any of these conditions
+allows an attacker to achieve remote code execution (RCE) with the full
+privileges of the host process.</p>
+<h3
+id="process-level-isolation-and-principle-of-least-privilege">Process-Level
+Isolation and Principle of Least Privilege</h3>
+<p>Sandboxing mitigates these risks by removing the decoding logic from
+the browser's privileged broker process and isolating it in a dedicated,
+low-privilege utility process.</p>
+<p>Under this architecture, the decoder process operates under the
+principle of least privilege. It does not have direct access to user
+files, network sockets, input devices, or host display hardware. The
+main browser process sends the raw, untrusted AV1 packets to the
+sandboxed process via Inter-Process Communication (IPC). The sandboxed
+process decodes the bitstream and transmits only raw pixel buffers (such
+as YUV or RGB frames) back via shared memory.</p>
+<p>If a malicious AV1 file successfully exploits a memory corruption
+flaw, the attacker is trapped inside a sandbox that lacks the operating
+system permissions required to read sensitive local data, persist
+malware on disk, or communicate with an external server.</p>
+<h3 id="restricting-system-calls">Restricting System Calls</h3>
+<p>To prevent an attacker from breaking out of the isolated process,
+sandboxes enforce strict kernel-level system call filtering. Using
+technologies like <code>seccomp-bpf</code> on Linux, AppContainer on
+Windows, or Seatbelt on macOS, the host OS intercepts every request made
+by the decoder process.</p>
+<p>Because a software video decoder strictly requires CPU cycles and
+memory access to perform mathematical transforms, virtually all other OS
+features are blocked. System calls related to spawning sub-processes
+(<code>execve</code>, <code>fork</code>), opening arbitrary files
+(<code>open</code>, <code>openat</code>), and binding network interfaces
+(<code>socket</code>, <code>connect</code>) are denied by default. Any
+attempt by an exploited AV1 decoder to invoke an unpermitted system call
+triggers an immediate process termination by the kernel.</p>
+<h3 id="library-sandboxing-and-webassembly">Library Sandboxing and
+WebAssembly</h3>
+<p>In addition to OS-level process sandboxing, modern software stacks
+increasingly employ fine-grained library sandboxing through tools like
+RLBox and WebAssembly (Wasm).</p>
+<p>Using this approach, native C/C++ AV1 decoding libraries are compiled
+into WebAssembly bytecode. This creates an isolated, virtualized memory
+space within the process itself:</p>
+<ul>
+<li>The decoder cannot access any memory address outside of its
+designated Wasm heap.</li>
+<li>Control-flow integrity is strictly enforced, preventing
+return-oriented programming (ROP) exploits.</li>
+<li>All pointers exchanged between the host code and the decoder are
+explicitly validated and sanitized.</li>
+</ul>
+<p>This approach provides memory safety guarantees similar to rewriting
+the decoder in a memory-safe language, allowing performance-critical
+C/C++ AV1 libraries to run safely without the performance overhead of
+full OS process context switches.</p>
+<h3 id="crash-containment-and-fault-recovery">Crash Containment and
+Fault Recovery</h3>
+<p>Sandboxing also enhances stability by decoupling decoder failures
+from the rest of the application. If a malformed AV1 video triggers an
+unhandled memory fault, such as a segmentation violation, only the
+sandboxed worker terminates.</p>
+<p>The primary browser engine detects the crash, safely discards the
+compromised worker, and instantiates a clean decoder instance without
+interrupting the user's active session, corrupting memory in other
+browser tabs, or exposing sensitive credentials stored in the parent
+process.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

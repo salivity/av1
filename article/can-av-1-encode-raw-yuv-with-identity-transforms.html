@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can AV1 Encode Raw YUV with Identity Transforms? - av1</title>
+    <meta name="description" content="This article examines whether the AV1 video codec can encode uncompressed raw YUV pixel values directly via identity transformations. In short, while AV1 supports lossless encoding where an identity transform bypasses frequency-domain transformation, it">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/can-av-1-encode-raw-yuv-with-identity-transforms">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can AV1 Encode Raw YUV with Identity Transforms? - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/can-av-1-encode-raw-yuv-with-identity-transforms" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines whether the AV1 video codec can encode uncompressed raw YUV pixel values directly via identity transformations. In short, while AV1 supports lossless encoding where an identity transform bypasses frequency-domain transformation, it" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-av1-encode-raw-yuv-with-identity-transforms">Can AV1 Encode
+Raw YUV with Identity Transforms?</h1>
+<p>This article examines whether the AV1 video codec can encode
+uncompressed raw YUV pixel values directly via identity transformations.
+In short, while AV1 supports lossless encoding where an identity
+transform bypasses frequency-domain transformation, it does not support
+writing uncompressed, raw pixel streams directly into the bitstream.
+Every sample passes through entropy coding, meaning AV1 achieves
+bit-exact raw reconstruction through lossless mathematical
+representation rather than raw uncompressed bit stuffing.</p>
+<h3 id="the-role-of-the-identity-transform-in-av1">The Role of the
+Identity Transform in AV1</h3>
+<p>AV1 includes an Identity Transform (IDTX) mode alongside traditional
+transforms such as the Discrete Cosine Transform (DCT) and Asymmetric
+Discrete Sine Transform (ADST). When IDTX is applied both horizontally
+and vertically, the encoder skips the frequency decomposition entirely.
+The transform coefficients directly correspond to the spatial domain
+residual values on a one-to-one basis, ensuring that no spatial
+information is altered or smeared across frequency bins.</p>
+<h3 id="lossless-mode-and-quantization-bypass">Lossless Mode and
+Quantization Bypass</h3>
+<p>To encode exact raw YUV pixel values, AV1 relies on its dedicated
+lossless mode. In this mode, the quantizer index (<code>qindex</code>)
+is set to zero, and the identity transform is enforced across all
+blocks.</p>
+<p>When quantization is disabled and the identity transform is
+active:</p>
+<ul>
+<li>The prediction residual is not scaled or rounded.</li>
+<li>The reconstruction process yields mathematically exact,
+bit-identical YUV values upon decode.</li>
+<li>Intra-prediction may still predict pixel values from neighboring
+blocks, but the identity transform ensures the residual preserves every
+exact delta.</li>
+</ul>
+<h3 id="av1-lossless-vs-true-uncompressed-pcm">AV1 Lossless vs. True
+Uncompressed PCM</h3>
+<p>A key technical distinction exists between lossless identity encoding
+and "raw uncompressed" encoding:</p>
+<ol type="1">
+<li><strong>Absence of a PCM Mode:</strong> Older standards like
+H.264/AVC and H.265/HEVC include an explicit Pulse Code Modulation (PCM)
+macroblock mode. In PCM mode, the encoder completely bypasses
+prediction, transformation, quantization, and entropy coding, writing
+the raw pixel bits directly into the bitstream uncompressed.</li>
+<li><strong>Mandatory Entropy Coding:</strong> AV1 lacks an equivalent
+raw PCM bypass mode. Even when configured for lossless identity
+encoding, AV1 requires all coefficient data and residuals to be encoded
+through its multi-symbol arithmetic entropy coder (derived from the
+Daala entropy coder).</li>
+</ol>
+<h3 id="supported-formats-and-bit-depths">Supported Formats and Bit
+Depths</h3>
+<p>AV1 can losslessly represent pixel data across its supported
+profiles:</p>
+<ul>
+<li><strong>Subsampling:</strong> YUV 4:2:0, 4:2:2, and 4:4:4, as well
+as RGB.</li>
+<li><strong>Bit Depths:</strong> 8-bit, 10-bit, and 12-bit
+precision.</li>
+</ul>
+<p>When working with YUV 4:4:4 or RGB, the full spatial resolution of
+every color channel is preserved. The decoder reconstructs the exact
+original integer values for each channel without chroma subsampling
+artifacts or lossy color conversion.</p>
+<h3 id="summary">Summary</h3>
+<p>AV1 can encode and reproduce exact, uncompressed raw YUV values using
+identity transforms combined with zero quantization. However, it cannot
+output raw, uncompressed bytes directly to the bitstream; all values
+must pass through arithmetic entropy compression.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closed vs Open GOPs in AV1: Random Access Efficiency - av1</title>
+    <meta name="description" content="This article examines the structural and operational differences between closed and open Groups of Pictures (GOPs) in the AV1 video codec, specifically focusing on random access efficiency. While closed GOPs ensure complete independence between segments">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/closed-vs-open-go-ps-in-av-1-random-access-efficiency">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Closed vs Open GOPs in AV1: Random Access Efficiency - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/closed-vs-open-go-ps-in-av-1-random-access-efficiency" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the structural and operational differences between closed and open Groups of Pictures (GOPs) in the AV1 video codec, specifically focusing on random access efficiency. While closed GOPs ensure complete independence between segments" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="closed-vs-open-gops-in-av1-random-access-efficiency">Closed vs
+Open GOPs in AV1: Random Access Efficiency</h1>
+<p>This article examines the structural and operational differences
+between closed and open Groups of Pictures (GOPs) in the AV1 video
+codec, specifically focusing on random access efficiency. While closed
+GOPs ensure complete independence between segments to provide
+deterministic, low-latency seeking and seamless adaptive streaming, open
+GOPs allow inter-frame references across GOP boundaries to maximize
+compression efficiency at the expense of random access speed and
+implementation simplicity.</p>
+<h3 id="gop-fundamentals-in-av1">GOP Fundamentals in AV1</h3>
+<p>In video compression, a Group of Pictures defines how intra-coded
+(I-frames or keyframes) and inter-coded (P-frames and B-frames) are
+organized over time. AV1 introduces advanced frame typing—such as Key
+Frames, Intra-only frames, Inter frames, and Switch Frames—to control
+prediction structures.</p>
+<p>The primary distinction between open and closed GOPs lies in the
+strictness of reference frame boundaries:</p>
+<ul>
+<li><strong>Closed GOP:</strong> Every frame within the GOP references
+only frames within that same GOP. No frame after an intra keyframe can
+reference any frame preceding that keyframe.</li>
+<li><strong>Open GOP:</strong> Frames occurring after an intra-coded
+frame in display order are permitted to reference frames from the
+preceding GOP in decode order.</li>
+</ul>
+<h3 id="how-closed-gops-optimize-random-access">How Closed GOPs Optimize
+Random Access</h3>
+<p>Closed GOPs offer the highest random access efficiency. Because a
+closed GOP keyframe completely resets the decoding dependency chain, the
+decoder can initiate playback instantaneously at any keyframe without
+context from earlier frames.</p>
+<ol type="1">
+<li><strong>Deterministic Seeking Latency:</strong> When a user seeks to
+a specific timestamp corresponding to a closed GOP keyframe, the decoder
+immediately begins decoding that frame and subsequent frames. There is
+zero overhead from parsing or decoding past data.</li>
+<li><strong>Predictable Memory and Buffer Management:</strong> Decoders
+can instantly purge reference frame buffers upon encountering a closed
+keyframe, preventing memory bloat and eliminating the need to maintain
+historical reference lists.</li>
+<li><strong>Optimized for Chunk-Based Delivery:</strong> In HTTP
+Adaptive Streaming formats (such as HLS and DASH), video is split into
+discrete chunks. Closed GOPs ensure that each chunk is fully
+self-contained. When switching bitrates, the decoder does not encounter
+missing reference frames, preventing visual artifacts or decoder
+stalls.</li>
+</ol>
+<h3 id="the-random-access-penalty-of-open-gops">The Random Access
+Penalty of Open GOPs</h3>
+<p>Open GOPs improve overall compression efficiency by roughly 1% to 3%
+because leading bidirectional frames (frames that appear after the
+keyframe in display order but before it in decode order, or vice versa)
+can use high-quality reference frames from the previous GOP. However,
+this structure degrades random access efficiency in several ways:</p>
+<ol type="1">
+<li><strong>Decoder Prerolling Requirements:</strong> To correctly
+decode all frames following an open GOP keyframe, the decoder may need
+to fetch and decode frames from the prior GOP. This creates seek
+latency, as the player must execute a "preroll" operation before
+presenting video to the user.</li>
+<li><strong>Frame Dropping (Leading Frames):</strong> If the decoder
+jumps directly to an open GOP keyframe without decoding the prior GOP,
+it must identify and drop any leading frames that depend on the missing
+history. This causes stutter or temporary frame-rate drops at the seek
+destination until a purely independent temporal point is reached.</li>
+<li><strong>Signaling Complexity:</strong> In AV1, open GOP structures
+rely heavily on metadata signaling (such as temporal delimiter OBUs and
+frame header reference flags) so the decoder knows which frames are
+displayable without previous dependencies. This increases decoder parser
+overhead.</li>
+</ol>
+<h3 id="trade-off-summary-in-av1-implementations">Trade-Off Summary in
+AV1 Implementations</h3>
+<ul>
+<li><strong>Seeking Latency:</strong> Closed GOPs provide near-zero seek
+latency; open GOPs introduce decoding delays or frame drops when seeking
+into arbitrary keyframes.</li>
+<li><strong>Compression Density:</strong> Open GOPs achieve higher video
+quality at the same bitrate by leveraging temporal continuity across
+boundaries; closed GOPs sacrifice minor compression gains to maintain
+frame independence.</li>
+<li><strong>Use-Case Alignment:</strong> Closed GOP structures are the
+standard choice for video-on-demand (VOD) seeking responsiveness, live
+broadcasting, trick-play modes (fast-forward/rewind), and adaptive
+streaming. Open GOPs are preferred in offline storage or strictly linear
+playback scenarios where random seeking is rare and maximum compression
+efficiency is the priority.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

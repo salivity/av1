@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 In-Loop Deblocking Filters Remove Artifacts - av1</title>
+    <meta name="description" content="This article provides an overview of the in-loop deblocking filter in the AV1 video codec, explaining how it identifies and mitigates artificial block edges caused by transform and prediction quantization. It covers the root causes of boundary discontinu">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-in-loop-deblocking-filters-remove-artifacts">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 In-Loop Deblocking Filters Remove Artifacts - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-in-loop-deblocking-filters-remove-artifacts" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the in-loop deblocking filter in the AV1 video codec, explaining how it identifies and mitigates artificial block edges caused by transform and prediction quantization. It covers the root causes of boundary discontinu" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-in-loop-deblocking-filters-remove-artifacts">How AV1
+In-Loop Deblocking Filters Remove Artifacts</h1>
+<p>This article provides an overview of the in-loop deblocking filter in
+the AV1 video codec, explaining how it identifies and mitigates
+artificial block edges caused by transform and prediction quantization.
+It covers the root causes of boundary discontinuities, the mechanics of
+loop filtering within the decode pipeline, adaptive edge selection, and
+the mathematical smoothing operations used to preserve authentic image
+details while restoring visual continuity.</p>
+<h3 id="the-origin-of-block-boundary-artifacts">The Origin of Block
+Boundary Artifacts</h3>
+<p>Modern video codecs like AV1 rely on block-based hybrid coding.
+Images are partitioned into rectangular blocks known as Coding Block
+Units (ranging from 4x4 to 128x128 pixels) to perform spatial
+prediction, temporal motion compensation, and frequency transforms. When
+these blocks undergo quantization—the lossy step that compresses the
+data—high-frequency transform coefficients are discarded.</p>
+<p>Because neighboring blocks are predicted and quantized independently,
+the reconstruction errors at the edges do not match. This mismatch
+produces sharp, unnatural step discontinuities along the boundaries of
+transform blocks and prediction blocks. To human vision, these manifest
+as a distracting grid-like pattern across continuous surfaces such as
+skies, walls, and faces.</p>
+<h3 id="the-role-of-an-in-loop-design">The Role of an "In-Loop"
+Design</h3>
+<p>AV1 implements its deblocking filter "in-loop," which distinguishes
+it from post-processing filters:</p>
+<ol type="1">
+<li><strong>Reference Frame Consistency:</strong> The deblocking filter
+processes the reconstructed frame before it is stored in the Decoded
+Picture Buffer (DPB).</li>
+<li><strong>Error Drift Prevention:</strong> Subsequent frames that use
+inter-picture prediction reference the deblocked frame rather than the
+unfiltered, raw reconstructed frame. This prevents boundary errors from
+compounding and propagating across multiple frames over time.</li>
+</ol>
+<h3 id="edge-identification-and-processing-order">Edge Identification
+and Processing Order</h3>
+<p>The AV1 deblocking filter operates on a virtual 4x4 sample grid
+across the entire frame. It processes two primary edge types:</p>
+<ul>
+<li><strong>Vertical Boundaries:</strong> Filtered first to modify
+horizontal pixel values across vertical block seams.</li>
+<li><strong>Horizontal Boundaries:</strong> Filtered second to modify
+vertical pixel values across horizontal block seams.</li>
+</ul>
+<p>The filter only targets edges corresponding to actual transform block
+boundaries or prediction block boundaries. Interior regions of a
+transform block are skipped because they do not contain
+quantization-induced boundary steps.</p>
+<h3 id="adaptive-filter-strength-and-thresholding">Adaptive Filter
+Strength and Thresholding</h3>
+<p>To avoid blurring real image features like sharp object outlines or
+textures, the filter dynamically adjusts its intensity based on several
+parameters:</p>
+<ul>
+<li><strong>Quantization Parameter (QP):</strong> Higher quantization
+introduces more severe artifacts, prompting the filter to apply higher
+base filtering strengths. Lower QP values reduce filter strength to
+preserve fine texture.</li>
+<li><strong>Prediction Modes:</strong> Intra-coded blocks usually have
+higher reconstruction variances at their edges than inter-coded blocks,
+often warranting stronger filtering.</li>
+<li><strong>Motion Vectors:</strong> If neighboring inter-blocks share
+similar motion vectors and the same reference frame, the likelihood of a
+severe prediction mismatch is reduced, resulting in weaker
+filtering.</li>
+<li><strong>Frame and Block-Level Deltas:</strong> AV1 allows the
+encoder to signal global filter strength levels per frame, with optional
+segment-level or block-level adjustments to handle local
+complexity.</li>
+</ul>
+<h3 id="boundary-condition-testing">Boundary Condition Testing</h3>
+<p>Before any pixel values are modified, the filter tests the boundary
+samples to ensure that the discontinuity is an artifact rather than a
+true edge:</p>
+<ol type="1">
+<li>Samples perpendicular to the boundary (designated as <span
+class="math inline">\(p_2, p_1, p_0\)</span> on one side and <span
+class="math inline">\(q_0, q_1, q_2\)</span> on the other) are
+sampled.</li>
+<li>The filter evaluates flatness conditions, checking whether <span
+class="math inline">\(|p_0 - q_0|\)</span>, <span
+class="math inline">\(|p_1 - p_0|\)</span>, and <span
+class="math inline">\(|q_1 - q_0|\)</span> stay below defined threshold
+values derived from the filter strength parameters.</li>
+<li>If the sample differences exceed the threshold, the algorithm
+classifies the transition as an authentic image edge, and filtering is
+suppressed to preserve sharpness.</li>
+</ol>
+<h3 id="narrow-and-wide-filter-applications">Narrow and Wide Filter
+Applications</h3>
+<p>Once an edge passes the boundary condition tests, AV1 applies either
+a narrow or a wide filter depending on the block size and sample
+flatness:</p>
+<ul>
+<li><strong>Narrow Filters (2-tap to 4-tap):</strong> Applied to smaller
+transform blocks (such as 4x4) or boundaries with moderate gradient
+variations. The filter alters only the immediate boundary samples (<span
+class="math inline">\(p_0\)</span> and <span
+class="math inline">\(q_0\)</span>, and sometimes <span
+class="math inline">\(p_1\)</span> and <span
+class="math inline">\(q_1\)</span>) by applying a clipping-limited delta
+to smooth out the step discontinuity without affecting surrounding
+pixels.</li>
+<li><strong>Wide Filters (up to 14-tap):</strong> Applied to larger
+transform boundaries (such as 8x8, 16x16, 32x32, or 64x64 blocks) where
+severe blocking artifacts can create large-scale banding across flat
+areas. Wide filters sample deeper into the block (up to 7 pixels on each
+side) and apply multi-tap weighted averaging. This distributes the
+transition smoothly over a wider area without introducing noticeable
+blurring.</li>
+</ul>
+<h3 id="independent-color-channel-processing">Independent Color Channel
+Processing</h3>
+<p>AV1 applies deblocking to luma (<span
+class="math inline">\(Y\)</span>) and chroma (<span
+class="math inline">\(Cb, Cr\)</span>) planes independently. Because the
+human visual system perceives brightness contrasts and color transitions
+differently, luma and chroma require distinct thresholding. The encoder
+can specify separate filter levels for vertical and horizontal edges
+across both luma and chroma components, preventing color bleeding across
+boundaries while maintaining edge cleanliness.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

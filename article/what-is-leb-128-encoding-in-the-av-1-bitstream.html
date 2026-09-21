@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is LEB128 Encoding in the AV1 Bitstream? - av1</title>
+    <meta name="description" content="Little Endian Base 128 (LEB128) is a variable-length integer compression format widely used in modern computing, including the Alliance for Open Media's AV1 video codec specification. This article explains how LEB128 works, how it is implemented within t">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/what-is-leb-128-encoding-in-the-av-1-bitstream">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="What Is LEB128 Encoding in the AV1 Bitstream? - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/what-is-leb-128-encoding-in-the-av-1-bitstream" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Little Endian Base 128 (LEB128) is a variable-length integer compression format widely used in modern computing, including the Alliance for Open Media's AV1 video codec specification. This article explains how LEB128 works, how it is implemented within t" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="what-is-leb128-encoding-in-the-av1-bitstream">What Is LEB128
+Encoding in the AV1 Bitstream?</h1>
+<p>Little Endian Base 128 (LEB128) is a variable-length integer
+compression format widely used in modern computing, including the
+Alliance for Open Media's AV1 video codec specification. This article
+explains how LEB128 works, how it is implemented within the AV1
+bitstream to represent syntax elements like Open Bitstream Unit (OBU)
+sizes, and why it provides an optimal balance between payload efficiency
+and architectural flexibility.</p>
+<h3 id="how-leb128-works">How LEB128 Works</h3>
+<p>LEB128 allows arbitrarily large integers to be stored in a variable
+number of bytes. Rather than allocating a static 32-bit or 64-bit block
+for an integer—which wastes space when storing small numbers—LEB128
+expands or contracts dynamically based on the value's magnitude.</p>
+<p>The format encodes data using the following mechanism:</p>
+<ol type="1">
+<li><strong>7-Bit Segmentation:</strong> The binary representation of
+the integer is split into groups of 7 bits, starting from the least
+significant bits (little-endian order).</li>
+<li><strong>Continuation Bit (MSB):</strong> Each 7-bit chunk is placed
+into an 8-bit byte. The most significant bit (MSB, or bit 7) serves as a
+continuation flag:
+<ul>
+<li>A value of <code>1</code> indicates that more bytes follow.</li>
+<li>A value of <code>0</code> indicates that this byte is the final byte
+of the integer.</li>
+</ul></li>
+<li><strong>Byte Assembly:</strong> The decoder reads bytes sequentially
+until it encounters a byte with an MSB of <code>0</code>, strips the
+continuation bits, and reassembles the remaining 7-bit payloads in
+little-endian sequence.</li>
+</ol>
+<h3 id="example-encoding-the-number-600">Example: Encoding the Number
+600</h3>
+<p>To illustrate how a decimal value is converted to unsigned LEB128
+(ULEB128):</p>
+<ul>
+<li><strong>Binary representation of 600:</strong>
+<code>10 0101 1000</code> (10 bits).</li>
+<li><strong>Split into 7-bit groups:</strong>
+<ul>
+<li>Group 1 (lowest 7 bits): <code>101 1000</code> (88 in decimal)</li>
+<li>Group 2 (remaining bits): <code>000 0100</code> (4 in decimal)</li>
+</ul></li>
+<li><strong>Add continuation flags:</strong>
+<ul>
+<li>Group 1 is followed by more data, so the MSB becomes <code>1</code>:
+<code>1101 1000</code> (<code>0xD8</code> in hex).</li>
+<li>Group 2 is the final byte, so the MSB becomes <code>0</code>:
+<code>0000 0100</code> (<code>0x04</code> in hex).</li>
+</ul></li>
+<li><strong>Final Encoded Stream:</strong> <code>0xD8 0x04</code>
+(stored in 2 bytes instead of a standard 4-byte 32-bit integer).</li>
+</ul>
+<h3 id="leb128-in-the-av1-bitstream-specification">LEB128 in the AV1
+Bitstream Specification</h3>
+<p>In the AV1 specification, an unsigned variant denoted as
+<code>leb128()</code> is utilized primarily within the Open Bitstream
+Unit (OBU) framing structure.</p>
+<p>The fundamental unit of an AV1 bitstream is the OBU, which carries
+video sequence headers, metadata, tile groups, and frame data. When an
+OBU header specifies that the size is present (via the
+<code>obu_has_size_field</code> flag), the exact length of the trailing
+payload is encoded using <code>leb128()</code>.</p>
+<p>The AV1 standard places specific requirements on its LEB128
+implementation:</p>
+<ul>
+<li><strong>Maximum Byte Limit:</strong> The AV1 specification restricts
+<code>leb128()</code> fields to a maximum of 8 bytes, which provides
+enough range to describe values up to 56 bits (exceeding petabytes in
+payload size, well beyond any realistic stream requirement).</li>
+<li><strong>Bitstream Parsing Constraint:</strong> AV1 decoders must
+return an error if a LEB128 value exceeds 8 bytes or if the decoded
+value causes an integer overflow.</li>
+<li><strong>Canonical Encoding Handling:</strong> While the
+specification allows for leading zeros in the numerical value (which
+manifest as trailing bytes with value <code>0x80</code> followed by
+<code>0x00</code>), conforming encoders generally emit the minimal
+representation to preserve bandwidth.</li>
+</ul>
+<h3 id="why-av1-utilizes-leb128">Why AV1 Utilizes LEB128</h3>
+<ol type="1">
+<li><strong>Bandwidth Optimization:</strong> A large portion of OBUs
+contain small metadata elements, sequence headers, or temporal
+delimiters that only require tens or hundreds of bytes. LEB128 allows
+these units to declare their size in 1 or 2 bytes rather than consuming
+a fixed 4-byte or 8-byte field.</li>
+<li><strong>Support for Ultra-High Bitrates:</strong> Because the field
+dynamically expands, high-fidelity uncompressed frames, 8K keyframes, or
+extensive alpha-channel tiles can expand their size definitions without
+running into container-level length limits.</li>
+<li><strong>Simpler Parsing and Slicing:</strong> Because the OBU size
+is encoded with a self-terminating variable integer format right at the
+header, parsers can quickly read the length and skip irrelevant or
+unsupported OBUs without parsing the payload data itself.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

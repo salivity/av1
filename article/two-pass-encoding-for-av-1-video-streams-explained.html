@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Pass Encoding for AV1 Video Streams Explained - av1</title>
+    <meta name="description" content="Two-pass encoding is a critical video processing method used to maximize visual quality and compress data efficiently when producing AV1 video streams. This article examines the core function of two-pass workflows in AV1 compression, detailing the mechan">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/two-pass-encoding-for-av-1-video-streams-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Two-Pass Encoding for AV1 Video Streams Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/two-pass-encoding-for-av-1-video-streams-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Two-pass encoding is a critical video processing method used to maximize visual quality and compress data efficiently when producing AV1 video streams. This article examines the core function of two-pass workflows in AV1 compression, detailing the mechan" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="two-pass-encoding-for-av1-video-streams-explained">Two-Pass
+Encoding for AV1 Video Streams Explained</h1>
+<p>Two-pass encoding is a critical video processing method used to
+maximize visual quality and compress data efficiently when producing AV1
+video streams. This article examines the core function of two-pass
+workflows in AV1 compression, detailing the mechanics of each pass, the
+benefits of advanced bitrate distribution, and the trade-offs between
+processing time and stream fidelity.</p>
+<h3 id="the-purpose-of-two-pass-encoding-in-av1">The Purpose of Two-Pass
+Encoding in AV1</h3>
+<p>AV1 (AOMedia Video 1) is an open-source, highly efficient video codec
+designed to deliver superior compression compared to predecessors like
+H.264 and HEVC. However, AV1 features exceptionally high computational
+complexity. The primary function of a two-pass encoding workflow is to
+optimize the allocation of data bits throughout the entire duration of a
+video file, ensuring that the target file size or bitrate is hit
+precisely without sacrificing visual fidelity during complex scenes.</p>
+<p>Unlike single-pass encoding, which must make instantaneous
+compression decisions on incoming frames, a two-pass workflow separates
+the process into two distinct phases: analysis and final
+compression.</p>
+<h3 id="phase-1-the-analysis-pass">Phase 1: The Analysis Pass</h3>
+<p>During the first pass, the encoder analyzes the source video from
+beginning to end without generating the final output stream.</p>
+<ul>
+<li><strong>Scene and Motion Analysis:</strong> The encoder identifies
+scene changes, camera pans, high-speed motion, and static
+backgrounds.</li>
+<li><strong>Complexity Mapping:</strong> It calculates the spatial
+complexity (fine details, textures) and temporal complexity (motion
+between frames) for every segment.</li>
+<li><strong>Log Generation:</strong> The encoder writes this structural
+data into a statistical log file. This file records which segments will
+require a higher density of bits to prevent compression artifacts and
+which simple scenes can maintain high quality with minimal data.</li>
+</ul>
+<p>Because no final video rendering or intensive rate-distortion
+optimization occurs during this step, the first pass is typically
+configured to run much faster than the second pass.</p>
+<h3 id="phase-2-the-final-compression-pass">Phase 2: The Final
+Compression Pass</h3>
+<p>In the second pass, the encoder reads the statistical log file
+generated during the first phase to perform the actual AV1
+compression.</p>
+<ul>
+<li><strong>Strategic Bit Allocation:</strong> Using global knowledge of
+the entire video, the encoder applies variable bitrate (VBR) techniques.
+It distributes the available bit budget intelligently—allocating more
+bits to complex action sequences and heavily textured frames, while
+pulling bits away from static talking heads or uniform backgrounds.</li>
+<li><strong>Accurate Bitrate Targeting:</strong> The encoder ensures the
+final stream strictly meets target constraints, such as a specific file
+size limit or a strict average bitrate required for smooth streaming
+over limited bandwidth.</li>
+<li><strong>Quality Consistency:</strong> By preemptively planning for
+difficult-to-encode moments, the second pass prevents sudden drops in
+visual quality (such as macroblocking or banding) that frequently occur
+in single-pass encoding when an unexpected high-motion scene
+appears.</li>
+</ul>
+<h3 id="key-benefits-for-av1-deployments">Key Benefits for AV1
+Deployments</h3>
+<ol type="1">
+<li><strong>Maximum Compression Efficiency:</strong> AV1 achieves its
+best rate-distortion performance when the encoder has full context of
+the content, allowing publishers to achieve the lowest possible bitrate
+for a specified visual quality threshold.</li>
+<li><strong>Predictable File Sizes:</strong> For video-on-demand (VOD)
+providers, hitting exact storage budgets and bandwidth limits is
+critical. Two-pass encoding eliminates the variance typical of
+single-pass modes.</li>
+<li><strong>Optimized Delivery for Constrained Networks:</strong> Mobile
+and low-bandwidth viewers benefit from a more consistent stream that
+eliminates bitrate spikes capable of triggering buffering events.</li>
+</ol>
+<h3 id="when-to-use-two-pass-av1-workflows">When to Use Two-Pass AV1
+Workflows</h3>
+<p>Two-pass encoding is the industry standard for on-demand streaming
+(VOD), physical media authoring, and master archival storage, where
+encoding time is secondary to bandwidth savings and visual quality.
+Because the two-pass workflow requires parsing the entire video before
+producing an output, it cannot be used for low-latency or live streaming
+applications, where single-pass encoding remains mandatory.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

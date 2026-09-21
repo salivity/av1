@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dav1d ARM Assembly Optimizations for AV1 Decoding - av1</title>
+    <meta name="description" content="This article explores how the open-source dav1d decoder delivers industry-leading AV1 video playback speeds on ARM-powered devices, from smartphones to servers. By bypassing compiler auto-vectorization in favor of hand-tuned assembly, dav1d maximizes the">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/dav-1-d-arm-assembly-optimizations-for-av-1-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="dav1d ARM Assembly Optimizations for AV1 Decoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/dav-1-d-arm-assembly-optimizations-for-av-1-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the open-source dav1d decoder delivers industry-leading AV1 video playback speeds on ARM-powered devices, from smartphones to servers. By bypassing compiler auto-vectorization in favor of hand-tuned assembly, dav1d maximizes the" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="dav1d-arm-assembly-optimizations-for-av1-decoding">dav1d ARM
+Assembly Optimizations for AV1 Decoding</h1>
+<p>This article explores how the open-source dav1d decoder delivers
+industry-leading AV1 video playback speeds on ARM-powered devices, from
+smartphones to servers. By bypassing compiler auto-vectorization in
+favor of hand-tuned assembly, dav1d maximizes the architectural features
+of ARMv7 and AArch64 architectures. The following breakdown examines the
+key assembly-level techniques employed—including custom ARM NEON SIMD
+implementations, aggressive register allocation, pipeline-aware
+instruction scheduling, and specialized algorithms for AV1 in-loop
+filters.</p>
+<h3 id="hand-crafted-arm-neon-simd-vectorization">Hand-Crafted ARM NEON
+SIMD Vectorization</h3>
+<p>Compilers often struggle to auto-vectorize complex video decoding
+routines due to pointer aliasing, non-trivial branching, and boundary
+conditions. dav1d addresses this by implementing all compute-intensive
+inner loops directly in hand-written assembly using ARM NEON SIMD
+(Single Instruction, Multiple Data).</p>
+<p>NEON provides 128-bit vector registers capable of processing 16 8-bit
+integers or 8 16-bit integers per instruction. dav1d leverages this
+across core decoding tasks:</p>
+<ul>
+<li><strong>Intra and Inter Prediction:</strong> Pixel block
+predictions, fractional pel interpolation, and weighted averaging are
+calculated simultaneously across entire rows or blocks using vector
+instructions like <code>uaddl</code>, <code>umlsl</code>, and
+<code>uxtl</code>.</li>
+<li><strong>Inverse Transforms (IDCT/ADST):</strong> dav1d converts 2D
+spatial transforms into vectorized 1D row and column operations. By
+processing 8 or 16 pixels per vector lane, it completes multi-stage
+butterfly operations in fewer clock cycles.</li>
+</ul>
+<h3 id="register-allocation-and-spill-reduction-on-aarch64">Register
+Allocation and Spill Reduction on AArch64</h3>
+<p>AArch64 provides 31 general-purpose 64-bit registers
+(<code>x0</code>–<code>x30</code>) and 32 128-bit SIMD/floating-point
+registers (<code>v0</code>–<code>v31</code>). dav1d's assembly routines
+are designed to maximize the occupancy of these registers.</p>
+<p>By keeping coefficients, intermediate transform values, filter
+coefficients, and prediction states entirely within the
+<code>v0</code>–<code>v31</code> vector registers, dav1d eliminates
+stack spilling (saving and restoring variables to memory). This
+drastically cuts down on L1 cache interactions and avoids load-to-use
+pipeline stalls, which is critical for low-power mobile cores with
+limited cache bandwidth.</p>
+<h3 id="loop-filter-optimization-cdef-and-loop-restoration">Loop Filter
+Optimization: CDEF and Loop Restoration</h3>
+<p>AV1 features three distinct in-loop filtering stages that make
+decoding computationally heavy: the Deblocking Filter, the Constrained
+Directional Enhancement Filter (CDEF), and Loop Restoration (Wiener and
+Self-Guided filters). dav1d implements bespoke assembly strategies for
+each:</p>
+<ul>
+<li><strong>CDEF Direction Search and Filtering:</strong> CDEF requires
+determining the primary direction of edges within an 8x8 block and then
+applying a directional low-pass filter. dav1d calculates the directional
+variance and cross-directional differences using vectorized horizontal
+additions (<code>saddlv</code>, <code>uaddlv</code>) and vector clamping
+(<code>smin</code>, <code>smax</code>, <code>sqrshrn</code>).</li>
+<li><strong>Wiener and Self-Guided Restoration:</strong> These filters
+employ 2D separable symmetric convolutions. In assembly, dav1d splits
+the operations into horizontal passes that remain in registers, followed
+by vertical passes using transposed values. Intermediate rounding and
+shifts are mapped directly to ARM instructions like
+<code>sqrdmulh</code> (Signed Saturating Rounding Doubling Multiply
+High) and <code>rshrn</code> (Rounding Shift Right Narrow), which
+perform rounding and clamping in a single instruction.</li>
+</ul>
+<h3 id="in-register-matrix-transposition">In-Register Matrix
+Transposition</h3>
+<p>Inverse transform stages and directional filtering require frequent
+transpositions of 4x4, 8x8, 16x16, and 32x32 blocks of pixel data.
+Writing data back to cache to read it column-wise is slow.</p>
+<p>dav1d relies on ARM NEON permute and interleave instructions,
+specifically:</p>
+<ul>
+<li><code>zip1</code> / <code>zip2</code> for interleaving high and low
+halves of vectors.</li>
+<li><code>trn1</code> / <code>trn2</code> for transposing paired 8-bit
+or 16-bit lanes.</li>
+<li><code>ext</code> (Extract) for rotating elements across vector
+boundaries without touching memory.</li>
+</ul>
+<p>These operations allow entire 8x8 blocks of transform coefficients to
+be transposed in-place within the vector register file in a handful of
+cycles.</p>
+<h3 id="instruction-scheduling-and-latency-hiding">Instruction
+Scheduling and Latency Hiding</h3>
+<p>Modern ARM cores, such as ARM Cortex-A and Apple Silicon, rely on
+wide out-of-order execution pipelines. dav1d’s assembly is tuned to keep
+execution units fully saturated:</p>
+<ul>
+<li><strong>Independent Instruction Interleaving:</strong> Rather than
+executing back-to-back operations on the same vector register, dav1d
+unrolls loops and interleaves operations across multiple independent
+registers. For example, while one instruction waits for the latency of a
+vector multiply-accumulate (<code>mla</code>), the execution engine
+processes loads or shifts for an adjacent pixel block.</li>
+<li><strong>Minimizing Conditional Branches:</strong> Branch
+mispredictions flush the CPU pipeline. dav1d replaces conditional code
+paths within assembly with branchless vector masks, such as bitwise
+selections (<code>bif</code>, <code>bit</code>, <code>bsl</code>) and
+vector comparisons (<code>cmeq</code>, <code>cmgt</code>), allowing
+uniform execution flow regardless of video content.</li>
+</ul>
+<h3 id="efficient-film-grain-synthesis">Efficient Film Grain
+Synthesis</h3>
+<p>AV1 uses grain synthesis to simulate film grain at the playback
+stage, avoiding the bit-cost of encoding noise. dav1d implements the
+PRNG (Pseudo-Random Number Generator) and Gaussian noise application
+directly in NEON assembly, vectorizing the calculation of random grain
+patterns across entire macroblocks to make this post-processing step
+virtually free on ARM processors.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

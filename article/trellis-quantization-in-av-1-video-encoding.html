@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trellis Quantization in AV1 Video Encoding - av1</title>
+    <meta name="description" content="Trellis quantization is an optimization technique that improves video compression efficiency by evaluating the trade-off between visual distortion and bit consumption at the transform coefficient level. This article explains the core principles of Trelli">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/trellis-quantization-in-av-1-video-encoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Trellis Quantization in AV1 Video Encoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/trellis-quantization-in-av-1-video-encoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Trellis quantization is an optimization technique that improves video compression efficiency by evaluating the trade-off between visual distortion and bit consumption at the transform coefficient level. This article explains the core principles of Trelli" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="trellis-quantization-in-av1-video-encoding">Trellis Quantization
+in AV1 Video Encoding</h1>
+<p>Trellis quantization is an optimization technique that improves video
+compression efficiency by evaluating the trade-off between visual
+distortion and bit consumption at the transform coefficient level. This
+article explains the core principles of Trellis quantization—commonly
+known as Rate-Distortion Optimized Quantization (RDOQ)—and details how
+it is specifically tailored to complement the multi-symbol entropy
+coding engine used in the AV1 video standard.</p>
+<h3 id="fundamentals-of-trellis-quantization">Fundamentals of Trellis
+Quantization</h3>
+<p>Standard scalar quantization divides transformed frequency
+coefficients by a step size and rounds them to the nearest integer.
+While computationally inexpensive, simple rounding ignores whether
+transmitting an altered coefficient value might save a significant
+number of bits at the cost of minimal reconstructed distortion.</p>
+<p>Trellis quantization frames the quantization process as a
+graph-search problem solved using the Viterbi algorithm. Coefficients in
+a transformed block are ordered according to their scan sequence. For
+each coefficient, the algorithm evaluates multiple candidate
+quantization states (typically the floor and ceiling rounding values, or
+zero).</p>
+<p>The optimal sequence of quantized levels is determined by minimizing
+a Lagrangian rate-distortion cost function:</p>
+<p><span class="math display">\[J = D + \lambda R\]</span></p>
+<p>Here, <span class="math inline">\(D\)</span> represents the
+distortion (squared error between the original and reconstructed
+transform coefficients), <span class="math inline">\(R\)</span>
+represents the rate (the number of bits required to signal that level in
+the bitstream), and <span class="math inline">\(\lambda\)</span> is a
+Lagrange multiplier derived from the frame's quantization parameter
+(QP). The Trellis algorithm traverses the graph to find the minimum-cost
+path through the block.</p>
+<h3 id="av1-entropy-coding-architecture">AV1 Entropy Coding
+Architecture</h3>
+<p>To understand how Trellis quantization is customized for AV1, one
+must consider how AV1 signals transform coefficients. Unlike H.264 or
+HEVC, which rely heavily on binary arithmetic coding (CABAC), AV1 uses a
+non-binary, multi-symbol arithmetic coder derived from the Daala
+project. It leverages context-dependent Cumulative Distribution
+Functions (CDFs) that adapt dynamically as symbols are processed.</p>
+<p>AV1 serializes transform blocks through a multi-layered syntax:</p>
+<ol type="1">
+<li><strong>End-of-Block (EOB):</strong> The index of the last non-zero
+coefficient in scan order.</li>
+<li><strong>Base Levels:</strong> Binary flags indicating whether a
+coefficient is non-zero (<code>base_eob</code> or
+<code>base_flag</code>), and whether it exceeds lower magnitude
+thresholds.</li>
+<li><strong>Levels and Signs:</strong> Intermediate magnitude flags
+followed by an Exp-Golomb remainder for large values, alongside sign
+bits.</li>
+<li><strong>Context Dependency:</strong> The probability distribution of
+each flag depends on the position of the coefficient, the transform
+type, and the magnitudes of previously decoded neighboring
+coefficients.</li>
+</ol>
+<h3 id="customizing-trellis-quantization-for-av1">Customizing Trellis
+Quantization for AV1</h3>
+<p>Because AV1’s entropy coder evaluates probabilities using
+multi-symbol CDFs and strict structural layers, Trellis quantization
+cannot use a generic bit-cost estimation. Encoders such as
+<code>libaom</code> and <code>SVT-AV1</code> customize the algorithm in
+several critical ways:</p>
+<h4 id="1-context-accurate-rate-estimation">1. Context-Accurate Rate
+Estimation</h4>
+<p>The rate term (<span class="math inline">\(R\)</span>) in the cost
+function must match the true cost of AV1’s entropy engine. For every
+candidate level at every node in the trellis, the algorithm queries the
+active CDF context tables. This includes estimating the cost of the
+base-level flags, intermediate level flags, sign bits, and potential
+Golomb-coded tails. Because neighboring reconstructed coefficients
+define the context for subsequent coefficients, the Trellis graph tracks
+context transitions accurately across the scan path.</p>
+<h4 id="2-eob-position-optimization">2. EOB Position Optimization</h4>
+<p>In AV1, signaling the EOB token incurs a distinct bit cost, but it
+eliminates the need to signal any subsequent coefficients. AV1-tailored
+Trellis algorithms explicitly evaluate candidate EOB positions. The
+encoder tests whether truncating trailing high-frequency coefficients to
+zero reduces the overall cost <span class="math inline">\(J\)</span>,
+balancing the increased distortion of dropping those coefficients
+against the substantial rate reduction of an earlier EOB.</p>
+<h4 id="3-handling-non-binary-transitions">3. Handling Non-Binary
+Transitions</h4>
+<p>Traditional Trellis implementations designed for binary coders
+evaluate simple transitions. For AV1, candidate states must model the
+multi-symbol nature of the syntax. The search space is structured around
+AV1's specific magnitude thresholds (e.g., levels 0, 1, 2, and beyond),
+ensuring that probabilities assigned to compound multi-symbol tokens
+reflect actual syntax generation rather than generic approximations.</p>
+<h4 id="4-transform-specific-scan-orders">4. Transform-Specific Scan
+Orders</h4>
+<p>AV1 supports a wide variety of transform kernels (DCT, Asymmetric
+Discrete Sine Transforms, and Identity transforms) across rectangular
+and square block sizes ranging from 4x4 to 64x64. Trellis quantization
+paths are aligned with the custom scan patterns of each transform type,
+ensuring that the dependency chain used for neighbor context modeling
+matches the exact traversal order of the decoder.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

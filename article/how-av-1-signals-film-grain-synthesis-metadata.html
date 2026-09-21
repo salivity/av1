@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Signals Film Grain Synthesis Metadata - av1</title>
+    <meta name="description" content="This article provides an overview of how the AV1 video codec implements film grain synthesis (FGS) by transmitting parametric data instead of encoding raw grain directly into the pixel stream. By stripping high-frequency noise during encoding and signali">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-signals-film-grain-synthesis-metadata">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Signals Film Grain Synthesis Metadata - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-signals-film-grain-synthesis-metadata" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AV1 video codec implements film grain synthesis (FGS) by transmitting parametric data instead of encoding raw grain directly into the pixel stream. By stripping high-frequency noise during encoding and signali" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-signals-film-grain-synthesis-metadata">How AV1 Signals
+Film Grain Synthesis Metadata</h1>
+<p>This article provides an overview of how the AV1 video codec
+implements film grain synthesis (FGS) by transmitting parametric data
+instead of encoding raw grain directly into the pixel stream. By
+stripping high-frequency noise during encoding and signaling its
+mathematical characteristics via designated syntax elements within Open
+Bitstream Units (OBUs), AV1 achieves substantial bitrate savings while
+preserving cinematic texture. The following sections detail the
+signaling workflow, the structure of the parameter payload, and how the
+decoder applies this metadata to reconstruct the original grain
+profile.</p>
+<h3 id="the-film-grain-synthesis-architecture">The Film Grain Synthesis
+Architecture</h3>
+<p>Traditional video compression treats film grain as high-frequency
+detail, which requires a disproportionately high bitrate to encode
+without producing artifacts. AV1 solves this by modeling grain as a
+separate, parameterized layer.</p>
+<p>During the encoding stage, an integrated grain analyzer estimates the
+statistical properties of the film grain, denoises the source images,
+and compresses the smooth video. The derived grain properties are then
+transmitted alongside the compressed video data. Upon decoding, the
+reconstructed video is rendered, and an autoregressive (AR) synthesis
+engine regenerates and blends the pseudo-random grain over the final
+output after all in-loop filtering operations (deblocking, CDEF, and
+loop restoration) are complete.</p>
+<h3 id="signaling-hierarchy-within-av1-obus">Signaling Hierarchy Within
+AV1 OBUs</h3>
+<p>AV1 packages all bitstream data into Open Bitstream Units (OBUs). The
+transmission of film grain characteristics operates through a specific
+hierarchical structure:</p>
+<ol type="1">
+<li><p><strong>Sequence Header OBU
+(<code>OBU_SEQUENCE_HEADER</code>):</strong><br />
+At the highest level, the bitstream indicates whether film grain is
+enabled across the video sequence using the
+<code>film_grain_params_present</code> syntax flag. If this flag is set
+to zero, the decoder bypasses all film grain operations for the entire
+sequence, reducing processing overhead.</p></li>
+<li><p><strong>Frame Header OBU (<code>OBU_FRAME_HEADER</code> or
+<code>OBU_FRAME</code>):</strong><br />
+When enabled at the sequence level, grain parameters are conveyed within
+the frame header via the <code>film_grain_params()</code> syntax
+element. While custom or external metadata can be routed through
+<code>OBU_METADATA</code>, standard film grain synthesis parameters in
+AV1 are explicitly native to the frame-level bitstream syntax to ensure
+frame-accurate synchronization.</p></li>
+<li><p><strong>Parameter Inheritance:</strong><br />
+To minimize metadata overhead, AV1 allows inter-coded frames to
+reference grain characteristics from previously decoded frames. The
+<code>update_grain</code> flag informs the decoder whether to parse a
+new set of grain coefficients or reuse the parameters from an earlier
+designated reference frame.</p></li>
+</ol>
+<h3 id="the-film-grain-parameter-payload">The Film Grain Parameter
+Payload</h3>
+<p>When a frame introduces or updates film grain metadata, the decoder
+parses the <code>film_grain_params()</code> structure, which contains
+several crucial mathematical descriptors:</p>
+<ul>
+<li><strong>Random Seed (<code>grain_seed</code>):</strong> A 16-bit
+pseudo-random number generator (PRNG) seed that ensures deterministic,
+reproducible noise generation across different hardware and software
+decoders.</li>
+<li><strong>Piecewise Linear Scaling:</strong> Film grain intensity
+typically varies depending on pixel luminance and chrominance. AV1
+models this relationship using piecewise linear scaling functions for
+each color plane (Y, Cb, and Cr). The bitstream signals coordinate
+points (<code>point_y_value</code>, <code>point_y_scaling</code>) that
+define how strongly the grain should be applied across different
+brightness levels.</li>
+<li><strong>Autoregressive (AR) Coefficients:</strong> The spatial
+frequency and correlation of the grain are defined by an autoregressive
+process. The payload signals the AR filter lag
+(<code>ar_coeff_lag</code>), followed by the signed coefficients
+(<code>ar_coeffs_y_plus_128</code>, <code>ar_coeffs_cb_plus_128</code>,
+<code>ar_coeffs_cr_plus_128</code>). These coefficients govern whether
+the grain appears fine, coarse, or correlated across color
+channels.</li>
+<li><strong>Chroma Components and Multipliers:</strong> Flags such as
+<code>chroma_scaling_from_luma</code> dictate whether chroma channels
+derive their grain profiles directly from the luminance plane or require
+independent parameter sets. Additional multiplier values regulate the
+cross-plane correlation.</li>
+</ul>
+<h3 id="decoding-and-applying-the-metadata">Decoding and Applying the
+Metadata</h3>
+<p>Once the parameters are extracted from the OBU structure, the decoder
+executes the reconstruction pipeline:</p>
+<ol type="1">
+<li><strong>Generation of the Noise Template:</strong> The decoder uses
+the transmitted <code>grain_seed</code> to drive a PRNG, filling an
+internal template buffer with synthetic noise shaped by the AR filter
+coefficients.</li>
+<li><strong>Intensity Scaling:</strong> The base noise values are scaled
+dynamically against the reconstructed pixel values using the piecewise
+linear lookup tables defined in the metadata.</li>
+<li><strong>Additive Blending:</strong> The synthesized noise is clamped
+and added to the decoded pixels. Because this step occurs entirely
+post-loop-filter, the synthesis process avoids feedback loops that could
+disrupt the motion-compensation engine, ensuring both visual consistency
+and compression efficiency.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

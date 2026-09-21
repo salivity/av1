@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Performance in Ultra-High-Speed Video Encoding - av1</title>
+    <meta name="description" content="This article examines the performance profile of the AV1 video codec when encoding and storing ultra-high-speed camera recordings. High-speed imaging captures hundreds to thousands of frames per second, creating massive raw data footprints that severely">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-performance-in-ultra-high-speed-video-encoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Performance in Ultra-High-Speed Video Encoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-performance-in-ultra-high-speed-video-encoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines the performance profile of the AV1 video codec when encoding and storing ultra-high-speed camera recordings. High-speed imaging captures hundreds to thousands of frames per second, creating massive raw data footprints that severely" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-performance-in-ultra-high-speed-video-encoding">AV1
+Performance in Ultra-High-Speed Video Encoding</h1>
+<p>This article examines the performance profile of the AV1 video codec
+when encoding and storing ultra-high-speed camera recordings. High-speed
+imaging captures hundreds to thousands of frames per second, creating
+massive raw data footprints that severely strain storage and processing
+pipelines. Below, we break down how AV1 handles this data, focusing on
+compression efficiency, computational bottlenecks, motion estimation
+behavior, and current hardware capabilities.</p>
+<h3 id="compression-efficiency-and-data-footprint">Compression
+Efficiency and Data Footprint</h3>
+<p>Ultra-high-speed cameras generate immense data rates—often tens of
+gigabytes per second in uncompressed raw frames. AV1 provides
+significant advantages in storage reduction, delivering roughly 30% to
+40% better compression efficiency than HEVC (H.265) and up to 50% over
+AVC (H.264) at equivalent objective quality metrics (such as VMAF and
+PSNR). For long-term archiving or cloud distribution of high-speed
+captures, AV1 dramatically lowers storage costs and bandwidth
+requirements without sacrificing critical visual data.</p>
+<h3 id="temporal-redundancy-and-motion-estimation">Temporal Redundancy
+and Motion Estimation</h3>
+<p>At capture rates ranging from 500 to 100,000+ frames per second
+(fps), motion between adjacent frames is exceptionally small. AV1 excels
+under these conditions due to its sophisticated inter-frame prediction
+tools:</p>
+<ul>
+<li><strong>Sub-Pixel Interpolation:</strong> AV1 utilizes advanced
+8-tap interpolation filters, allowing motion compensation engines to
+accurately model micro-movements.</li>
+<li><strong>Warped Motion and Global Motion:</strong> These tools
+efficiently track affine transformations caused by high-speed camera
+panning or object deformation.</li>
+<li><strong>Variable Block Partitioning:</strong> The codec dynamically
+partitions blocks from 128x128 down to 4x4, effectively isolating moving
+boundaries from static backgrounds.</li>
+</ul>
+<p>Because inter-frame displacement is minimal, AV1 generates extremely
+small residual data, maximizing the compression benefits of P-frames and
+B-frames relative to standard 24–60 fps footage.</p>
+<h3 id="encoding-complexity-and-real-time-limitations">Encoding
+Complexity and Real-Time Limitations</h3>
+<p>AV1's primary drawback in high-speed workflows is computational
+complexity. Real-time encoding of ultra-high-speed streams using AV1 is
+not feasible:</p>
+<ul>
+<li><strong>Software Encoders (SVT-AV1, libaom):</strong> Even on
+high-core-count workstation CPUs (such as AMD Threadripper or
+dual-socket Intel Xeon systems), high-efficiency AV1 encoding presets
+operate at fractions of real-time speed. While faster presets (presets
+8–10 in SVT-AV1) can process standard frame rates quickly, they cannot
+ingest continuous thousands-of-frames-per-second streams directly from a
+sensor.</li>
+<li><strong>Workflow Impact:</strong> Production workflows require
+high-speed footage to be written to fast intermediate memory (such as
+on-camera DDR buffers or enterprise NVMe arrays) before executing an
+offline, multi-threaded AV1 transcoding pass.</li>
+</ul>
+<h3 id="hardware-acceleration-capabilities">Hardware Acceleration
+Capabilities</h3>
+<p>Modern dedicated fixed-function hardware encoders—found in recent
+architectures like Intel Arc, Nvidia Ada Lovelace (NVENC), and AMD RDNA
+3—support AV1 hardware encoding.</p>
+<p>While these hardware units offload the host CPU and process video
+orders of magnitude faster than software, their throughput is capped
+(typically at 4K 60–120 fps or 8K 60 fps). As a result, processing
+footage recorded at 1,000 fps requires feeding the hardware encoder in a
+slowed playback configuration (e.g., replaying high-speed frames at 60
+fps to encode an extended slow-motion output stream).</p>
+<h3 id="decoding-and-analytical-playback">Decoding and Analytical
+Playback</h3>
+<p>While encoding demands substantial processing power, AV1's decoding
+profile is optimized for accessibility. Broad hardware decode support on
+modern client devices ensures that once ultra-high-speed footage is
+compressed into AV1, scientists, engineers, and analysts can scrub,
+review, and analyze the slow-motion playback smoothly at 4K and 8K
+resolutions without relying on specialized compute clusters.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why PSNR Fails for AV1 Film Grain Synthesis - av1</title>
+    <meta name="description" content="AV1 film grain synthesis drastically improves perceived video quality at lower bitrates by removing natural grain before encoding and synthetically regenerating it during playback. While this technique creates a visually pleasing, cinematic experience th">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/why-psnr-fails-for-av-1-film-grain-synthesis">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why PSNR Fails for AV1 Film Grain Synthesis - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/why-psnr-fails-for-av-1-film-grain-synthesis" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 film grain synthesis drastically improves perceived video quality at lower bitrates by removing natural grain before encoding and synthetically regenerating it during playback. While this technique creates a visually pleasing, cinematic experience th" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-psnr-fails-for-av1-film-grain-synthesis">Why PSNR Fails for
+AV1 Film Grain Synthesis</h1>
+<p>AV1 film grain synthesis drastically improves perceived video quality
+at lower bitrates by removing natural grain before encoding and
+synthetically regenerating it during playback. While this technique
+creates a visually pleasing, cinematic experience that masks compression
+artifacts, traditional metrics like Peak Signal-to-Noise Ratio (PSNR)
+register it as severe signal degradation. This article explains why the
+mathematical nature of PSNR makes it fundamentally incapable of
+measuring the subjective benefits of AV1's film grain synthesis.</p>
+<h3 id="how-av1-film-grain-synthesis-works">How AV1 Film Grain Synthesis
+Works</h3>
+<p>Natural film grain and high-frequency sensor noise are notoriously
+difficult for video codecs to compress. Because noise is mostly random,
+motion compensation and spatial prediction cannot effectively predict
+it, forcing encoders to spend a large portion of the bitrate budget
+simply preserving static-like patterns.</p>
+<p>AV1 solves this with Film Grain Synthesis (FGS). During encoding, the
+video is analyzed to estimate the statistical characteristics of the
+grain, such as its pattern, intensity, and frequency. The encoder then
+denoises the video, encodes the clean image at a much lower bitrate, and
+sends the grain characteristics as lightweight metadata. Upon decoding,
+the player generates pseudo-random synthetic grain according to these
+parameters and blends it back onto the reconstructed frame.</p>
+<h3 id="the-mathematical-flaw-of-psnr">The Mathematical Flaw of
+PSNR</h3>
+<p>Peak Signal-to-Noise Ratio relies entirely on Mean Squared Error
+(MSE), which computes the squared difference between the pixel values of
+the original frame and the decoded frame at identical spatial
+coordinates <span class="math inline">\((x, y)\)</span>.</p>
+<p>Because the grain generated by AV1 is stochastic (pseudo-randomly
+simulated rather than an exact copy of the source grain), the synthetic
+grain particles almost never align perfectly with the original grain on
+a pixel-by-pixel basis. A pixel that was bright in the original noise
+pattern might be dark in the synthesized pattern.</p>
+<p>From an MSE standpoint, this misalignment registers as a massive
+error. When calculating PSNR, this discrepancy significantly lowers the
+score, falsely indicating that the video quality has degraded, even
+though the image may appear sharper and more detailed to human
+viewers.</p>
+<h3 id="human-perception-vs-deterministic-matching">Human Perception vs.
+Deterministic Matching</h3>
+<p>The human visual system does not evaluate grain by comparing
+individual pixel positions. Instead, human eyes evaluate grain
+statistically and contextually:</p>
+<ul>
+<li><strong>Texture Consistency:</strong> The brain perceives grain as
+an overarching texture that gives the image an organic, filmic
+look.</li>
+<li><strong>Artifact Masking:</strong> Grain acts as natural dither,
+effectively masking compression artifacts such as color banding in flat
+areas and macroblocking in dark scenes.</li>
+<li><strong>Perceived Sharpness:</strong> The presence of grain
+increases the high-frequency content of the display, making soft edges
+appear visually crisper.</li>
+</ul>
+<p>Because PSNR evaluates deterministic, pixel-for-pixel accuracy rather
+than structural or statistical fidelity, it treats deliberate,
+perceptually beneficial noise as corruption. Turning film grain
+synthesis on will almost universally lower a stream's PSNR score while
+simultaneously improving its subjective viewing quality.</p>
+<h3 id="better-alternatives-for-assessing-av1-video">Better Alternatives
+for Assessing AV1 Video</h3>
+<p>Because standard PSNR fails to capture the benefits of FGS, relying
+on it for AV1 rate-distortion optimization or quality verification leads
+to misleading conclusions. Modern workflows rely on alternative
+approaches:</p>
+<ul>
+<li><strong>Denoised-Reference PSNR/SSIM:</strong> Evaluating the
+reconstructed image before film grain is added against a pre-denoised
+version of the source to measure actual underlying compression
+fidelity.</li>
+<li><strong>Tuned Perceptual Metrics:</strong> Using metrics like VMAF
+(Video Multi-Method Assessment Fusion) with grain-aware models or
+combined with spatial metrics like CAMBI (to measure banding
+reduction).</li>
+<li><strong>Subjective Human Testing:</strong> Utilizing Mean Opinion
+Score (MOS) evaluations, which remain the ultimate ground truth for
+validating synthetic grain performance.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

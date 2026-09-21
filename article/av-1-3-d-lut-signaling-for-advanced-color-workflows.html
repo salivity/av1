@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 3D LUT Signaling for Advanced Color Workflows - av1</title>
+    <meta name="description" content="The 3D Lookup Table (LUT) signaling mechanism proposed for AV1 provides an efficient, standardized method to transmit volumetric color transformation data directly within the video bitstream. Designed for advanced color management, including High Dynamic">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-3-d-lut-signaling-for-advanced-color-workflows">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 3D LUT Signaling for Advanced Color Workflows - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-3-d-lut-signaling-for-advanced-color-workflows" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The 3D Lookup Table (LUT) signaling mechanism proposed for AV1 provides an efficient, standardized method to transmit volumetric color transformation data directly within the video bitstream. Designed for advanced color management, including High Dynamic" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-3d-lut-signaling-for-advanced-color-workflows">AV1 3D LUT
+Signaling for Advanced Color Workflows</h1>
+<p>The 3D Lookup Table (LUT) signaling mechanism proposed for AV1
+provides an efficient, standardized method to transmit volumetric color
+transformation data directly within the video bitstream. Designed for
+advanced color management, including High Dynamic Range (HDR) grading
+and wide color gamut mapping, this mechanism allows content creators to
+preserve artistic intent across heterogeneous playback environments. By
+signaling 3D LUT data alongside the video payload, AV1 decoders can
+perform complex, non-linear color adjustments at the rendering stage
+without requiring multiple stream encodes or heavy bandwidth
+overhead.</p>
+<h3 id="purpose-and-architecture">Purpose and Architecture</h3>
+<p>In professional video pipelines, 1D LUTs and standard parametric
+transfer functions are often insufficient for complex cross-channel
+transformations, such as converting between wide color gamuts (e.g.,
+BT.2020 to BT.709) or performing sophisticated tone mapping. A 3D LUT
+maps three input color components (typically Red, Green, and Blue) to
+three output components across a three-dimensional lattice, enabling
+cross-channel interdependencies such as saturation preservation during
+extreme luminance shifts.</p>
+<p>The proposed mechanism integrates this capability into AV1 via the
+existing Open Bitstream Unit (OBU) architecture. By encapsulating 3D LUT
+specifications within specialized Metadata OBUs, the video stream
+delivers transformation tables synchronously with video frames, enabling
+both static and scene-by-scene dynamic adjustments.</p>
+<h3 id="key-signaling-elements">Key Signaling Elements</h3>
+<p>The proposed 3D LUT signaling specification defines several
+parameters necessary for the decoder to reconstruct and apply the table
+correctly:</p>
+<ul>
+<li><strong>Grid Dimensions:</strong> Defines the resolution of the
+lattice (e.g., <span class="math inline">\(9 \times 9 \times 9\)</span>,
+<span class="math inline">\(17 \times 17 \times 17\)</span>, or <span
+class="math inline">\(33 \times 33 \times 33\)</span> nodes). The
+signaling supports symmetric or custom asymmetric cube sizes depending
+on bandwidth and precision requirements.</li>
+<li><strong>Bit-Depth and Precision:</strong> Specifies the fractional
+precision and bit-depth (typically 10-bit, 12-bit, or 16-bit
+floating/fixed-point) of the output coordinate values mapped at each
+node.</li>
+<li><strong>Data Compression and Delta Coding:</strong> To minimize
+bitstream overhead, the mechanism avoids transmitting raw node
+coordinates in uncompressed form. Instead, it utilizes differential
+encoding (delta-coding between adjacent lattice points), spatial
+prediction across grid planes, and entropy coding to compress the table
+data.</li>
+<li><strong>Target Color Space and Range:</strong> Signals the intended
+input and output color primaries, transfer characteristics, and matrix
+coefficients (CP/TC/MC), ensuring the display pipeline applies the LUT
+at the correct stage of the rendering chain.</li>
+<li><strong>Interpolation Guidance:</strong> Suggests or specifies the
+required interpolation algorithm—such as trilinear, prism, or
+tetrahedral interpolation—to balance computational complexity and color
+accuracy on target hardware.</li>
+</ul>
+<h3 id="workflow-integration-and-use-cases">Workflow Integration and Use
+Cases</h3>
+<p>Once received and decoded, the 3D LUT is applied in the
+post-reconstruction display pipeline:</p>
+<ol type="1">
+<li><strong>Creative Tone Mapping:</strong> Transmitting custom creative
+looks dynamically allows cinematographers to adapt HDR mastering to
+standard displays without sacrificing specific grading aesthetics.</li>
+<li><strong>Display Gamut Adaptation:</strong> Downmapping
+high-luminance, wide-gamut sources to legacy or resource-constrained
+screens avoids clipping and hue shifts.</li>
+<li><strong>Single-Layer Distribution:</strong> Broadcasters and
+streaming platforms can distribute a single HDR master stream. Capable
+displays render the native HDR signal, while displays requiring color
+conversions apply the signaled 3D LUT to generate an accurate SDR or
+alternate HDR target locally.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

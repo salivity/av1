@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How CDEF Detects Edges to Prevent Blurring in AV1 - av1</title>
+    <meta name="description" content="The Constrained Directional Enhancement Filter (CDEF) is a core in-loop filtering tool in the AV1 video codec designed to eliminate ringing artifacts without sacrificing edge sharpness. By combining the directional deblocking filter from the Thor codec w">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-cdef-detects-edges-to-prevent-blurring-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How CDEF Detects Edges to Prevent Blurring in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-cdef-detects-edges-to-prevent-blurring-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Constrained Directional Enhancement Filter (CDEF) is a core in-loop filtering tool in the AV1 video codec designed to eliminate ringing artifacts without sacrificing edge sharpness. By combining the directional deblocking filter from the Thor codec w" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-cdef-detects-edges-to-prevent-blurring-in-av1">How CDEF
+Detects Edges to Prevent Blurring in AV1</h1>
+<p>The Constrained Directional Enhancement Filter (CDEF) is a core
+in-loop filtering tool in the AV1 video codec designed to eliminate
+ringing artifacts without sacrificing edge sharpness. By combining the
+directional deblocking filter from the Thor codec with the deringing
+filter from the Daala codec, CDEF analyzes block textures to locate
+dominant edges and aligns its filtering along those lines rather than
+across them. This article explains the exact mechanism CDEF uses to
+identify directional edges and adapt its filtering to preserve vital
+video details.</p>
+<h3 id="block-level-direction-search">Block-Level Direction Search</h3>
+<p>CDEF analyzes reconstructed video frames in small blocks, typically
+divided into 8x8 pixel regions (which may be subdivided into 4x4 blocks
+for chrominance). Because ringing artifacts are most noticeable around
+high-contrast transitions, the filter must first determine if a dominant
+edge exists within each block and determine its precise angle.</p>
+<p>To do this, CDEF evaluates eight discrete directions, representing
+angles spaced at roughly 22.5-degree intervals (<span
+class="math inline">\(0^\circ, 22.5^\circ, 45^\circ, 67.5^\circ,
+90^\circ, 112.5^\circ, 135^\circ\)</span>, and <span
+class="math inline">\(157.5^\circ\)</span>).</p>
+<h3 id="directional-variance-calculation">Directional Variance
+Calculation</h3>
+<p>The algorithm identifies the correct direction by measuring pixel
+variance along lines parallel to each candidate angle. For each of the
+eight directions:</p>
+<ol type="1">
+<li>The block's pixels are grouped into lines oriented along that
+specific angle.</li>
+<li>The sum of pixel intensities along each parallel line is
+calculated.</li>
+<li>The algorithm computes the variance of these line sums across the
+block.</li>
+</ol>
+<p>When a candidate direction perfectly matches an edge, the pixel
+values along each individual line remain relatively uniform, but the
+contrast <em>between</em> parallel lines is maximized. Consequently, the
+direction that produces the highest variance among its line averages is
+chosen as the dominant edge direction.</p>
+<p>Along with the best direction, the algorithm calculates the
+directional strength. If the maximum variance is low, the block is
+classified as flat or textureless, meaning no strong edge is
+present.</p>
+<h3 id="direction-aligned-non-linear-filtering">Direction-Aligned
+Non-Linear Filtering</h3>
+<p>Once the primary direction is established, CDEF applies a non-linear
+conditional filter designed specifically to avoid blurring:</p>
+<ul>
+<li><strong>Primary Filter:</strong> Aligned strictly along the detected
+edge direction. Because it smooths pixels along the path of the edge
+rather than across it, it eliminates ringing without softening the
+transition between distinct visual regions.</li>
+<li><strong>Secondary Filter:</strong> Configured at a 45-degree
+cross-direction to catch residual noise. It uses significantly lower
+strength thresholds to prevent degradation of the main edge.</li>
+</ul>
+<h3 id="thresholding-to-protect-detail">Thresholding to Protect
+Detail</h3>
+<p>To guarantee that genuine high-frequency details are not erased, CDEF
+uses clipping thresholds (primary and secondary strengths) signaled at
+the frame or block level. If the difference between a neighboring pixel
+and the target pixel exceeds the threshold, the neighbor's contribution
+is clamped. This ensures that the filter only smooths low-amplitude
+ringing artifacts while leaving large, structurally significant pixel
+transitions untouched.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

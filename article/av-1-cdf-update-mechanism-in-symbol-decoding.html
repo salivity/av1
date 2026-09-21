@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 CDF Update Mechanism in Symbol Decoding - av1</title>
+    <meta name="description" content="The Cumulative Distribution Function (CDF) update mechanism in the AV1 video codec is a core component of its entropy coding engine, allowing the decoder to adapt dynamically to the shifting statistics of video data. By recalculating symbol probabilities">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-cdf-update-mechanism-in-symbol-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 CDF Update Mechanism in Symbol Decoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-cdf-update-mechanism-in-symbol-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Cumulative Distribution Function (CDF) update mechanism in the AV1 video codec is a core component of its entropy coding engine, allowing the decoder to adapt dynamically to the shifting statistics of video data. By recalculating symbol probabilities" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-cdf-update-mechanism-in-symbol-decoding">AV1 CDF Update
+Mechanism in Symbol Decoding</h1>
+<p>The Cumulative Distribution Function (CDF) update mechanism in the
+AV1 video codec is a core component of its entropy coding engine,
+allowing the decoder to adapt dynamically to the shifting statistics of
+video data. By recalculating symbol probabilities immediately after each
+symbol is decoded, the mechanism ensures high data compression
+efficiency while maintaining the throughput necessary for modern
+hardware decoders. This dynamic adaptation enables AV1 to accurately
+model symbol distributions without requiring pre-transmitted probability
+tables for every block.</p>
+<h3 id="transition-to-multi-symbol-entropy-coding">Transition to
+Multi-Symbol Entropy Coding</h3>
+<p>Unlike legacy video codecs such as H.264 and HEVC, which rely heavily
+on binary arithmetic coding (CABAC) where symbols are decomposed into
+binary "bins," AV1 utilizes a multi-symbol arithmetic coder derived from
+the Daala project. In this architecture, syntax elements can possess
+alphabets of up to 16 symbols processed in a single cycle. The CDF
+represents the cumulative probability of these symbols, mapping out
+ranges within the arithmetic coder's internal register. The CDF update
+mechanism is the process that recalibrates these ranges based on the
+symbols observed during decoding.</p>
+<h3 id="the-dynamic-adaptation-process">The Dynamic Adaptation
+Process</h3>
+<p>When a symbol is decoded from the bitstream, the decoder identifies
+the current context and retrieves the associated CDF. Once the
+arithmetic decoding engine extracts the symbol value, the CDF update
+step modifies the probability distribution before the next symbol in
+that context is read:</p>
+<ol type="1">
+<li><strong>Count-Based Learning Rate:</strong> The rate of adaptation
+is governed by a context counter that tracks how many times a particular
+context has been visited. At the start of a frame, contexts adapt
+rapidly using a higher learning rate, allowing the distribution to
+settle quickly into local statistical patterns. As more symbols are
+decoded, the adaptation rate stabilizes to prevent noise from disrupting
+the learned probabilities.</li>
+<li><strong>Probability Shifting:</strong> The update algorithm
+increases the probability interval of the decoded symbol while
+proportionally shrinking the intervals of non-occurring symbols.
+Mathematically, this is implemented using an exponential moving
+average:</li>
+</ol>
+<p><span class="math display">\[\text{CDF}[i] = \text{CDF}[i] +
+((\text{Target}[i] - \text{CDF}[i]) \gg \text{Rate})\]</span></p>
+<p>Where <span class="math inline">\(\text{Target}[i]\)</span>
+represents the ideal cumulative distribution after observing the current
+symbol, and <span class="math inline">\(\text{Rate}\)</span> determines
+the adaptation speed.</p>
+<ol start="3" type="1">
+<li><strong>Fixed-Point Precision:</strong> To guarantee identical
+cross-platform decoding and hardware friendliness, all calculations are
+executed using integer arithmetic with predefined precision (typically
+15-bit cumulative frequency ranges). Bit shifts replace complex division
+operations, ensuring deterministic behavior across diverse computing
+architectures.</li>
+</ol>
+<h3 id="role-in-compression-efficiency-and-hardware-throughput">Role in
+Compression Efficiency and Hardware Throughput</h3>
+<p>The primary role of the CDF update mechanism is balancing entropy
+reduction with parallel processing capability:</p>
+<ul>
+<li><strong>Shorter Code Lengths:</strong> By dynamically widening the
+probability intervals of frequently occurring syntax elements (such as
+common transform coefficient levels or motion vector directions),
+subsequent occurrences of these symbols require fewer bits to
+encode.</li>
+<li><strong>Context Carry-Over:</strong> AV1 allows CDFs to be carried
+over from previously decoded frames via a frame-level context buffer.
+The update mechanism ensures that inter-frame correlations are
+maintained while still permitting intra-frame variation.</li>
+<li><strong>Single-Step Symbol Processing:</strong> Updating the CDF
+directly across an <span class="math inline">\(N\)</span>-ary alphabet
+avoids the serialization bottleneck inherent in binary arithmetic
+coders. Hardware decoders can decode full syntax elements and update
+their distribution profiles in a single operational step, significantly
+improving throughput for high-resolution video streams.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

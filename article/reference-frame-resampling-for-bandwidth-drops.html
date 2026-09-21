@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Frame Resampling for Bandwidth Drops - av1</title>
+    <meta name="description" content="Reference Frame Resampling (RFR) is an advanced video encoding feature that allows video conferencing platforms to adapt instantly to network fluctuations without interrupting the video stream. This article explains how RFR functions, why traditional res">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/reference-frame-resampling-for-bandwidth-drops">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Reference Frame Resampling for Bandwidth Drops - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/reference-frame-resampling-for-bandwidth-drops" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Reference Frame Resampling (RFR) is an advanced video encoding feature that allows video conferencing platforms to adapt instantly to network fluctuations without interrupting the video stream. This article explains how RFR functions, why traditional res" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="reference-frame-resampling-for-bandwidth-drops">Reference Frame
+Resampling for Bandwidth Drops</h1>
+<p>Reference Frame Resampling (RFR) is an advanced video encoding
+feature that allows video conferencing platforms to adapt instantly to
+network fluctuations without interrupting the video stream. This article
+explains how RFR functions, why traditional resolution switching
+struggles during bandwidth drops, and how RFR enables seamless
+resolution downscaling by referencing frames of different sizes,
+preserving real-time communication without the latency spikes caused by
+keyframes.</p>
+<h3 id="the-challenge-of-traditional-bandwidth-adaptation">The Challenge
+of Traditional Bandwidth Adaptation</h3>
+<p>In standard video compression (such as base H.264), video frames are
+compressed by predicting changes relative to previous frames (reference
+frames). When a user's network connection deteriorates, the video
+conferencing client must lower the video resolution to prevent buffering
+or dropped calls.</p>
+<p>Traditionally, changing the resolution requires an Intra-coded frame
+(I-frame or keyframe). Keyframes do not rely on previous frames and
+establish a new baseline for the video stream. However, keyframes are
+significantly larger in data size than predictive frames
+(P-frames)—often up to ten times larger. Sending a massive keyframe over
+an already congested, dropping connection causes a traffic spike,
+leading to packet loss, noticeable stutter, and audio-video
+desynchronization.</p>
+<h3 id="how-reference-frame-resampling-works">How Reference Frame
+Resampling Works</h3>
+<p>Reference Frame Resampling, supported in codecs such as VP9 and AV1,
+removes the requirement for a keyframe when adjusting resolution.</p>
+<ol type="1">
+<li><strong>Cross-Resolution Prediction:</strong> RFR allows an encoder
+to compress a new frame at a lower resolution while still using a
+higher-resolution prior frame as a reference point.</li>
+<li><strong>Internal Rescaling:</strong> Instead of reinitializing the
+entire stream, the decoder automatically resamples (scales up or down)
+the stored reference buffer to match the spatial dimensions of the
+incoming frame before calculating differences.</li>
+<li><strong>Continuous Predictive Encoding:</strong> Because the decoder
+can map motion vectors across different resolutions, the encoder can
+continue sending lightweight P-frames without missing a beat.</li>
+</ol>
+<h3 id="how-rfr-assists-during-a-bandwidth-drop">How RFR Assists During
+a Bandwidth Drop</h3>
+<p>When available bandwidth drops suddenly, RFR intervenes to maintain
+call stability in three primary ways:</p>
+<ul>
+<li><strong>Instant Bitrate Reduction:</strong> The encoder can
+immediately drop the resolution (e.g., from 1080p to 360p) on the very
+next frame. This slashes the data rate instantly, matching the degraded
+network limits within milliseconds.</li>
+<li><strong>Elimination of Congestion Spikes:</strong> By bypassing the
+need for a keyframe, RFR avoids pushing a burst of heavy data through a
+constrained pipe. This prevents the network bufferbloat that typically
+leads to frozen video.</li>
+<li><strong>Zero Visual Interruption:</strong> Users experience a
+temporary reduction in video sharpness rather than a frozen screen or
+dropped frames. The transition is smooth and imperceptible in terms of
+temporal fluidness.</li>
+</ul>
+<p>Once the network connection recovers, RFR applies the same logic in
+reverse, scaling the resolution back up to HD without demanding a
+disruptive keyframe.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

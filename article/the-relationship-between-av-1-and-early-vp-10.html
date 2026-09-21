@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Relationship Between AV1 and Early VP10 - av1</title>
+    <meta name="description" content="AOMedia Video 1 (AV1) is fundamentally built upon the architectural and source-code baseline of Google's experimental VP10 codec. This article details the structural relationship between the two formats, examining how the early VP10 development directly">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/the-relationship-between-av-1-and-early-vp-10">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Relationship Between AV1 and Early VP10 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/the-relationship-between-av-1-and-early-vp-10" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AOMedia Video 1 (AV1) is fundamentally built upon the architectural and source-code baseline of Google's experimental VP10 codec. This article details the structural relationship between the two formats, examining how the early VP10 development directly" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="the-relationship-between-av1-and-early-vp10">The Relationship
+Between AV1 and Early VP10</h1>
+<p>AOMedia Video 1 (AV1) is fundamentally built upon the architectural
+and source-code baseline of Google's experimental VP10 codec. This
+article details the structural relationship between the two formats,
+examining how the early VP10 development directly established the
+codebase, block partitioning schemes, and frame processing pipelines
+that formed the foundation of the AV1 standard.</p>
+<h2 id="codebase-foundation-and-the-genesis-of-libaom">Codebase
+Foundation and the Genesis of libaom</h2>
+<p>The structural connection between AV1 and VP10 began at the
+source-code level. Google was developing VP10 within the open-source
+<code>libvpx</code> repository as the direct successor to VP9. When the
+Alliance for Open Media (AOMedia) formed in 2015, Google, Mozilla,
+Cisco, and other industry partners agreed to pool their intellectual
+property and experimental technologies into a single royalty-free
+format.</p>
+<p>To jumpstart development, AOMedia adopted Google’s ongoing VP10
+project as the structural core. The official AV1 reference repository,
+<code>libaom</code>, was created by branching the VP10 codebase out of
+<code>libvpx</code>. As a result, early iterations of AV1 were
+functionally identical to VP10, carrying forward its architectural
+conventions, bitstream layout, and algorithmic design patterns.</p>
+<h2 id="block-partitioning-and-superblock-structure">Block Partitioning
+and Superblock Structure</h2>
+<p>AV1's spatial division framework is a direct evolution of VP10's
+experimental partition trees. VP9 was limited to a 64x64 superblock
+hierarchy with limited partition options (split, horizontal, vertical).
+Early VP10 introduced experiments that expanded the maximum superblock
+size to 128x128 pixels to better handle high-resolution 4K and 8K
+content.</p>
+<p>Furthermore, VP10 experimented with recursive partitioning trees that
+introduced non-square, rectangular partition modes, including 1:4 and
+4:1 aspect ratios, as well as T-shaped partitions. AV1 integrated this
+exact expanded tree hierarchy from VP10, making VP10's experimental
+partitioning mechanics the core organizational structure for how AV1
+segments picture data.</p>
+<h2 id="prediction-mechanics-and-motion-vectors">Prediction Mechanics
+and Motion Vectors</h2>
+<p>The core intra- and inter-frame prediction architecture of AV1
+originated in early VP10 research. VP10 sought to dramatically expand
+directional intra-prediction beyond the 10 basic modes of VP9,
+introducing fine-grained angle deltas that allowed intra-modes to match
+complex edges closely.</p>
+<p>In inter-frame prediction, early VP10 laid the structural framework
+for advanced compound prediction—combining two reference blocks using
+flexible weightings rather than simple averaging. Techniques such as
+wedge-based prediction, smooth blending, and expanded reference frame
+buffers (increasing the active reference frames from three to seven)
+were prototyped in VP10 before being finalized within AV1.</p>
+<h2 id="integration-point-for-external-technologies">Integration Point
+for External Technologies</h2>
+<p>While VP10 served as the primary skeleton, its structural framework
+was designed to be modular enough to ingest complementary technologies
+from other member codecs, specifically Mozilla's Daala and Cisco's
+Thor:</p>
+<ul>
+<li><strong>Entropy Coding:</strong> Early AV1 prototypes maintained
+VP10's binary arithmetic coding engine before replacing it with a
+multi-symbol arithmetic coder derived from Daala.</li>
+<li><strong>In-Loop Filtering:</strong> AV1's filtering pipeline layers
+Daala’s directional deringing filter and Thor’s Constrained Low-Pass
+Filter (CLPF) into what became the Constrained Directional Enhancement
+Filter (CDEF), all applied on top of the loop deblocking framework
+inherited from VP10.</li>
+<li><strong>Transform Engine:</strong> VP10’s expanded discrete cosine
+transforms (DCT) and asymmetric discrete sine transforms (ADST) were
+merged with Daala’s identity and lapped transform research to form AV1's
+diverse transform library.</li>
+</ul>
+<p>AV1 did not replace VP10; rather, AV1 represents the finalized,
+multi-party evolution of the VP10 baseline. Early VP10 provided the
+frame logic, software skeleton, and algorithmic backbone that enabled
+subsequent modern coding tools to be integrated into an interoperable
+standard.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

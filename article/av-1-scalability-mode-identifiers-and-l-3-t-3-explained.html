@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Scalability Mode Identifiers and L3T3 Explained - av1</title>
+    <meta name="description" content="AV1 scalability mode identifiers, such as L3T3, define standardized configurations for Scalable Video Coding (SVC) within the AV1 video codec framework. These identifiers describe how an encoded video stream is partitioned into distinct spatial (resoluti">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-scalability-mode-identifiers-and-l-3-t-3-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Scalability Mode Identifiers and L3T3 Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-scalability-mode-identifiers-and-l-3-t-3-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 scalability mode identifiers, such as L3T3, define standardized configurations for Scalable Video Coding (SVC) within the AV1 video codec framework. These identifiers describe how an encoded video stream is partitioned into distinct spatial (resoluti" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-scalability-mode-identifiers-and-l3t3-explained">AV1
+Scalability Mode Identifiers and L3T3 Explained</h1>
+<p>AV1 scalability mode identifiers, such as L3T3, define standardized
+configurations for Scalable Video Coding (SVC) within the AV1 video
+codec framework. These identifiers describe how an encoded video stream
+is partitioned into distinct spatial (resolution) and temporal (frame
+rate) layers. This article explains the syntax of these identifiers,
+breaks down the components of L3T3, details how layer dependencies work,
+and highlights their practical role in adaptive streaming and real-time
+WebRTC communications.</p>
+<h3 id="the-role-of-scalability-in-av1">The Role of Scalability in
+AV1</h3>
+<p>Scalable Video Coding enables a single video encoder to produce a
+layered bitstream containing a base layer and one or more enhancement
+layers. Instead of encoding multiple distinct bitstreams for different
+network conditions (simulcast), an AV1 encoder can produce a single SVC
+bitstream. A Selective Forwarding Unit (SFU) or video player can drop
+enhancement layers without decoding the stream, adapting instantly to
+bandwidth fluctuations or device constraints.</p>
+<p>To eliminate ambiguity between encoders, media servers, and decoders,
+the Alliance for Open Media (AOM) and the W3C WebRTC working group
+established standard scalability mode identifiers.</p>
+<h3 id="breaking-down-the-identifier-syntax-l3t3">Breaking Down the
+Identifier Syntax: L3T3</h3>
+<p>The identifier format follows a concise naming convention that
+details the exact layering structure:</p>
+<ul>
+<li><strong>L (Spatial Layers):</strong> The letter "L" denotes the
+number of spatial layers with inter-layer dependency, where higher
+layers depend on lower layers to reconstruct the picture. The number
+following "L" indicates the count. In <code>L3T3</code>,
+<strong>L3</strong> means there are three spatial layers (for example,
+360p, 720p, and 1080p).</li>
+<li><strong>T (Temporal Layers):</strong> The letter "T" denotes the
+number of temporal layers. The number following "T" indicates the frame
+rate steps available. In <code>L3T3</code>, <strong>T3</strong> means
+there are three temporal layers (for example, 15 fps, 30 fps, and 60
+fps).</li>
+</ul>
+<p>An <code>L3T3</code> configuration creates a matrix of 9 potential
+operational points (3 spatial × 3 temporal). A receiver with limited
+bandwidth can receive the base spatial layer at the lowest frame rate,
+while a high-bandwidth desktop receiver can consume all layers for
+maximum quality and frame rate.</p>
+<h3 id="dependency-and-structural-variants">Dependency and Structural
+Variants</h3>
+<p>The AV1 scalability specification includes variations on this basic
+syntax to define how frames reference each other:</p>
+<ul>
+<li><strong>S-Modes (Simulcast/Independent):</strong> An identifier
+starting with <code>S</code> (such as <code>S3T3</code>) indicates that
+the spatial layers are independent. Unlike <code>L</code> layers, an
+<code>S</code> spatial layer cannot reference frames from lower spatial
+layers. This reduces decoding complexity at the cost of higher
+compression overhead.</li>
+<li><strong>Keyframe Alignment Modifiers:</strong> Suffixes such as
+<code>_KEY</code> or <code>_KEY_SHIFT</code> specify keyframe
+synchronization across layers:
+<ul>
+<li><code>_KEY</code>: Indicates that all spatial layers share
+synchronized keyframes. When a keyframe arrives, all spatial layers can
+be decoded immediately from that point.</li>
+<li><code>_KEY_SHIFT</code>: Allows keyframes across spatial layers to
+be staggered over time to prevent bit-rate spikes.</li>
+</ul></li>
+<li><strong>Ratio Modifiers:</strong> Suffixes like <code>h</code>
+(half) indicate non-standard resolution scaling factors. By default,
+spatial layers often scale by a factor of 2:1, but specific modifiers
+can alter this to 1.5:1.</li>
+</ul>
+<h3 id="practical-application-in-webrtc">Practical Application in
+WebRTC</h3>
+<p>In real-time communication architectures, <code>L3T3</code> allows a
+client to transmit one coherent video feed containing high-definition,
+standard-definition, and low-definition options at various frame rates.
+Media servers (SFUs) inspect the AV1 RTP packet headers and forward only
+the layers that match each participant's downlink capacity. This
+eliminates the CPU overhead of server-side transcoding while providing
+instantaneous resilience against packet loss and congestion.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Video in Matroska: MKV Mapping Explained - av1</title>
+    <meta name="description" content="This article provides an overview of how the AOMedia Video 1 (AV1) bitstream is encapsulated within the Matroska (MKV) multimedia container. Matroska accommodates AV1 by standardizing a specific Codec ID, embedding a configuration record inside the track">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-video-in-matroska-mkv-mapping-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Video in Matroska: MKV Mapping Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-video-in-matroska-mkv-mapping-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AOMedia Video 1 (AV1) bitstream is encapsulated within the Matroska (MKV) multimedia container. Matroska accommodates AV1 by standardizing a specific Codec ID, embedding a configuration record inside the track" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-video-in-matroska-mkv-mapping-explained">AV1 Video in
+Matroska: MKV Mapping Explained</h1>
+<p>This article provides an overview of how the AOMedia Video 1 (AV1)
+bitstream is encapsulated within the Matroska (MKV) multimedia
+container. Matroska accommodates AV1 by standardizing a specific Codec
+ID, embedding a configuration record inside the track headers, and
+packing AV1 Open Bitstream Units (OBUs) into standard Matroska data
+blocks. Understanding this integration is essential for developers,
+multimedia engineers, and video enthusiasts looking to package or demux
+modern AV1 streams efficiently.</p>
+<h3 id="the-codec-identifier">The Codec Identifier</h3>
+<p>In Matroska, every track must define a <code>CodecID</code> string to
+signal the decoding format to demuxers. For AV1 video tracks, the
+standard identifier is:</p>
+<ul>
+<li><code>V_AV1</code></li>
+</ul>
+<p>This string explicitly signals that the elementary stream contained
+in the track's clusters conforms to the AV1 bitstream specification
+defined by the Alliance for Open Media (AOMedia).</p>
+<h3 id="track-initialization-with-codecprivate">Track Initialization
+with CodecPrivate</h3>
+<p>The <code>CodecPrivate</code> element in the Matroska
+<code>TrackEntry</code> holds the global configuration data necessary to
+initialize the AV1 decoder prior to decoding frames.</p>
+<p>Matroska adopts the <code>AV1CodecConfigurationRecord</code> format
+(identical to the structure used in the MP4/ISOBMFF container binding).
+The <code>CodecPrivate</code> data contains:</p>
+<ul>
+<li><strong>Configuration Version:</strong> Specifies the record version
+(currently version 1).</li>
+<li><strong>Profile and Level:</strong> The target AV1 profile (Main,
+High, or Professional) and operating level.</li>
+<li><strong>Tier and Color Metadata:</strong> Flags indicating the tier,
+bit depth, chroma subsampling format, and color representation.</li>
+<li><strong>Initial Sequence Header OBU:</strong> One or more serialized
+Sequence Header OBUs that define basic sequence parameters such as frame
+dimensions, color primaries, and temporal configurations.</li>
+</ul>
+<p>Embedding the Sequence Header OBU within <code>CodecPrivate</code>
+guarantees that the decoder can configure its decoding pipeline
+immediately upon demuxing the track, even before processing the first
+video frame.</p>
+<h3 id="encapsulating-obus-in-matroska-blocks">Encapsulating OBUs in
+Matroska Blocks</h3>
+<p>AV1 elementary streams consist of a sequence of Open Bitstream Units
+(OBUs). When mapped into Matroska:</p>
+<ul>
+<li><strong>Temporal Units per Block:</strong> Each Matroska
+<code>Block</code> or <code>SimpleBlock</code> typically encapsulates
+one complete AV1 Temporal Unit (TU). A Temporal Unit includes all OBUs
+associated with a single display time, which may consist of one or more
+frames (such as base frames and overlay/spatial layer frames).</li>
+<li><strong>OBU Framing:</strong> OBUs within a block must use the
+standard OBU header formatting. The length of each OBU is usually
+indicated by setting the <code>obu_has_size_field</code> flag to 1,
+providing explicit size boundaries without requiring additional
+delimiters.</li>
+<li><strong>Redundant OBUs:</strong> Temporal Delimiter OBUs, which are
+commonly found in raw annex-B bitstreams, are generally omitted in
+Matroska because Matroska's block boundaries already demarcate distinct
+temporal frames.</li>
+</ul>
+<h3 id="timestamps-and-keyframe-detection">Timestamps and Keyframe
+Detection</h3>
+<p>Matroska handles presentation timing and seeking through its own
+track-level metadata:</p>
+<ul>
+<li><strong>Presentation Timestamps (PTS):</strong> Each
+<code>Block</code> has a relative timestamp, which, combined with the
+segment's <code>TimestampScale</code>, defines when the decoded frame
+should be presented to the viewer.</li>
+<li><strong>Keyframes:</strong> In a Matroska container, a frame is
+marked as a keyframe (via the keyframe flag in a
+<code>SimpleBlock</code> or by omitting reference elements in a
+<code>BlockGroup</code>) if it represents an AV1 Key Frame. In AV1, an
+intra-coded frame that can be decoded without reference to past frames,
+coupled with a valid Sequence Header, qualifies as a seekable
+random-access point.</li>
+<li><strong>Frame Display Management:</strong> AV1 features advanced
+display models, such as using <code>show_existing_frame</code> to
+display previously decoded reference frames. Matroska handles these by
+storing the corresponding OBU in a block timed at the exact moment the
+frame must be shown.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

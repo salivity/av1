@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebCodecs API: Low-Level AV1 Video Decoding - av1</title>
+    <meta name="description" content="This article provides an overview of the WebCodecs API and explains how it enables developers to achieve low-level, high-performance AV1 video decoding directly in web browsers. You will learn about the limitations of traditional browser media elements,">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/web-codecs-api-low-level-av-1-video-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="WebCodecs API: Low-Level AV1 Video Decoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/web-codecs-api-low-level-av-1-video-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the WebCodecs API and explains how it enables developers to achieve low-level, high-performance AV1 video decoding directly in web browsers. You will learn about the limitations of traditional browser media elements," />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="webcodecs-api-low-level-av1-video-decoding">WebCodecs API:
+Low-Level AV1 Video Decoding</h1>
+<p>This article provides an overview of the WebCodecs API and explains
+how it enables developers to achieve low-level, high-performance AV1
+video decoding directly in web browsers. You will learn about the
+limitations of traditional browser media elements, the core architecture
+of WebCodecs, and the step-by-step mechanism used to process raw AV1
+bitstreams into renderable video frames.</p>
+<h3 id="what-is-the-webcodecs-api">What Is the WebCodecs API?</h3>
+<p>Historically, web browsers handled video playback through high-level
+abstractions like the HTML5 <code>&lt;video&gt;</code> element, Media
+Source Extensions (MSE), and WebRTC. While these tools are effective for
+standard media playback and conferencing, they act as "black boxes."
+They offer little control over individual frames, timestamps, or raw
+bitstreams, forcing developers building video editors, game streaming
+clients, or computer vision applications to compile third-party software
+decoders into WebAssembly (Wasm). However, Wasm decoders typically run
+on the CPU, lacking direct access to platform hardware acceleration and
+draining device battery life.</p>
+<p>The WebCodecs API bridges this gap by exposing the browser's internal
+media processing pipeline. It gives JavaScript developers direct access
+to native video decoders, video encoders, audio decoders, and audio
+encoders already integrated into the host operating system and browser
+runtime.</p>
+<h3 id="understanding-av1-in-modern-browsers">Understanding AV1 in
+Modern Browsers</h3>
+<p>AV1 (AOMedia Video 1) is an open, royalty-free video coding format
+designed for efficient video transmission over the internet. It delivers
+significantly higher compression ratios than predecessors like AVC
+(H.264) and VP9 without sacrificing visual fidelity. Because AV1
+decoding is computationally intensive, running it efficiently requires
+access to dedicated hardware decoding blocks (found in modern GPUs and
+SoCs) or highly optimized platform software decoders, such as
+<code>dav1d</code>.</p>
+<h3 id="how-webcodecs-enables-low-level-av1-decoding">How WebCodecs
+Enables Low-Level AV1 Decoding</h3>
+<p>The WebCodecs API provides low-level access to AV1 decoding primarily
+through the <code>VideoDecoder</code> interface. Instead of passing an
+entire media container (like an MP4 or WebM file) to the browser, the
+application assumes responsibility for demuxing the file and feeding raw
+elementary stream packets directly to the decoder.</p>
+<h4 id="1-configuration-and-capabilities-check">1. Configuration and
+Capabilities Check</h4>
+<p>Before decoding, the application checks whether the user's browser
+and hardware support the specific AV1 profile and resolution. This is
+achieved using the static method
+<code>VideoDecoder.isConfigSupported()</code>.</p>
+<p>The AV1 codec string follows a standardized format detailing profile,
+level, tier, and bit depth (for example, <code>av01.0.04M.08</code>
+indicates AV1 Main Profile, Level 3.0, Main tier, 8-bit color). If
+hardware acceleration is supported, the browser configures its internal
+pipeline accordingly.</p>
+<h4 id="2-instantiating-the-videodecoder">2. Instantiating the
+VideoDecoder</h4>
+<p>A decoder instance is created with two fundamental callback
+functions:</p>
+<ul>
+<li><strong><code>output</code></strong>: Receives decoded, uncompressed
+<code>VideoFrame</code> objects as soon as they are processed.</li>
+<li><strong><code>error</code></strong>: Catches decoding errors, such
+as corrupt bitstreams or unsupported features.</li>
+</ul>
+<p>Once instantiated, the decoder is configured with the target codec
+string, coded dimensions, and any optional color space data via
+<code>decoder.configure()</code>.</p>
+<h4 id="3-processing-av1-bitstreams-with-encodedvideochunk">3.
+Processing AV1 Bitstreams with EncodedVideoChunk</h4>
+<p>Demuxed AV1 packets are wrapped in <code>EncodedVideoChunk</code>
+objects. Each chunk defines:</p>
+<ul>
+<li>The frame type (keyframe or delta frame).</li>
+<li>The presentation timestamp (PTS).</li>
+<li>The raw byte buffer containing the AV1 Open Bitstream Units
+(OBUs).</li>
+</ul>
+<p>When <code>decoder.decode(chunk)</code> is called, the WebCodecs
+pipeline passes the compressed payload directly to the underlying AV1
+decoder—whether that is an integrated GPU decoding block or an optimized
+native library.</p>
+<h4 id="4-handling-decoded-frames">4. Handling Decoded Frames</h4>
+<p>The resulting <code>VideoFrame</code> passed to the
+<code>output</code> callback represents raw image data (typically in YUV
+format). WebCodecs allows these frames to be manipulated with minimal
+latency and near-zero memory copies:</p>
+<ul>
+<li>Frames can be drawn directly onto an HTML5
+<code>&lt;canvas&gt;</code> or an <code>OffscreenCanvas</code> via 2D
+contexts.</li>
+<li>Frames can be uploaded directly as textures into WebGL or WebGPU
+pipelines for custom shaders and post-processing.</li>
+<li>Frames can be passed across Web Workers using structured cloning
+without copying the underlying pixel data.</li>
+</ul>
+<p>Once rendering is complete, calling <code>videoFrame.close()</code>
+immediately frees the associated GPU or system memory, preventing
+garbage collection bottlenecks.</p>
+<h3 id="key-benefits-of-webcodecs-for-av1">Key Benefits of WebCodecs for
+AV1</h3>
+<ul>
+<li><strong>Hardware Acceleration Access</strong>: WebCodecs utilizes
+the platform's native AV1 decoders, offloading work from the CPU and
+minimizing battery consumption.</li>
+<li><strong>Ultra-Low Latency</strong>: By bypassing the buffering
+heuristics inherent in MSE and the <code>&lt;video&gt;</code> element,
+frames can be decoded and displayed as soon as packets arrive over the
+network.</li>
+<li><strong>Fine-Grained Frame Control</strong>: Developers gain
+per-frame access to timing, metadata, and pixel buffers, facilitating
+frame-accurate video editing, real-time machine learning, and advanced
+rendering directly inside the web browser.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

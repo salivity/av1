@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 CDEF Dominant Direction Calculation Formula - av1</title>
+    <meta name="description" content="The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec identifies the primary edge orientation of an 8x8 block to apply directional smoothing without blurring sharp details. To determine this dominant direction, CDEF analyzes eight">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-cdef-dominant-direction-calculation-formula">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 CDEF Dominant Direction Calculation Formula - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-cdef-dominant-direction-calculation-formula" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec identifies the primary edge orientation of an 8x8 block to apply directional smoothing without blurring sharp details. To determine this dominant direction, CDEF analyzes eight" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-cdef-dominant-direction-calculation-formula">AV1 CDEF
+Dominant Direction Calculation Formula</h1>
+<p>The Constrained Directional Enhancement Filter (CDEF) in the AV1
+video codec identifies the primary edge orientation of an 8x8 block to
+apply directional smoothing without blurring sharp details. To determine
+this dominant direction, CDEF analyzes eight discrete angles and
+calculates which direction minimizes the mean squared error along
+directional lines. This article breaks down the mathematical formula and
+algorithmic steps used to compute directional energy, select the optimal
+angle, and determine directional confidence.</p>
+<h3 id="the-8-discrete-directions">The 8 Discrete Directions</h3>
+<p>CDEF tests eight possible directions, indexed from <span
+class="math inline">\(d \in \{0, 1, \dots, 7\}\)</span>. These
+correspond to angles at increments of 22.5°:</p>
+<ul>
+<li><strong><span class="math inline">\(d = 0\)</span>:</strong>
+Horizontal (0°)</li>
+<li><strong><span class="math inline">\(d = 1\)</span>:</strong>
+22.5°</li>
+<li><strong><span class="math inline">\(d = 2\)</span>:</strong>
+Diagonal (45°)</li>
+<li><strong><span class="math inline">\(d = 3\)</span>:</strong>
+67.5°</li>
+<li><strong><span class="math inline">\(d = 4\)</span>:</strong>
+Vertical (90°)</li>
+<li><strong><span class="math inline">\(d = 5\)</span>:</strong>
+112.5°</li>
+<li><strong><span class="math inline">\(d = 6\)</span>:</strong>
+Diagonal (135°)</li>
+<li><strong><span class="math inline">\(d = 7\)</span>:</strong>
+157.5°</li>
+</ul>
+<h3 id="mathematical-formulation">Mathematical Formulation</h3>
+<p>Within an 8x8 block of pixels, each direction <span
+class="math inline">\(d\)</span> defines a set of parallel lines <span
+class="math inline">\(k\)</span>. Let <span
+class="math inline">\(x_{p}\)</span> represent the value of pixel <span
+class="math inline">\(p\)</span> belonging to line <span
+class="math inline">\(k\)</span> for direction <span
+class="math inline">\(d\)</span>, and let <span
+class="math inline">\(N_{d,k}\)</span> be the number of pixels located
+along that specific line.</p>
+<p>The algorithm calculates the sum of pixel intensities along each line
+<span class="math inline">\(k\)</span>:</p>
+<p><span class="math display">\[S_{d, k} = \sum_{p \in \text{line}(d,
+k)} x_p\]</span></p>
+<p>The objective is to find the direction that minimizes the variance of
+pixels along the lines, which is mathematically equivalent to maximizing
+the variance between the lines. The directional energy <span
+class="math inline">\(E_d\)</span> for direction <span
+class="math inline">\(d\)</span> is computed as:</p>
+<p><span class="math display">\[E_d = \sum_{k} \frac{S_{d, k}^2}{N_{d,
+k}}\]</span></p>
+<p>The dominant direction <span class="math inline">\(d^*\)</span> is
+the angle that maximizes this energy:</p>
+<p><span class="math display">\[d^* = \arg\max_{d} E_d\]</span></p>
+<h3 id="directional-variance-and-confidence">Directional Variance and
+Confidence</h3>
+<p>After identifying the optimal direction <span
+class="math inline">\(d^*\)</span>, the codec computes a confidence
+metric to determine whether directional filtering is beneficial or if
+the block represents a flat or chaotic region.</p>
+<p>The directional variance <span
+class="math inline">\(\sigma^2\)</span> evaluates the contrast between
+the dominant direction and the average block energy:</p>
+<p><span class="math display">\[\sigma^2 = E_{d^*} - \frac{1}{64} \left(
+\sum_{p \in \text{block}} x_p \right)^2\]</span></p>
+<p>If <span class="math inline">\(\sigma^2\)</span> is low, the block
+lacks a defined edge, and directional filtering strength is attenuated.
+If <span class="math inline">\(\sigma^2\)</span> is high, filtering is
+applied primarily along direction <span
+class="math inline">\(d^*\)</span>.</p>
+<h3 id="implementation-optimizations">Implementation Optimizations</h3>
+<p>In hardware and software implementations (such as libaom and
+rav1e):</p>
+<ol type="1">
+<li><strong>Integer Division Avoidance:</strong> The division by <span
+class="math inline">\(N_{d,k}\)</span> is structured using lookup tables
+and fixed-point arithmetic to avoid runtime division instructions.</li>
+<li><strong>Subsampling:</strong> Encoders often subsample pixel
+calculations (e.g., evaluating every second pixel in a checkerboard
+pattern) during direction search to reduce computational complexity
+while retaining direction accuracy.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

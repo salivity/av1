@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Decoders Construct Reference Buffers - av1</title>
+    <meta name="description" content="In the AV1 video coding standard, the decoder maintains an internal Decoded Picture Buffer (DPB) consisting of eight virtual frame slots to manage advanced temporal prediction and reference sharing. This article explains how an AV1 decoder processes refe">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-decoders-construct-reference-buffers">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Decoders Construct Reference Buffers - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-decoders-construct-reference-buffers" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the AV1 video coding standard, the decoder maintains an internal Decoded Picture Buffer (DPB) consisting of eight virtual frame slots to manage advanced temporal prediction and reference sharing. This article explains how an AV1 decoder processes refe" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-decoders-construct-reference-buffers">How AV1 Decoders
+Construct Reference Buffers</h1>
+<p>In the AV1 video coding standard, the decoder maintains an internal
+Decoded Picture Buffer (DPB) consisting of eight virtual frame slots to
+manage advanced temporal prediction and reference sharing. This article
+explains how an AV1 decoder processes reference buffer reconstruction
+when encountering an unannounced or non-displayed frame, detailing the
+signaling mechanisms, buffer slot mapping, and memory update procedures
+required to keep the decoding pipeline synchronized without immediately
+outputting pictures to the display queue.</p>
+<h3 id="the-nature-of-unannounced-frames-in-av1">The Nature of
+Unannounced Frames in AV1</h3>
+<p>In AV1, an "unannounced" or invisible frame is typically a frame
+coded with the header syntax element <code>show_frame</code> set to
+<code>0</code>. These frames are decoded and stored directly into the
+reference picture buffer rather than being sent to the display pipeline.
+They often serve as forward-looking prediction sources (such as
+Alternate Reference frames, or <code>ALTREF</code>), intermediate
+overlay surfaces, or non-displayed intra frames intended to prime
+reference buffers during random access or scene transitions.</p>
+<p>Because these frames do not correspond to an immediate display event,
+the decoder must construct and update its reference buffer state solely
+based on the structural header instructions accompanying the frame.</p>
+<h3 id="the-8-slot-reference-architecture">The 8-Slot Reference
+Architecture</h3>
+<p>The AV1 decoder maintains an internal pool of eight reference frame
+slots (<code>ref_frame[8]</code>). Active inter-prediction tools access
+these slots through seven reference frame aliases:</p>
+<ul>
+<li><strong>LAST_FRAME, LAST2_FRAME, LAST3_FRAME</strong>: Past temporal
+references.</li>
+<li><strong>GOLDEN_FRAME</strong>: A designated past reference often
+held across longer intervals.</li>
+<li><strong>BWDREF_FRAME, ALTREF2_FRAME, ALTREF_FRAME</strong>: Backward
+or lookahead temporal references.</li>
+</ul>
+<p>When an unannounced frame enters the decoder, it may draw from any of
+these slots for its own inter-prediction, or it may be coded as an
+intra-only frame that requires no prior references.</p>
+<h3 id="reference-construction-and-slot-mapping-mechanism">Reference
+Construction and Slot Mapping Mechanism</h3>
+<p>Upon receiving an unannounced frame header, the decoder executes a
+precise sequence to initialize and update its buffer state:</p>
+<h4 id="1-frame-type-and-reference-header-evaluation">1. Frame Type and
+Reference Header Evaluation</h4>
+<p>The decoder inspects <code>frame_type</code> and
+<code>primary_ref_frame</code>:</p>
+<ul>
+<li>If the frame is an intra-only frame (<code>KEY_FRAME</code> or
+<code>INTRA_ONLY_FRAME</code>), the decoder does not map motion
+compensation references. If it is a Key Frame, it typically invalidates
+or resets all reference slots.</li>
+<li>If <code>primary_ref_frame</code> is specified, the decoder copies
+foundational parameters (such as segmentation maps, loop filter
+configurations, and global motion models) from that designated buffer
+index. If it is set to <code>PRIMARY_REF_NONE</code>, these structures
+are reinitialized to defaults.</li>
+</ul>
+<h4 id="2-association-of-reference-pointers-ref_frame_idx">2.
+Association of Reference Pointers (<code>ref_frame_idx</code>)</h4>
+<p>If the unannounced frame is an inter frame, the bitstream supplies
+the <code>ref_frame_idx</code> array. This array explicitly directs the
+decoder on which of the eight physical buffer slots correspond to each
+of the prediction references (<code>LAST_FRAME</code> through
+<code>ALTREF_FRAME</code>). The decoder loads the pixel data and motion
+vectors associated with those slots into the prediction pipeline.</p>
+<h4 id="3-image-reconstruction">3. Image Reconstruction</h4>
+<p>The decoder reconstructs the unannounced frame by parsing transform
+blocks, generating intra- or inter-predictions from the assigned
+reference slots, applying inverse transforms, and adding residual
+signals. Loop restoration, CDEF (Constrained Directional Enhancement
+Filter), and deblocking filters are applied according to the frame
+header flags.</p>
+<h4 id="4-buffer-refresh-signaling-refresh_frame_flags">4. Buffer
+Refresh Signaling (<code>refresh_frame_flags</code>)</h4>
+<p>The defining step for storing an unannounced frame is evaluating the
+8-bit <code>refresh_frame_flags</code> syntax element. Each bit in this
+mask corresponds to one of the eight reference slots:</p>
+<ul>
+<li>A bit value of <code>1</code> instructs the decoder to overwrite
+that buffer slot with the newly decoded, reconstructed frame.</li>
+<li>A bit value of <code>0</code> retains the existing reference picture
+in that slot.</li>
+</ul>
+<p>By setting <code>show_frame = 0</code> alongside specific
+<code>refresh_frame_flags</code>, an unannounced frame can overwrite one
+or more slots (such as replacing an outdated <code>ALTREF</code>)
+without ever being presented to the display device.</p>
+<h3 id="handling-unannounced-frames-with-show_existing_frame">Handling
+Unannounced Frames with <code>show_existing_frame</code></h3>
+<p>A variant of the unannounced frame mechanism occurs when a bitstream
+signals <code>show_existing_frame = 1</code>. In this scenario, no new
+pixel decoding takes place. Instead:</p>
+<ul>
+<li>The header specifies an index (<code>frame_to_show_map_idx</code>)
+pointing to an existing reference slot populated earlier by a
+non-displayed frame.</li>
+<li>The decoder reads the frame directly from that reference buffer and
+outputs it to the display.</li>
+<li>If the frame is flagged as a key-frame replacement via
+<code>reset_decoder_state</code>, the decoder updates reference metadata
+accordingly to re-anchor subsequent predictions.</li>
+</ul>
+<h3 id="recovery-from-missing-reference-buffers">Recovery from Missing
+Reference Buffers</h3>
+<p>If an unannounced frame arrives following packet loss or an
+out-of-order seek, the target reference slots referenced by
+<code>ref_frame_idx</code> might be invalid or uninitialized. Under
+strict specification compliance, decoders flag these frames as
+unreferenceable. Robust decoders employ concealment techniques by either
+synthesizing reference memory with default neutral-gray values (luma
+128, chroma 128) or replicating the nearest valid reference picture in
+the buffer to prevent memory faults while reconstructing the frame.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

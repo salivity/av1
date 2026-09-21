@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Windows GPU Drivers Expose AV1 via DXVA2 and D3D11 - av1</title>
+    <meta name="description" content="Modern Windows graphics drivers expose hardware-accelerated AV1 decoding by bridging fixed-function media processing silicon with the operating system's video APIs: DirectX Video Acceleration 2.0 (DXVA2) and Direct3D 11 (D3D11) Video APIs. This article d">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-windows-gpu-drivers-expose-av-1-via-dxva-2-and-d-3-d-11">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Windows GPU Drivers Expose AV1 via DXVA2 and D3D11 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-windows-gpu-drivers-expose-av-1-via-dxva-2-and-d-3-d-11" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Modern Windows graphics drivers expose hardware-accelerated AV1 decoding by bridging fixed-function media processing silicon with the operating system's video APIs: DirectX Video Acceleration 2.0 (DXVA2) and Direct3D 11 (D3D11) Video APIs. This article d" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-windows-gpu-drivers-expose-av1-via-dxva2-and-d3d11">How
+Windows GPU Drivers Expose AV1 via DXVA2 and D3D11</h1>
+<p>Modern Windows graphics drivers expose hardware-accelerated AV1
+decoding by bridging fixed-function media processing silicon with the
+operating system's video APIs: DirectX Video Acceleration 2.0 (DXVA2)
+and Direct3D 11 (D3D11) Video APIs. This article details the structural
+mechanisms GPU drivers use to advertise AV1 support, negotiate decode
+profiles using standardized Globally Unique Identifiers (GUIDs),
+exchange parameter buffers for frame reconstruction, and dispatch
+bitstream commands to the hardware via the Windows Display Driver Model
+(WDDM).</p>
+<h3 id="av1-decoder-profiles-and-guid-registration">AV1 Decoder Profiles
+and GUID Registration</h3>
+<p>To make AV1 decoding accessible to applications like web browsers and
+media players, GPU drivers must register standard decoder GUIDs defined
+by Microsoft in the DirectX Video Acceleration specifications.</p>
+<p>The primary profiles exposed include:</p>
+<ul>
+<li><code>DXVA_ModeAV1_VLD_Profile0</code>: Baseline 8-bit or 10-bit
+decoding with 4:2:0 chroma subsampling.</li>
+<li><code>DXVA_ModeAV1_VLD_Profile1</code>: 8-bit or 10-bit decoding
+with 4:4:4 chroma subsampling.</li>
+<li><code>DXVA_ModeAV1_VLD_Profile2</code>: 12-bit decoding or
+alternative subsampling formats (such as 4:2:2).</li>
+<li><code>DXVA_ModeAV1_VLD_12bit</code>: Specific configurations
+accommodating 12-bit high-bitdepth pipelines.</li>
+</ul>
+<p>When the GPU driver initializes its User-Mode Driver (UMD) layer, it
+registers support for these GUIDs based on the underlying hardware
+engine (e.g., Intel Quick Sync, NVIDIA NVDEC, or AMD VCN). If the
+physical hardware lacks dedicated AV1 hardware logic, the driver simply
+omits these GUIDs from its supported list.</p>
+<h3 id="driver-capability-negotiation">Driver Capability
+Negotiation</h3>
+<p>The driver exposes discovery endpoints through either D3D11 Video or
+DXVA2 interfaces:</p>
+<h4 id="direct3d-11-video-api">Direct3D 11 Video API</h4>
+<p>Under Direct3D 11, capability discovery revolves around the
+<code>ID3D11VideoDevice</code> interface:</p>
+<ol type="1">
+<li><strong>Profile Enumeration</strong>: The application calls
+<code>GetVideoDecoderProfileCount()</code> and
+<code>GetVideoDecoderProfile()</code>. The driver reports an array of
+supported profile GUIDs, including the AV1 decode GUIDs.</li>
+<li><strong>Format Verification</strong>: The application verifies
+surface formats via <code>CheckVideoDecoderFormat()</code>. For AV1
+Profile 0, the driver confirms support for <code>DXGI_FORMAT_NV12</code>
+(8-bit) and <code>DXGI_FORMAT_P010</code> (10-bit).</li>
+<li><strong>Configuration Retrieval</strong>: The application queries
+<code>GetVideoDecoderConfigCount()</code> and
+<code>GetVideoDecoderConfig()</code>. The driver returns supported
+decoder configurations, specifying parameters such as encrypted
+bitstream support or slice control limits.</li>
+</ol>
+<h4 id="dxva2-directx-video-acceleration-2">DXVA2 (DirectX Video
+Acceleration 2)</h4>
+<p>In the older DXVA2 API (built on Direct3D 9Ex), discovery is handled
+via <code>IDirectXVideoDecoderService</code>:</p>
+<ol type="1">
+<li>The application queries <code>GetDecoderDeviceGuids()</code>, where
+the driver responds with supported DXVA device types.</li>
+<li>The format is validated through
+<code>GetDecoderRenderTargets()</code>, ensuring target textures (such
+as NV12 surfaces) can be rendered directly by the hardware decoder
+engine.</li>
+<li>The configuration is obtained through
+<code>GetDecoderConfigurations()</code>, allowing the driver to define
+input buffer requirements (<code>DXVA2_ConfigPictureDecode</code>).</li>
+</ol>
+<h3 id="av1-bitstream-buffers-and-parameter-structures">AV1 Bitstream
+Buffers and Parameter Structures</h3>
+<p>AV1 is an Open Bitstream Unit (OBU) based standard requiring
+significant frame-level and tile-level parameters. The driver exposes
+its capabilities to accept structured picture parameters and raw
+bitstream slices, offloading the heaviest computational steps while
+relying on the application to perform lightweight bitstream
+demuxing.</p>
+<p>When decoding a frame, the driver requires specific buffers sent
+through the interface:</p>
+<ul>
+<li><strong>Picture Parameters
+(<code>DXVA_PicParams_AV1</code>)</strong>: The application passes a
+structured representation of the AV1 frame header. This includes frame
+type, reference frame indexes, spatial resolutions, quantization
+parameters (<code>base_q_idx</code>), loop filter strengths, CDEF
+(Constrained Directional Enhancement Filter) parameters, Loop
+Restoration modes, and Film Grain synthesis metadata.</li>
+<li><strong>Tile Command Buffers (<code>DXVA_Tile_AV1</code>)</strong>:
+AV1 frames can be split into independent tiles. This buffer specifies
+the number of tiles, byte offsets, and row/column configurations so the
+hardware decoder can parse them in parallel.</li>
+<li><strong>Bitstream Data Buffers</strong>: The raw compressed
+entropy-coded data of the AV1 tiles (Tile Group OBUs).</li>
+<li><strong>Film Grain Buffer</strong>: If the driver supports
+hardware-accelerated film grain application, an auxiliary structure
+containing grain synthesis lookup parameters is supplied.</li>
+</ul>
+<h3 id="kernel-dispatch-and-hardware-execution">Kernel Dispatch and
+Hardware Execution</h3>
+<p>Once the application submits these buffers via
+<code>ID3D11VideoContext::SubmitDecoderBuffers</code> or
+<code>IDirectXVideoDecoder::Execute</code>:</p>
+<ol type="1">
+<li><strong>User-Mode Driver Translation</strong>: The UMD converts the
+standard <code>DXVA_PicParams_AV1</code> and tile buffers into
+proprietary command packets tailored for the GPU's fixed-function video
+processing engine.</li>
+<li><strong>WDDM Submission</strong>: The UMD passes these command
+packets down to the Kernel-Mode Driver (KMD) via Direct3D runtime calls
+(<code>D3DKMTSubmitCommand</code>).</li>
+<li><strong>Hardware Processing</strong>: The GPU's hardware video
+engine reads the raw bitstream buffer, parses the entropy-coded symbols,
+applies inverse quantization and transforms, executes in-loop filtering
+(Deblocking, CDEF, and Loop Restoration), and outputs the decoded planar
+image directly to the allocated <code>NV12</code> or <code>P010</code>
+surface in video memory.</li>
+<li><strong>Synchronization</strong>: The driver issues fences/events
+back through the DirectX runtime, signaling the completion of the decode
+operation so the resulting surface can be bound as an input to a
+swapchain, a video processor for scaling/color conversion, or a 3D
+rendering pipeline.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

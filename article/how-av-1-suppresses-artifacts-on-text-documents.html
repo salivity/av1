@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Suppresses Artifacts on Text Documents - av1</title>
+    <meta name="description" content="AV1 screen content mode eliminates the blurring, ringing, and ghosting typically caused by standard video compression on high-contrast text through a specialized suite of screen content coding (SCC) tools. Standard motion compensation uses fractional-pix">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-suppresses-artifacts-on-text-documents">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Suppresses Artifacts on Text Documents - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-suppresses-artifacts-on-text-documents" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 screen content mode eliminates the blurring, ringing, and ghosting typically caused by standard video compression on high-contrast text through a specialized suite of screen content coding (SCC) tools. Standard motion compensation uses fractional-pix" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-suppresses-artifacts-on-text-documents">How AV1
+Suppresses Artifacts on Text Documents</h1>
+<p>AV1 screen content mode eliminates the blurring, ringing, and
+ghosting typically caused by standard video compression on high-contrast
+text through a specialized suite of screen content coding (SCC) tools.
+Standard motion compensation uses fractional-pixel interpolation filters
+and frequency-domain transforms designed for continuous-tone camera
+footage, which inherently degrade the sharp, bi-level edges of text
+characters. AV1 suppresses these artifacts during text rendering and
+scrolling by employing integer-precision motion vectors, Intra Block
+Copy (IntraBC), palette coding, and transform skip modes, preserving
+razor-sharp text edges without the distortion of standard
+motion-compensated inter-prediction.</p>
+<h3 id="integer-motion-vector-precision">Integer Motion Vector
+Precision</h3>
+<p>Standard motion compensation achieves compression efficiency on
+real-world video by using fractional-pixel (half-pel or quarter-pel)
+motion vectors. These vectors require interpolation filters to estimate
+intermediate pixel values. While effective for natural textures,
+fractional-pixel interpolation acts as a low-pass filter that softens
+high-contrast edges, blurring glyphs and leaving halos around letters
+when scrolling through documents.</p>
+<p>AV1 screen content mode detects document and interface
+characteristics and allows the encoder to restrict motion vectors
+strictly to full-pixel (integer) accuracy. By forcing integer
+displacements:</p>
+<ul>
+<li>Sub-pixel interpolation filters are bypassed entirely.</li>
+<li>Exact pixel alignments are maintained from frame to frame during
+window movement and vertical document scrolling.</li>
+<li>Edge sharpness remains intact, preventing the typical temporal
+"smear" seen in scrolling text.</li>
+</ul>
+<h3 id="intra-block-copy-intrabc">Intra Block Copy (IntraBC)</h3>
+<p>IntraBC functions like motion compensation, but instead of
+referencing previous frames in time, it references previously
+reconstructed areas within the <em>same</em> frame.</p>
+<p>Because text documents are composed of repeating typographic
+elements—such as recurring letterforms, words, icons, and UI
+components—IntraBC allows the encoder to copy entire blocks of pixels
+directly from elsewhere on the page. Because IntraBC relies on integer
+displacements within the spatial domain:</p>
+<ul>
+<li>Text patterns are duplicated with zero generation loss.</li>
+<li>The encoder avoids generating heavy prediction residuals that would
+otherwise require lossy transform operations.</li>
+<li>Motion vector searches prioritize identical glyph matches across the
+document, bypassing temporal prediction dependencies.</li>
+</ul>
+<h3 id="palette-mode">Palette Mode</h3>
+<p>Text documents are dominated by a minimal set of distinct
+colors—typically dark glyphs against a light background. Conventional
+inter-frame and intra-frame prediction models expect continuous
+gradients and struggle with abrupt transitions, resulting in color
+bleeding and edge noise.</p>
+<p>AV1's palette mode bypasses traditional transform and quantization
+pipelines:</p>
+<ol type="1">
+<li>The encoder creates a localized color index (a palette) containing
+up to eight distinct colors for a given block.</li>
+<li>Individual pixels within the block are assigned a direct palette
+index rather than being derived from motion vectors or directional intra
+predictions.</li>
+<li>Because the color values are mapped discretely, there is no spatial
+or temporal motion error to propagate, effectively preventing edge
+degradation, mosquito noise, and color fringing around text
+boundaries.</li>
+</ol>
+<h3 id="identity-transform-transform-skip">Identity Transform (Transform
+Skip)</h3>
+<p>When motion compensation produces a prediction residual (the
+difference between the predicted block and the actual text), standard
+codecs run this residual through discrete cosine transforms (DCT) or
+asymmetric discrete sine transforms (ADST). High-contrast step
+edges—such as the transition from black font to white paper—create
+high-frequency coefficients in the transform domain. When quantized,
+this causes truncation, leading to Gibbs phenomenon (ringing artifacts)
+along the text borders.</p>
+<p>AV1 addresses this with the Identity Transform (IDTX), which skips
+frequency-domain conversion entirely:</p>
+<ul>
+<li>Residuals are quantized and coded directly in the spatial
+domain.</li>
+<li>The absence of frequency truncation eliminates ringing artifacts
+around glyphs.</li>
+<li>Combined with motion compensation, any minute prediction errors left
+over after text movement are corrected without introducing surrounding
+blur or noise.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

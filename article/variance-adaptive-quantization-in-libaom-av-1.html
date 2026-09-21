@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variance Adaptive Quantization in libaom AV1 - av1</title>
+    <meta name="description" content="Variance-based adaptive quantization (VAQ) in the libaom AV1 encoder is a psychoacoustic optimization technique that dynamically adjusts quantization parameters at the block level based on local spatial complexity. By calculating the variance—a measure">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/variance-adaptive-quantization-in-libaom-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Variance Adaptive Quantization in libaom AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/variance-adaptive-quantization-in-libaom-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Variance-based adaptive quantization (VAQ) in the libaom AV1 encoder is a psychoacoustic optimization technique that dynamically adjusts quantization parameters at the block level based on local spatial complexity. By calculating the variance—a measure" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="variance-adaptive-quantization-in-libaom-av1">Variance Adaptive
+Quantization in libaom AV1</h1>
+<p>Variance-based adaptive quantization (VAQ) in the libaom AV1 encoder
+is a psychoacoustic optimization technique that dynamically adjusts
+quantization parameters at the block level based on local spatial
+complexity. By calculating the variance—a measure of contrast and
+texture—within sub-regions of a video frame, the encoder redistributes
+bits away from complex, textured areas toward smooth, low-variance
+regions. This article explains the technical mechanics of variance-based
+adaptive quantization, its architectural implementation inside the
+libaom codebase, and its impact on compression efficiency and perceived
+visual quality.</p>
+<h3 id="the-role-of-adaptive-quantization">The Role of Adaptive
+Quantization</h3>
+<p>Standard video encoding applies a global Quantization Parameter (QP)
+across an entire frame. However, the Human Visual System (HVS) does not
+perceive distortion uniformly. The human eye easily detects compression
+artifacts, such as banding and blockiness, in smooth, flat areas (like
+skies or plain walls). Conversely, the eye is less sensitive to
+distortion in busy, highly textured areas (like grass or foliage), a
+phenomenon known as spatial masking.</p>
+<p>Adaptive Quantization (AQ) solves this disparity by altering the QP
+locally. Instead of treating every block equally, the encoder adjusts
+the QP per superblock or coding block using delta-Q (<span
+class="math inline">\(\Delta Q\)</span>) values.</p>
+<h3 id="the-variance-based-aq-mechanism">The Variance-Based AQ
+Mechanism</h3>
+<p>Variance-based AQ measures the spatial activity of a block by
+computing the statistical variance of its pixel luminance values:</p>
+<p><span class="math display">\[\text{Variance} = \frac{1}{N}
+\sum_{i=1}^{N} (x_i - \mu)^2\]</span></p>
+<p>Where <span class="math inline">\(x_i\)</span> represents pixel
+intensities, <span class="math inline">\(\mu\)</span> is the mean
+intensity of the block, and <span class="math inline">\(N\)</span> is
+the total number of pixels.</p>
+<ol type="1">
+<li><strong>Low-Variance Blocks (Smooth areas):</strong> Because
+compression artifacts are immediately noticeable in flat areas, the
+encoder assigns a negative <span class="math inline">\(\Delta Q\)</span>
+(lowering the QP). This allocates more bits and preserves smooth
+gradients.</li>
+<li><strong>High-Variance Blocks (Complex textures):</strong> Because
+fine textures mask quantization noise, the encoder assigns a positive
+<span class="math inline">\(\Delta Q\)</span> (raising the QP). This
+saves bits without a noticeable reduction in perceived quality.</li>
+</ol>
+<h3 id="implementation-in-the-libaom-codebase">Implementation in the
+libaom Codebase</h3>
+<p>In the official AV1 reference encoder, libaom, variance-based
+adaptive quantization is exposed via the configuration flag
+<code>--aq-mode=1</code>.</p>
+<p>The core logic resides predominantly within the following files:</p>
+<ul>
+<li><code>av1/encoder/aq_variance.c</code></li>
+<li><code>av1/encoder/aq_variance.h</code></li>
+</ul>
+<h4 id="execution-workflow-inside-libaom">Execution Workflow inside
+libaom</h4>
+<ol type="1">
+<li><p><strong>Energy and Variance Calculation:</strong><br />
+During the frame analysis phase, the encoder evaluates the luminance
+energy of sub-blocks (commonly <span class="math inline">\(8 \times
+8\)</span> or <span class="math inline">\(16 \times 16\)</span>). Helper
+functions calculate the sum of squares and the sum of pixel values to
+derive variance efficiently using integer arithmetic.</p></li>
+<li><p><strong>Log-Variance Representation:</strong><br />
+Because human contrast perception is logarithmic rather than linear,
+libaom converts raw block variance into a logarithmic scale. This
+compressed scale prevents extreme variance outliers from excessively
+distorting QP calculations.</p></li>
+<li><p><strong>Delta-Q Assignment:</strong><br />
+The function <code>av1_setup_in_frame_q_adj()</code> analyzes the
+distribution of block variances across the frame. It establishes
+thresholds that categorize blocks into distinct quantization segments or
+assigns direct delta-Q values relative to the base frame QP.</p></li>
+<li><p><strong>Rate-Distortion Optimization (RDO):</strong><br />
+Once the delta-Q values are established, libaom's RDO loop uses the
+adjusted quantization step sizes to evaluate coding modes, transform
+sizes, and prediction directions.</p></li>
+</ol>
+<h3 id="impact-on-metrics-and-perceived-quality">Impact on Metrics and
+Perceived Quality</h3>
+<p>Enabling variance-based AQ involves a deliberate trade-off between
+mathematical fidelity and subjective human preference:</p>
+<ul>
+<li><strong>Objective Metrics (PSNR):</strong> Peak Signal-to-Noise
+Ratio (PSNR) typically decreases when <code>--aq-mode=1</code> is
+enabled. PSNR penalizes errors equally across all pixels, so shifting
+bits away from high-energy textured regions reduces overall mathematical
+precision.</li>
+<li><strong>Perceptual Metrics (SSIM, VMAF):</strong> Metrics that model
+human perception, such as SSIM and VMAF, frequently report better or
+more stable scores under VAQ, reflecting reduced banding in
+gradients.</li>
+<li><strong>Visual Artifacts:</strong> VAQ prevents color contouring in
+dark and flat scenes while preserving overall bitrate limits, making it
+a critical feature for consumer-facing distribution profiles.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

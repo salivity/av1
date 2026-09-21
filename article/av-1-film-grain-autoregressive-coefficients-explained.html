@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Film Grain: Autoregressive Coefficients Explained - av1</title>
+    <meta name="description" content="This article explores how the AV1 video codec utilizes autoregressive (AR) coefficients within its film grain synthesis model to recreate natural, correlated grain patterns. By stripping high-frequency noise prior to compression and re-synthesizing it on">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-film-grain-autoregressive-coefficients-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Film Grain: Autoregressive Coefficients Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-film-grain-autoregressive-coefficients-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the AV1 video codec utilizes autoregressive (AR) coefficients within its film grain synthesis model to recreate natural, correlated grain patterns. By stripping high-frequency noise prior to compression and re-synthesizing it on" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-film-grain-autoregressive-coefficients-explained">AV1 Film
+Grain: Autoregressive Coefficients Explained</h1>
+<p>This article explores how the AV1 video codec utilizes autoregressive
+(AR) coefficients within its film grain synthesis model to recreate
+natural, correlated grain patterns. By stripping high-frequency noise
+prior to compression and re-synthesizing it on the client side using
+transmitted statistical parameters, AV1 circumvents traditional bitrate
+bottlenecks. Below, we examine the mathematical principles of
+autoregression in AV1, how spatial and cross-channel correlations are
+established, and the sequential process decoders use to shape random
+noise into film-like texture.</p>
+<h3 id="the-film-grain-dilemma-in-video-compression">The Film Grain
+Dilemma in Video Compression</h3>
+<p>Film grain and digital sensor noise are inherently non-deterministic
+and high-frequency. In conventional transform-based video coding,
+retaining this grain requires a substantial bitrate because the encoder
+treats random noise as detailed image data, wasting valuable bits trying
+to code unpredictable variations between frames. Conversely, aggressive
+quantization flattens the noise, causing smooth surfaces to exhibit
+severe banding, plastic-like textures, or temporal flickering.</p>
+<p>AV1 solves this using <strong>Film Grain Synthesis</strong> (FGS).
+During preprocessing, an encoder strips the grain from the source
+footage through denoising algorithms, analyzes the spatial
+characteristics of the removed noise, and transmits these properties as
+metadata in the bitstream. The video is compressed without noise, and
+the decoder synthetically recreates and blends the grain back onto the
+reconstructed frame.</p>
+<h3 id="what-is-the-autoregressive-ar-process">What Is the
+Autoregressive (AR) Process?</h3>
+<p>To generate realistic grain, a decoder cannot simply overlay uniform
+white noise across the frame. Natural film grain consists of physical
+silver halide crystals or sensor clusters that possess specific sizes,
+shapes, and spatial dependencies. Neighboring pixels in a grain pattern
+are correlated; a pixel's luminance value influences the expected
+luminance of its immediate neighbors.</p>
+<p>AV1 models these dependencies using a two-dimensional
+<strong>Autoregressive (AR) process</strong>. In an AR model, the value
+of an output sample <span class="math inline">\(G(x, y)\)</span> is
+calculated as a linear combination of its previously generated spatial
+neighbors plus a pseudo-random innovation value:</p>
+<p><span class="math display">\[G(x, y) = \sum_{(i, j) \in \Omega} c_{i,
+j} \cdot G(x - i, y - j) + e(x, y)\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(G(x, y)\)</span> is the synthetic grain
+sample at position <span class="math inline">\((x, y)\)</span>.</li>
+<li><span class="math inline">\(\Omega\)</span> represents the causal
+neighborhood of neighboring pixels.</li>
+<li><span class="math inline">\(c_{i, j}\)</span> represents the AR
+coefficients transmitted in the AV1 bitstream.</li>
+<li><span class="math inline">\(e(x, y)\)</span> is pseudo-random white
+noise generated via a standardized pseudo-random number generator
+(PRNG).</li>
+</ul>
+<h3 id="causal-neighborhoods-and-ar-lag">Causal Neighborhoods and AR
+Lag</h3>
+<p>Because grain synthesis must be deterministic and implementable in
+hardware pipelines with minimal latency, the AR filter is strictly
+causal. When synthesizing pixel <span class="math inline">\((x,
+y)\)</span>, the filter can only reference samples that have already
+been computed—typically pixels directly above, above-left, or
+immediately to the left of the target position.</p>
+<p>AV1 defines the extent of this spatial memory using a parameter
+called <strong>lag</strong>:</p>
+<ul>
+<li><strong>Lag 0:</strong> No spatial autoregression. Noise samples are
+spatially independent white noise (though cross-channel correlations may
+still apply).</li>
+<li><strong>Lag 1:</strong> The filter considers adjacent neighbors in
+an immediate radius (up to 1 pixel away in the causal window).</li>
+<li><strong>Lag 2 and Lag 3:</strong> The neighborhood expands to 2 or 3
+pixels in distance, allowing the model to capture broader spatial
+dependencies.</li>
+</ul>
+<p>Higher lag values give the AR filter the capacity to act as a
+low-pass or band-pass shaping filter. By adjusting the AR coefficients
+across a 3-pixel causal footprint, the model can simulate coarser grain
+structures, directional clumping, or soft, blurred noise without
+transmitting actual image pixels.</p>
+<h3 id="cross-channel-correlation">Cross-Channel Correlation</h3>
+<p>Film grain is rarely isolated to a single color plane. In color film
+stocks, grain in the red, green, and blue emulsion layers manifests as
+correlated fluctuations across the Y (luma), Cb, and Cr (chroma)
+channels.</p>
+<p>AV1's AR framework accommodates inter-channel dependencies by
+allowing chroma grain synthesis to reference both prior chroma samples
+and co-located luma grain samples. The AR equations for Cb and Cr
+incorporate additional coefficients that weight the reconstructed luma
+grain value at position <span class="math inline">\((x, y)\)</span>.
+This cross-channel coupling prevents synthetic grain from showing
+jarring, disconnected color noise that diverges from the underlying
+brightness variations.</p>
+<h3 id="the-decoder-reconstruction-pipeline">The Decoder Reconstruction
+Pipeline</h3>
+<p>When an AV1-compliant decoder renders a frame with film grain
+enabled, it executes the following steps:</p>
+<ol type="1">
+<li><strong>Base Noise Generation:</strong> The decoder seeds a
+deterministic PRNG using a frame-level seed to create a deterministic
+grid of independent Gaussian-distributed random values.</li>
+<li><strong>AR Filtering:</strong> The 2D AR filter sweeps across the
+grid. At each coordinate, the white noise sample is summed with the
+weighted sum of preceding neighbors according to the bitstream's AR
+coefficients, producing spatially correlated noise.</li>
+<li><strong>Luminance Scaling:</strong> Because human perception of
+grain depends on local brightness (Weber's Law), the amplitude of the
+generated grain is dynamically scaled using piecewise linear functions
+defined in the bitstream metadata.</li>
+<li><strong>Blending:</strong> The scaled, correlated grain is added to
+the decoded pixel values, and the final output is clipped to the target
+bit depth.</li>
+</ol>
+<p>By adjusting a small set of numerical coefficients rather than
+streaming actual noise, AV1 achieves convincing film grain reproduction
+at a tiny fraction of the standard transmission bandwidth.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

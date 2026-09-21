@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10-Bit AV1 Decoding on an 8-Bit Pipeline - av1</title>
+    <meta name="description" content="When decoding a 10-bit AV1 video stream targeting an 8-bit display or rendering pipeline, the pixel reconstruction bit depth remains strictly 10-bit. AV1 compliance mandates that all core decoding and reconstruction stages execute at the stream's native">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/10-bit-av-1-decoding-on-an-8-bit-pipeline">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="10-Bit AV1 Decoding on an 8-Bit Pipeline - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/10-bit-av-1-decoding-on-an-8-bit-pipeline" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When decoding a 10-bit AV1 video stream targeting an 8-bit display or rendering pipeline, the pixel reconstruction bit depth remains strictly 10-bit. AV1 compliance mandates that all core decoding and reconstruction stages execute at the stream's native" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="10-bit-av1-decoding-on-an-8-bit-pipeline">10-Bit AV1 Decoding on
+an 8-Bit Pipeline</h1>
+<p>When decoding a 10-bit AV1 video stream targeting an 8-bit display or
+rendering pipeline, the pixel reconstruction bit depth remains strictly
+<strong>10-bit</strong>. AV1 compliance mandates that all core decoding
+and reconstruction stages execute at the stream's native bit depth to
+prevent inter-frame drift and preserve structural integrity. This
+article explains the internal reconstruction mechanics of AV1, why
+intermediate bit depth reduction is not permitted, and how the final
+image is adapted for an 8-bit display surface.</p>
+<h3 id="internal-pixel-reconstruction-is-strictly-10-bit">Internal Pixel
+Reconstruction is Strictly 10-Bit</h3>
+<p>Regardless of the capabilities of the downstream display hardware,
+the pixel reconstruction bit depth for a 10-bit AV1 bitstream is always
+<strong>10 bits</strong>.</p>
+<p>In video decoding architectures, the reconstructed samples are
+typically held in 16-bit integer containers (often utilizing the least
+significant 10 bits or left-aligned within the 16 bits). Conforming AV1
+decoders execute all mathematical operations at the native bit depth,
+including:</p>
+<ul>
+<li>Intra-frame spatial prediction</li>
+<li>Motion-compensated inter prediction</li>
+<li>Inverse quantization and inverse discrete cosine/asymmetric
+transforms</li>
+<li>In-loop filtering: Deblocking Filter, Constrained Directional
+Enhancement Filter (CDEF), and Loop Restoration</li>
+</ul>
+<h3 id="why-reconstruction-cannot-be-reduced-to-8-bit">Why
+Reconstruction Cannot Be Reduced to 8-Bit</h3>
+<p>Truncating or rounding reconstructed pixels to 8 bits inside the
+decoding loop causes cumulative reference frame drift:</p>
+<ol type="1">
+<li><strong>Prediction Drift:</strong> AV1 relies heavily on temporal
+inter-frame prediction. Subsequent frames reference previously decoded
+frames stored in the Decoded Picture Buffer (DPB). If a decoder modifies
+reference samples by dropping two bits of precision, the decoder's
+reference frames will not match the encoder's reference frames. This
+mismatch accumulates across frames, causing severe visual artifacts,
+macroblocking, and color distortion.</li>
+<li><strong>In-Loop Filter Precision:</strong> Filters like CDEF and
+Loop Restoration rely on precise pixel variances. Running these filters
+on 8-bit approximations alters edge detection thresholds and directional
+filtering parameters, corrupting the image.</li>
+</ol>
+<h3 id="how-the-transition-to-an-8-bit-pipeline-occurs">How the
+Transition to an 8-Bit Pipeline Occurs</h3>
+<p>The reduction from 10-bit to 8-bit color occurs exclusively at the
+<strong>presentation or post-processing stage</strong>, completely
+outside the decoding and reconstruction loop.</p>
+<p>Once an entire frame is reconstructed at 10 bits and stored in the
+DPB for future frame references, a copy is passed to the presentation
+engine. At this point, the output pipeline converts the 10-bit YUV frame
+into an 8-bit format through one of the following methods:</p>
+<ul>
+<li><strong>Bit Truncation (Bit-Shifting):</strong> Discarding the two
+least significant bits (<code>pixel &gt;&gt; 2</code>). While fast, this
+method can introduce visible banding in smooth gradients.</li>
+<li><strong>Spatial or Temporal Dithering:</strong> Adding subtle noise
+patterns (such as Floyd-Steinberg dithering) during the 10-bit to 8-bit
+conversion to eliminate banding artifacts and preserve perceived
+gradient smoothness on 8-bit panels.</li>
+<li><strong>Color Space Conversion and Tone Mapping:</strong> If the
+10-bit source uses a High Dynamic Range (HDR) transfer function like PQ
+or HLG, tone-mapping algorithms remap the luminance and color gamut to
+Standard Dynamic Range (SDR) sRGB/Rec.709 before outputting 8-bit values
+to the display.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Motion Vector Precision in Inter Blocks - av1</title>
+    <meta name="description" content="This article provides an overview of motion vector precision levels in the AV1 video codec. In inter-frame prediction, AV1 optimizes the trade-off between displacement accuracy and bit overhead by offering flexible motion vector precision. Depending on t">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-motion-vector-precision-in-inter-blocks">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Motion Vector Precision in Inter Blocks - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-motion-vector-precision-in-inter-blocks" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of motion vector precision levels in the AV1 video codec. In inter-frame prediction, AV1 optimizes the trade-off between displacement accuracy and bit overhead by offering flexible motion vector precision. Depending on t" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-motion-vector-precision-in-inter-blocks">AV1 Motion Vector
+Precision in Inter Blocks</h1>
+<p>This article provides an overview of motion vector precision levels
+in the AV1 video codec. In inter-frame prediction, AV1 optimizes the
+trade-off between displacement accuracy and bit overhead by offering
+flexible motion vector precision. Depending on the video content,
+encoding settings, and frame-level flags, AV1 supports three primary
+precision levels for inter blocks: eighth-pel (1/8-pixel), quarter-pel
+(1/4-pixel), and full-pel (integer-pixel) precision.</p>
+<h3 id="eighth-pel-18-pixel-precision">Eighth-Pel (1/8-Pixel)
+Precision</h3>
+<p>Eighth-pel precision is the highest standard motion vector resolution
+available in AV1. Designed primarily for complex, photographic video
+sequences with subtle movement, this mode allows the encoder to capture
+sub-pixel spatial displacements with fine granularity.</p>
+<p>When 1/8-pel precision is activated:</p>
+<ul>
+<li>Motion vectors represent fractional displacements down to one-eighth
+of a luma sample.</li>
+<li>Interpolation is carried out using AV1's 8-tap polyphase filtering
+filters (including Regular, Smooth, and Sharp filter designs).</li>
+<li>This precision level is enabled when the frame header flag
+<code>allow_high_precision_mv</code> is set to 1, providing the highest
+rate-distortion efficiency for slow, continuous motion.</li>
+</ul>
+<h3 id="quarter-pel-14-pixel-precision">Quarter-Pel (1/4-Pixel)
+Precision</h3>
+<p>Quarter-pel precision provides a balance between compression
+efficiency and signaling overhead. It is a traditional standard across
+modern codecs and serves as a lower-overhead alternative to 1/8-pel
+accuracy.</p>
+<p>Key characteristics include:</p>
+<ul>
+<li>Motion vector components are constrained to increments of one-fourth
+of a pixel.</li>
+<li>If <code>allow_high_precision_mv</code> is disabled (set to 0), the
+codec reduces vector resolution to 1/4-pel, truncating the fractional
+precision bits to save bandwidth in high-motion sequences where
+sub-pixel accuracy yields diminishing returns.</li>
+<li>Chroma vectors derive their precision based on subsampling formats
+(such as YUV 4:2:0), mapping appropriately from the luma quarter-pel
+coordinates.</li>
+</ul>
+<h3 id="full-pel-integer-pixel-precision">Full-Pel (Integer-Pixel)
+Precision</h3>
+<p>Full-pel precision restricts motion vectors strictly to whole
+integer-pixel offsets, completely bypassing fractional-pel offsets.</p>
+<p>Integer-pel precision is predominantly utilized in the following
+scenarios:</p>
+<ul>
+<li><strong>Screen Content Coding (SCC):</strong> Computer-generated
+content, scrolling text, and desktop recordings often contain
+pixel-aligned, sharp edges. Using sub-pixel interpolation on text can
+cause unwanted blurring and waste bits.</li>
+<li><strong>Control Mechanisms:</strong> Frame-level syntax elements
+such as <code>cur_frame_force_integer_mv</code> can force all blocks
+within a frame into integer precision.</li>
+<li><strong>Encoding Efficiency:</strong> When forced or selected, the
+encoder eliminates the fractional vector bits entirely from the
+bitstream, reducing header overhead significantly.</li>
+</ul>
+<h3 id="adaptive-precision-and-signaling">Adaptive Precision and
+Signaling</h3>
+<p>AV1 does not permanently fix motion vector precision across an entire
+bitstream. Precision is governed dynamically:</p>
+<ol type="1">
+<li><strong>Frame-Level Negotiation:</strong> The encoder determines
+whether a frame allows high-precision vectors
+(<code>allow_high_precision_mv</code>) or enforces integer vectors
+(<code>cur_frame_force_integer_mv</code>).</li>
+<li><strong>Compound and Single Modes:</strong> Whether an inter block
+uses single reference prediction or compound reference prediction,
+motion vectors follow the precision flags established in the frame
+syntax.</li>
+<li><strong>Complexity Scaling:</strong> In fast-action scenes,
+high-precision motion vectors often fail to yield enough prediction
+residual savings to justify the cost of transmitting extra fractional
+bits. In such cases, dropping from 1/8-pel to 1/4-pel or integer-pel
+delivers superior rate-distortion performance.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Container Overhead: WebM vs MP4 Compared - av1</title>
+    <meta name="description" content="When packaging AV1 (AOMedia Video 1) video streams, selecting between WebM and MP4 affects container-level overhead, metadata placement, and transmission efficiency. WebM relies on the Extensible Binary Meta Language (EBML) to wrap AV1 frames in inline b">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-container-overhead-web-m-vs-mp-4-compared">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Container Overhead: WebM vs MP4 Compared - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-container-overhead-web-m-vs-mp-4-compared" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="When packaging AV1 (AOMedia Video 1) video streams, selecting between WebM and MP4 affects container-level overhead, metadata placement, and transmission efficiency. WebM relies on the Extensible Binary Meta Language (EBML) to wrap AV1 frames in inline b" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-container-overhead-webm-vs-mp4-compared">AV1 Container
+Overhead: WebM vs MP4 Compared</h1>
+<p>When packaging AV1 (AOMedia Video 1) video streams, selecting between
+WebM and MP4 affects container-level overhead, metadata placement, and
+transmission efficiency. WebM relies on the Extensible Binary Meta
+Language (EBML) to wrap AV1 frames in inline blocks, while MP4 utilizes
+the ISO Base Media File Format (ISOBMFF) with box-based indexing. Both
+formats add negligible bulk to standard video streams, but differences
+in header construction, frame indexing, and streaming architectures
+create measurable variances in per-frame byte overhead.</p>
+<h3 id="container-structural-fundamentals">Container Structural
+Fundamentals</h3>
+<p>AV1 video is organized into Open Bitstream Units (OBUs). When
+multiplexing AV1 into a media container, Temporal Delimiter OBUs are
+typically stripped, and sequence headers are factored into track-level
+initialization metadata. The remaining OBUs form the media samples
+packaged by the container.</p>
+<ul>
+<li><strong>WebM (Matroska Subset):</strong> Uses hierarchical EBML
+elements. Video is partitioned into <code>Cluster</code> elements, which
+contain individual <code>SimpleBlock</code> or <code>BlockGroup</code>
+elements holding the AV1 frame data.</li>
+<li><strong>MP4 (ISOBMFF):</strong> Uses nested units called boxes (or
+atoms). Frame data resides in the <code>mdat</code> (media data) box,
+while sample sizes, offsets, and presentation timings are cataloged in
+index tables within the <code>moov</code> box (for standard MP4) or
+within <code>moof</code> movie fragments (for fragmented MP4/fMP4).</li>
+</ul>
+<h3 id="webm-av1-overhead-breakdown">WebM AV1 Overhead Breakdown</h3>
+<p>WebM employs an inline framing mechanism:</p>
+<ol type="1">
+<li><strong>SimpleBlock Header (4 to 8 bytes per frame):</strong> Every
+AV1 frame inside WebM is wrapped in a <code>SimpleBlock</code>. The
+element identifier (1 byte) and data size descriptor (variable-length
+EBML integer, typically 2 to 4 bytes) are followed by a 1-byte track
+number, a 2-byte signed relative timecode, and a 1-byte flags field
+(signaling keyframe status and discardability).</li>
+<li><strong>Cluster Headers (15 to 30 bytes per cluster):</strong>
+Frames are grouped into <code>Cluster</code> structures (typically once
+per keyframe or every 1–5 seconds). A cluster adds an EBML ID, size, and
+absolute timestamp header.</li>
+</ol>
+<p>Because WebM stores timestamps and flags directly preceding the AV1
+frame payload, it incurs a consistent per-frame penalty of approximately
+<strong>5 to 9 bytes</strong>, plus minor periodic cluster overhead.</p>
+<h3 id="mp4-av1-overhead-breakdown">MP4 AV1 Overhead Breakdown</h3>
+<p>MP4 frame overhead depends significantly on whether standard
+(unfragmented) or fragmented (fMP4) multiplexing is used.</p>
+<h4 id="1-standard-mp4-progressive--vod">1. Standard MP4 (Progressive /
+VoD)</h4>
+<p>In non-fragmented MP4, raw AV1 frame payloads sit contiguous within
+the <code>mdat</code> box without per-frame container wrappers. Instead,
+metadata is concentrated in the <code>moov</code> atom:</p>
+<ul>
+<li><strong>Sample Size (<code>stsz</code>):</strong> 4 bytes per
+frame.</li>
+<li><strong>Time to Sample (<code>stts</code>):</strong> 8 bytes per
+unique duration run (often compressed via run-length encoding for
+constant frame rates to a single 8-byte entry).</li>
+<li><strong>Sync Sample (<code>stss</code>):</strong> 4 bytes per
+keyframe.</li>
+<li><strong>Chunk Offset (<code>stco</code> /
+<code>co64</code>):</strong> 4 to 8 bytes per chunk (a chunk typically
+aggregates dozens of frames).</li>
+<li><strong>Composition Time Offset (<code>ctts</code>):</strong> 8
+bytes per run if frame reordering/B-frames are utilized.</li>
+</ul>
+<p>Amortized across the stream, unfragmented MP4 requires approximately
+<strong>4 to 8 bytes per frame</strong> for fixed-frame-rate content,
+making it slightly more compact than WebM.</p>
+<h4 id="2-fragmented-mp4-hls--dash-streaming">2. Fragmented MP4 (HLS /
+DASH Streaming)</h4>
+<p>Fragmented MP4 distributes metadata alongside media using
+<code>moof</code> boxes:</p>
+<ul>
+<li><strong>Track Run (<code>trun</code> box):</strong> Each sample
+typically includes flags, size, and duration entries, consuming
+<strong>8 to 16 bytes per frame</strong> inside the fragment
+header.</li>
+<li><strong>Fragment Wrapper (<code>moof</code> + <code>mfhd</code> +
+<code>traf</code>):</strong> Adds roughly <strong>50 to 100
+bytes</strong> of fixed overhead per fragment.</li>
+</ul>
+<p>Fragmented MP4 incurs the highest overhead among the variants,
+averaging <strong>10 to 18 bytes per frame</strong> when factoring in
+fragment header frequency.</p>
+<h3 id="direct-overhead-comparison">Direct Overhead Comparison</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">WebM</th>
+<th style="text-align: left;">Standard MP4</th>
+<th style="text-align: left;">Fragmented MP4 (fMP4)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Metadata Placement</strong></td>
+<td style="text-align: left;">Inline (<code>SimpleBlock</code>)</td>
+<td style="text-align: left;">Centralized (<code>moov</code>)</td>
+<td style="text-align: left;">Segmented (<code>moof</code> tables)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Average Per-Frame
+Overhead</strong></td>
+<td style="text-align: left;">5 – 9 bytes</td>
+<td style="text-align: left;">4 – 8 bytes</td>
+<td style="text-align: left;">10 – 18 bytes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GOP/Fragment Header</strong></td>
+<td style="text-align: left;">~15 – 30 bytes (<code>Cluster</code>)</td>
+<td style="text-align: left;">N/A</td>
+<td style="text-align: left;">~50 – 100 bytes (<code>moof</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Impact on 4K Stream (15
+Mbps)</strong></td>
+<td style="text-align: left;">&lt; 0.005%</td>
+<td style="text-align: left;">&lt; 0.004%</td>
+<td style="text-align: left;">&lt; 0.01%</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Impact on Ultra-Low Bitrate (50
+kbps)</strong></td>
+<td style="text-align: left;">~0.15% – 0.25%</td>
+<td style="text-align: left;">~0.10% – 0.15%</td>
+<td style="text-align: left;">~0.30% – 0.50%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="practical-implications">Practical Implications</h3>
+<p>For high-resolution AV1 video (1080p, 4K, 8K), the difference between
+WebM and MP4 overhead is mathematically negligible, representing less
+than a fraction of a percent of total bandwidth.</p>
+<p>The overhead becomes relevant primarily in high-frame-rate (120+ fps)
+or extremely low-bitrate environments (such as audio-only streams or
+low-resolution video under 100 kbps). In standard non-fragmented
+configurations, MP4 achieves the lowest container overhead due to
+run-length encoded time tables in the <code>moov</code> box. However,
+for live streaming and chunk-based delivery, WebM provides a lower
+metadata footprint per frame than fragmented MP4 due to the lower
+structural overhead of EBML SimpleBlocks compared to ISOBMFF
+<code>trun</code> sample entries.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

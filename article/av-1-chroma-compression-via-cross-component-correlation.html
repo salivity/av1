@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Chroma Compression via Cross-Component Correlation - av1</title>
+    <meta name="description" content="This article provides an overview of how the AV1 video codec leverages cross-component correlation to compress chrominance (color) channels. By utilizing an advanced intra-prediction tool known as Chroma from Luma (CfL), AV1 models the relationship betwe">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-chroma-compression-via-cross-component-correlation">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Chroma Compression via Cross-Component Correlation - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-chroma-compression-via-cross-component-correlation" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AV1 video codec leverages cross-component correlation to compress chrominance (color) channels. By utilizing an advanced intra-prediction tool known as Chroma from Luma (CfL), AV1 models the relationship betwe" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-chroma-compression-via-cross-component-correlation">AV1
+Chroma Compression via Cross-Component Correlation</h1>
+<p>This article provides an overview of how the AV1 video codec
+leverages cross-component correlation to compress chrominance (color)
+channels. By utilizing an advanced intra-prediction tool known as Chroma
+from Luma (CfL), AV1 models the relationship between brightness and
+color information to remove redundant data, resulting in higher visual
+fidelity at reduced bitrates.</p>
+<h3 id="understanding-cross-component-redundancy">Understanding
+Cross-Component Redundancy</h3>
+<p>In standard digital video, content is typically represented in the
+YCbCr color space. The luma channel (<span
+class="math inline">\(Y\)</span>) contains the black-and-white
+structural details and edges, while the chroma channels (<span
+class="math inline">\(Cb\)</span> and <span
+class="math inline">\(Cr\)</span>) carry the color differences. In
+natural scenes, the color components generally share the same edge
+orientations, textures, and gradients as the brightness component.</p>
+<p>Traditional video codecs traditionally predicted chroma blocks solely
+using neighboring reconstructed chroma samples. AV1 overcomes this
+limitation by recognizing that the reconstructed luma block already
+contains rich structural information that can directly predict the
+chroma block.</p>
+<h3 id="the-chroma-from-luma-cfl-mechanism">The Chroma from Luma (CfL)
+Mechanism</h3>
+<p>AV1 implements cross-component prediction through its Chroma from
+Luma (CfL) prediction mode. Because chroma channels are often subsampled
+(most commonly in 4:2:0 format, where chroma resolution is half the
+width and half the height of luma), the process follows several precise
+steps:</p>
+<ol type="1">
+<li><strong>Luma Downsampling:</strong> If the input uses chroma
+subsampling, the reconstructed luma pixels corresponding to the current
+block are downsampled to match the dimensions of the target chroma
+block.</li>
+<li><strong>AC Component Extraction:</strong> AV1 computes the average
+value (DC component) of the downsampled luma block and subtracts it from
+each downsampled luma pixel. This isolates the high-frequency structural
+details (the AC component) from the baseline brightness.</li>
+<li><strong>Linear Scaling:</strong> The zero-mean luma signal is scaled
+by a factor (<span class="math inline">\(\alpha\)</span>) to approximate
+the variation in the chroma channel.</li>
+<li><strong>DC Restoration:</strong> The intra-predicted chroma DC value
+(derived from adjacent chroma pixels) is added to the scaled luma signal
+to produce the final predicted chroma block.</li>
+</ol>
+<p>The mathematical model for each chroma sample is expressed as:</p>
+<p><span class="math display">\[\text{Chroma}_{\text{pred}} = \alpha
+\times (\text{Luma}_{\text{sub}} - \text{DC}_{\text{Luma}}) +
+\text{DC}_{\text{Chroma}}\]</span></p>
+<h3 id="parameter-optimization-and-signaling">Parameter Optimization and
+Signaling</h3>
+<p>Rather than computing the scaling factor <span
+class="math inline">\(\alpha\)</span> implicitly at the decoder, the AV1
+encoder evaluates the optimal <span
+class="math inline">\(\alpha\)</span> parameters for both the <span
+class="math inline">\(Cb\)</span> and <span
+class="math inline">\(Cr\)</span> channels independently during
+rate-distortion optimization.</p>
+<p>The encoder tests multiple values of <span
+class="math inline">\(\alpha\)</span> to minimize prediction error and
+transmits the chosen parameter directly in the bitstream. AV1 uses an
+efficient signaling scheme with a limited set of discrete fractions and
+integer values (ranging from negative to positive values) to represent
+the scaling parameter, keeping the signaling overhead minimal.</p>
+<h3 id="coding-efficiency-gains">Coding Efficiency Gains</h3>
+<p>By utilizing the already decoded luma channel as a reference, CfL
+eliminates the need to independently signal complex structural and
+directional information for the chroma channels. This significantly
+reduces the residual energy (the difference between the original and
+predicted pixels) that must be transformed and quantized, producing
+notable coding gains in textured and sharp-edged regions without
+increasing color artifacts.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

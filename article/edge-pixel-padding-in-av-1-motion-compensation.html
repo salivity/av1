@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge-Pixel Padding in AV1 Motion Compensation - av1</title>
+    <meta name="description" content="Edge-pixel padding in the AV1 video codec ensures that motion compensation operates smoothly when motion vectors point beyond the boundaries of a reference frame. Because sub-pixel interpolation filters require surrounding context to calculate fractional">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/edge-pixel-padding-in-av-1-motion-compensation">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Edge-Pixel Padding in AV1 Motion Compensation - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/edge-pixel-padding-in-av-1-motion-compensation" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Edge-pixel padding in the AV1 video codec ensures that motion compensation operates smoothly when motion vectors point beyond the boundaries of a reference frame. Because sub-pixel interpolation filters require surrounding context to calculate fractional" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="edge-pixel-padding-in-av1-motion-compensation">Edge-Pixel
+Padding in AV1 Motion Compensation</h1>
+<p>Edge-pixel padding in the AV1 video codec ensures that motion
+compensation operates smoothly when motion vectors point beyond the
+boundaries of a reference frame. Because sub-pixel interpolation filters
+require surrounding context to calculate fractional positions, fetching
+pixels near or past frame borders risks reading undefined memory or
+introducing boundary artifacts. AV1 solves this by mathematically
+clamping out-of-bounds coordinates to the nearest valid edge pixels,
+creating an extended border of duplicated edge data that allows motion
+compensation loops to maintain reconstruction accuracy across the entire
+frame.</p>
+<h3 id="the-boundary-reference-problem">The Boundary Reference
+Problem</h3>
+<p>In motion compensation, a macroblock or coding block in the current
+frame predicts its content by referencing a previously decoded frame.
+Motion vectors often displace references across the outer edge of a
+picture, especially when an object enters or leaves the scene.</p>
+<p>AV1 utilizes separable directional interpolation filters, typically
+8-tap or 4-tap filters, to achieve half-pixel and quarter-pixel
+accuracy. An 8-tap filter requires up to four pixels of context to
+either side of the target coordinate. When the prediction block sits
+close to a border, the filter window naturally overshoots the frame
+boundary. Without a padding mechanism, these filters would either
+produce severe edge distortion or crash decoder implementations through
+invalid memory access.</p>
+<h3 id="edge-clamping-logic">Edge Clamping Logic</h3>
+<p>AV1 handles boundary extensions at the algorithmic level using sample
+coordinate clamping. When computing the source coordinates <span
+class="math inline">\((x, y)\)</span> in the reference frame, the codec
+clamps the index values to the outer boundaries of the picture area:</p>
+<ul>
+<li><span class="math inline">\(x_{\text{clamped}} = \max(0, \min(x,
+\text{Width} - 1))\)</span></li>
+<li><span class="math inline">\(y_{\text{clamped}} = \max(0, \min(y,
+\text{Height} - 1))\)</span></li>
+</ul>
+<p>Under this rule, any horizontal read past the left edge repeats the
+pixel at index <span class="math inline">\(0\)</span>, while reads past
+the right edge repeat the pixel at <span
+class="math inline">\(\text{Width} - 1\)</span>. The vertical borders
+replicate the top and bottom rows respectively. When a coordinate
+exceeds both axes simultaneously, it clamps to the nearest corner pixel,
+resulting in an outward orthogonal and diagonal replication of the
+boundary.</p>
+<h3 id="sub-pixel-interpolation-integration">Sub-Pixel Interpolation
+Integration</h3>
+<p>During motion compensation, the interpolation filters apply their
+weights directly to these clamped pixel arrays. Because the padding
+simply stretches the edge values, the filter applies its coefficients
+across a plateau of identical numbers when deeply out of bounds. This
+eliminates ringing artifacts and prevents artificial edges—such as
+zero-value black borders—from polluting the motion-compensated
+prediction block.</p>
+<h3 id="practical-buffer-implementation">Practical Buffer
+Implementation</h3>
+<p>While the AV1 specification defines edge padding mathematically via
+coordinate clamping, actual decoder implementations (such as libaom and
+dav1d) optimize this process for performance. Evaluating clipping logic
+per-pixel inside tightly optimized SIMD assembly routines degrades
+decoding speed.</p>
+<p>To overcome this, implementations allocate reference frame buffers
+with an extra physical margin—often between 64 and 128 pixels
+wide—surrounding the actual reconstructed picture. Once a frame finishes
+decoding:</p>
+<ol type="1">
+<li>The top and bottom rows are copied outward into the vertical
+margins.</li>
+<li>The left and right boundary columns are copied outward into the
+horizontal margins.</li>
+<li>The four corner pixels are propagated into the diagonal corner
+margins.</li>
+</ol>
+<p>This pre-padding allows the motion compensation loop to load
+contiguous blocks of memory directly, using normal pointer offsets
+without conditional boundary checks, while strictly adhering to the AV1
+specification.</p>
+<h3 id="loop-drift-prevention">Loop Drift Prevention</h3>
+<p>Because edge padding is fully standardized, both the AV1 encoder and
+decoder generate bit-identical prediction signals for out-of-bounds
+blocks. This strict determinism prevents reconstruction drift inside the
+inter-frame prediction loops, allowing encoders to freely search outside
+frame boundaries to compress panning shots and moving edges
+efficiently.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

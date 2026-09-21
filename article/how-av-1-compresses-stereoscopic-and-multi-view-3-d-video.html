@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Compresses Stereoscopic and Multi-View 3D Video - av1</title>
+    <meta name="description" content="This article provides an overview of how the AV1 video codec handles stereoscopic and multi-view 3D content. Because base AV1 does not include a dedicated multi-view profile like MVC or MV-HEVC, it compresses 3D material primarily through frame-packing f">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-compresses-stereoscopic-and-multi-view-3-d-video">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Compresses Stereoscopic and Multi-View 3D Video - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-compresses-stereoscopic-and-multi-view-3-d-video" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AV1 video codec handles stereoscopic and multi-view 3D content. Because base AV1 does not include a dedicated multi-view profile like MVC or MV-HEVC, it compresses 3D material primarily through frame-packing f" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-compresses-stereoscopic-and-multi-view-3d-video">How AV1
+Compresses Stereoscopic and Multi-View 3D Video</h1>
+<p>This article provides an overview of how the AV1 video codec handles
+stereoscopic and multi-view 3D content. Because base AV1 does not
+include a dedicated multi-view profile like MVC or MV-HEVC, it
+compresses 3D material primarily through frame-packing formats, metadata
+signaling via Open Bitstream Units (OBUs), and advanced inter-frame
+prediction tools that treat inter-view disparity similarly to motion.
+Below is an explanation of the core technical mechanisms AV1 utilizes to
+compress and deliver 3D video content efficiently.</p>
+<h3 id="frame-packing-architectures">Frame-Packing Architectures</h3>
+<p>The primary method for stereoscopic delivery in AV1 is frame packing.
+Instead of encoding distinct, isolated streams for each viewpoint, both
+the left-eye and right-eye views are combined into a single standard 2D
+video frame before encoding:</p>
+<ul>
+<li><strong>Side-by-Side (SBS):</strong> The horizontal resolution of
+both views is halved (or preserved in full-resolution SBS), placing the
+left and right perspectives next to each other within one frame.</li>
+<li><strong>Top-and-Bottom (Over-Under):</strong> The vertical
+resolution is halved, placing one perspective on top of the other.</li>
+</ul>
+<p>Because the two views share significant visual information, AV1's
+intra-frame and inter-frame tools compress the packed frame far more
+effectively than encoding two separate non-communicating streams.</p>
+<h3 id="disparity-compensation-via-inter-frame-prediction">Disparity
+Compensation via Inter-Frame Prediction</h3>
+<p>In stereoscopic video, the spatial difference between what the left
+and right eyes see is known as disparity. Mathematically, disparity
+resembles motion in standard 2D video.</p>
+<p>When multi-view streams are structured sequentially or as alternating
+frames, AV1 adapts its motion estimation and compensation tools to
+function as disparity estimation and compensation:</p>
+<ul>
+<li><strong>Motion Vectors as Disparity Vectors:</strong> AV1 calculates
+vectors pointing from a block in one view to the matching feature in the
+alternate view.</li>
+<li><strong>Warped Motion and Affine Prediction:</strong> AV1 supports
+affine motion models (rotation, scaling, and shear). In multi-view
+video, camera convergence angles cause slight perspective distortions
+between views. Affine prediction allows AV1 to compensate for these
+angle differences, dramatically lowering residual data.</li>
+</ul>
+<h3 id="extended-reference-frame-buffers">Extended Reference Frame
+Buffers</h3>
+<p>AV1 maintains up to eight reference frames in its decoding buffer,
+with the ability to reference up to seven of them for any single
+inter-frame prediction. In multi-view configurations:</p>
+<ul>
+<li>The codec can designate past temporal frames from the <em>same</em>
+eye's viewpoint as temporal references.</li>
+<li>It can simultaneously designate the current or previous frame of the
+<em>opposite</em> eye's viewpoint as an inter-view reference.</li>
+<li>Compound prediction combines temporal references with cross-view
+references, reducing bitrate requirements by reusing texture, lighting,
+and geometric data across perspectives.</li>
+</ul>
+<h3 id="superblock-partitioning-and-coding-efficiency">Superblock
+Partitioning and Coding Efficiency</h3>
+<p>Stereoscopic images contain identical high-level scenery with minor
+shifts in position. AV1 utilizes 128×128 pixel superblocks that
+recursively split down to 4×4 blocks.</p>
+<ul>
+<li><strong>Large Flat Areas:</strong> Backgrounds common to both views
+are encoded using large partitions (e.g., 64×64 or 128×128) with minimal
+transform coefficients.</li>
+<li><strong>Detailed Edges:</strong> Near object boundaries where
+stereoscopic occlusions occur (areas visible to one eye but hidden from
+the other), AV1 breaks blocks down to finer sizes to isolate the
+occlusion without re-encoding shared surroundings.</li>
+</ul>
+<h3 id="metadata-signaling-with-open-bitstream-units-obus">Metadata
+Signaling with Open Bitstream Units (OBUs)</h3>
+<p>AV1 structures its bitstream into Open Bitstream Units (OBUs). To
+ensure decoding displays understand how to unpack 3D views, AV1 embeds
+layout instructions inside Metadata OBUs:</p>
+<ul>
+<li><strong>Stereo 3D Signaling:</strong> Metadata OBUs specify whether
+the stream is mono, side-by-side, or top-and-bottom.</li>
+<li><strong>View Assignment:</strong> Flags indicate which half of the
+frame corresponds to the left eye and which corresponds to the right
+eye, as well as whether sub-sampling was applied horizontally or
+vertically.</li>
+<li><strong>Display Handling:</strong> Downstream display hardware
+parses these OBUs to slice, scale, and render the individual
+perspectives onto stereoscopic panels or 3D headsets without proprietary
+decoding layers.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

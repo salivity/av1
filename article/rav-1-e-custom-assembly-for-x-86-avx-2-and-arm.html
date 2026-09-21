@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rav1e Custom Assembly for x86 AVX2 and ARM - av1</title>
+    <meta name="description" content="This article examines how the rav1e AV1 video encoder implements and integrates custom assembly for x86 AVX2 and ARM platforms. It covers the build toolchain integration, foreign function interface (FFI) bindings, architecture-specific assembly designs,">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/rav-1-e-custom-assembly-for-x-86-avx-2-and-arm">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="rav1e Custom Assembly for x86 AVX2 and ARM - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/rav-1-e-custom-assembly-for-x-86-avx-2-and-arm" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how the rav1e AV1 video encoder implements and integrates custom assembly for x86 AVX2 and ARM platforms. It covers the build toolchain integration, foreign function interface (FFI) bindings, architecture-specific assembly designs," />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="rav1e-custom-assembly-for-x86-avx2-and-arm">rav1e Custom
+Assembly for x86 AVX2 and ARM</h1>
+<p>This article examines how the rav1e AV1 video encoder implements and
+integrates custom assembly for x86 AVX2 and ARM platforms. It covers the
+build toolchain integration, foreign function interface (FFI) bindings,
+architecture-specific assembly designs, and the runtime CPU detection
+mechanism used to safely dispatch hand-optimized vector operations.</p>
+<h3 id="build-toolchain-and-assembly-compilation">Build Toolchain and
+Assembly Compilation</h3>
+<p>rav1e is primarily written in Rust, but it relies on low-level
+assembly routines to accelerate compute-heavy video encoding tasks such
+as discrete cosine transforms, motion estimation, loop filters, and
+pixel prediction. The compilation of these routines is managed during
+the build stage using a custom <code>build.rs</code> script.</p>
+<ul>
+<li><strong>x86_64 (AVX2):</strong> Assembly routines are written in
+Netwide Assembler (NASM) syntax. The build script leverages the
+<code>nasm-rs</code> crate to detect a local installation of NASM or
+Yasm, compiling <code>.asm</code> source files directly into native
+object files that are linked into the final Rust binary.</li>
+<li><strong>ARM / AArch64:</strong> ARM routines are written in standard
+GNU Assembler (GAS) syntax within <code>.S</code> files. The build
+script uses the <code>cc</code> crate to invoke the platform's native C
+compiler (such as GCC or Clang) to assemble these files with appropriate
+architecture flags (e.g., <code>-march=armv8-a</code>).</li>
+</ul>
+<h3
+id="architecture-specific-vector-implementation">Architecture-Specific
+Vector Implementation</h3>
+<h4 id="x86-avx2-routines">x86 AVX2 Routines</h4>
+<p>The x86 assembly routines in rav1e often derive from or share design
+patterns with the <code>dav1d</code> AV1 decoder. They utilize the
+widely adopted <code>x86inc.asm</code> macro abstraction layer, which
+provides:</p>
+<ul>
+<li><strong>ABI Normalization:</strong> Automatically handles calling
+convention differences between System V (Linux/macOS) and Microsoft x64
+(Windows), managing stack alignment and register preservation.</li>
+<li><strong>YMM Register Allocation:</strong> Enables seamless access to
+256-bit AVX2 vector registers (<code>ymm0</code>–<code>ymm15</code>),
+implementing SIMD parallelism on 8-bit and 10-bit pixel blocks.</li>
+<li><strong>Fused Instructions:</strong> Employs AVX2 features including
+fused multiply-add (FMA3), broad bitwise manipulation, and 256-bit wide
+integer permutations to accelerate matrix transformations and pixel
+averaging.</li>
+</ul>
+<h4 id="arm-neon-routines">ARM (NEON) Routines</h4>
+<p>ARM optimization focuses primarily on the 64-bit AArch64 platform
+using NEON vector extensions:</p>
+<ul>
+<li><strong>Direct Vector Register Usage:</strong> Routines explicitly
+manage NEON's thirty-two 128-bit vector registers
+(<code>v0</code>–<code>v31</code>), operating simultaneously on 8-bit,
+16-bit, or 32-bit lanes.</li>
+<li><strong>Instruction Efficiency:</strong> Utilizes NEON instructions
+such as vector widening/narrowing arithmetic (<code>saddl</code>,
+<code>uaddl</code>), pairwise additions, and cross-lane permutations
+tailored for pixel-level prediction and filtering.</li>
+<li><strong>Calling Convention Compliance:</strong> Adheres to the
+standard AAPCS64 ABI, directly mapping parameters passed from the Rust
+runtime into AArch64 general-purpose (<code>x0</code>–<code>x7</code>)
+and vector (<code>v0</code>–<code>v7</code>) registers.</li>
+</ul>
+<h3 id="rust-ffi-and-safe-abstraction-layers">Rust FFI and Safe
+Abstraction Layers</h3>
+<p>To integrate these external routines, rav1e defines C-compatible
+foreign function signatures within unsafe Rust modules:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> <span class="st">&quot;C&quot;</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> rav1e_subpixel_filter_avx2(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        dst<span class="op">:</span> <span class="op">*</span><span class="kw">mut</span> <span class="dt">u8</span><span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        dst_stride<span class="op">:</span> <span class="dt">isize</span><span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        src<span class="op">:</span> <span class="op">*</span><span class="kw">const</span> <span class="dt">u8</span><span class="op">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        src_stride<span class="op">:</span> <span class="dt">isize</span><span class="op">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        width<span class="op">:</span> <span class="dt">i32</span><span class="op">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        height<span class="op">:</span> <span class="dt">i32</span><span class="op">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Direct calls to these symbols are inherently <code>unsafe</code>. To
+prevent undefined behavior, rav1e encapsulates each assembly invocation
+within safe Rust wrappers. These wrappers validate slice boundaries,
+enforce correct memory alignments (often 16 or 32 bytes), and verify
+that input parameters conform strictly to block-size constraints
+required by the vector code.</p>
+<h3 id="dynamic-runtime-cpu-dispatch">Dynamic Runtime CPU Dispatch</h3>
+<p>rav1e supports diverse hardware targets by decoupling the assembly
+implementations from the baseline compiler target. It uses runtime CPU
+feature detection rather than relying exclusively on static compile-time
+flags.</p>
+<ol type="1">
+<li><strong>Hardware Detection:</strong> At runtime or encoder
+initialization, rav1e queries the host CPU capabilities. On x86, it
+evaluates CPUID flags for instruction sets like <code>AVX2</code>,
+<code>FMA3</code>, and <code>SSSE3</code>. On ARM, it reads OS-provided
+capabilities or hardware auxiliary vectors (e.g., via
+<code>getauxval</code> on Linux) to check for <code>NEON</code> or
+advanced crypto/vector extensions.</li>
+<li><strong>Function Pointer Resolution:</strong> rav1e structures its
+core operations around function tables or trait implementations. During
+initialization, the encoder checks the detected feature flags and
+populates these tables with pointers to the fastest available
+implementation.</li>
+<li><strong>Fallback Strategy:</strong> If the required SIMD extensions
+(such as AVX2 on an older x86 machine) are absent, the dispatch
+mechanism falls back to auto-vectorized, pure Rust implementations. This
+design guarantees broad binary portability while maximizing performance
+on supported microarchitectures.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

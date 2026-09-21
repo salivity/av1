@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Scalable Video Coding: Inter-Layer Prediction - av1</title>
+    <meta name="description" content="AV1 natively supports Scalable Video Coding (SVC) without requiring a separate extension profile or specialized inter-layer prediction syntax. Instead of introducing isolated prediction modes, AV1 achieves inter-layer prediction by combining its flexible">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-scalable-video-coding-inter-layer-prediction">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Scalable Video Coding: Inter-Layer Prediction - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-scalable-video-coding-inter-layer-prediction" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 natively supports Scalable Video Coding (SVC) without requiring a separate extension profile or specialized inter-layer prediction syntax. Instead of introducing isolated prediction modes, AV1 achieves inter-layer prediction by combining its flexible" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-scalable-video-coding-inter-layer-prediction">AV1 Scalable
+Video Coding: Inter-Layer Prediction</h1>
+<p>AV1 natively supports Scalable Video Coding (SVC) without requiring a
+separate extension profile or specialized inter-layer prediction syntax.
+Instead of introducing isolated prediction modes, AV1 achieves
+inter-layer prediction by combining its flexible reference frame
+architecture with normative reference picture resampling. This approach
+allows spatial, temporal, and quality enhancement layers to efficiently
+predict data from lower layers using standard inter-frame coding
+tools.</p>
+<h3 id="reference-frame-management-and-buffer-allocation">Reference
+Frame Management and Buffer Allocation</h3>
+<p>In AV1, the decoder maintains an eight-slot reference frame buffer
+pool. When operating in scalable modes, the encoder explicitly
+designates which decoded frames from base or lower layers are retained
+in these buffer slots.</p>
+<p>When an enhancement layer frame is decoded, the bitstream configures
+its inter-frame references—such as <code>LAST_FRAME</code>,
+<code>GOLDEN_FRAME</code>, or <code>ALTREF_FRAME</code>—to point
+directly to lower-layer frames stored in the pool. This allows
+inter-layer prediction to function identically to standard temporal
+inter-frame prediction from the perspective of the motion compensation
+pipeline.</p>
+<h3 id="reference-picture-resampling-for-spatial-scalability">Reference
+Picture Resampling for Spatial Scalability</h3>
+<p>The primary enabler of spatial inter-layer prediction in AV1 is its
+native Reference Picture Resampling (normative downscaling and
+upscaling) feature. In earlier standards, such as H.264/SVC or
+HEVC/SHVC, inter-layer spatial prediction required dedicated
+texture-upsampling filters and distinct prediction syntax.</p>
+<p>AV1 eliminates this complexity:</p>
+<ul>
+<li><strong>On-the-Fly Scaling:</strong> When a higher-resolution
+spatial enhancement layer selects a lower-resolution base-layer frame as
+a reference, the decoder automatically applies AV1's normative
+phase-adaptive 8-tap upscaling filter.</li>
+<li><strong>Unified Motion Compensation:</strong> Once the lower-layer
+reference buffer is rescaled to match the current frame's resolution,
+the enhancement layer performs motion search, block partitioning, and
+residual coding using ordinary inter-prediction mechanisms.</li>
+<li><strong>Zero-Motion Vectors:</strong> When the spatial enhancement
+layer directly aligns with the base layer, motion vectors are commonly
+coded as zero, utilizing the rescaled lower-layer content directly as
+the predictor.</li>
+</ul>
+<h3 id="quality-snr-scalability">Quality (SNR) Scalability</h3>
+<p>For SNR or fidelity scalability, the spatial resolution remains
+identical between the base layer and enhancement layers. Inter-layer
+prediction in this scenario requires no scaling operations:</p>
+<ul>
+<li>The base layer frame is decoded and stored in a reference buffer
+slot.</li>
+<li>The enhancement layer points to this buffer slot at the exact same
+spatial dimensions.</li>
+<li>Prediction occurs directly via standard inter-coding, allowing the
+enhancement layer to transmit only refined residual data to improve
+visual quality.</li>
+</ul>
+<h3 id="scalability-structure-signaling">Scalability Structure
+Signaling</h3>
+<p>AV1 communicates dependency rules and prediction paths through the
+<code>scalability_structure</code> syntax, embedded within the Sequence
+Header Open Bitstream Unit (OBU) or metadata OBUs. This structure
+defines:</p>
+<ul>
+<li>The total number of spatial and temporal layers.</li>
+<li>The reference picture marking patterns.</li>
+<li>Explicit frame-dependency trees, ensuring decoders know which
+lower-layer buffers must be retained for cross-layer prediction without
+buffer corruption.</li>
+</ul>
+<p>By treating lower-layer frames simply as alternative references
+within a unified frame-management system, AV1 streamlines decoder
+complexity while enabling robust cross-layer prediction for spatial,
+temporal, and SNR scalability.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

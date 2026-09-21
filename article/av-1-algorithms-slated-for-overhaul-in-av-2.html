@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Algorithms Slated for Overhaul in AV2 - av1</title>
+    <meta name="description" content="As the Alliance for Open Media (AOMedia) develops AV2 to succeed the AV1 video standard, researchers are systematically re-engineering the baseline coding tools to achieve substantial bitrate reductions. While AV1 combined technologies from VP9, Daala, a">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-algorithms-slated-for-overhaul-in-av-2">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Algorithms Slated for Overhaul in AV2 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-algorithms-slated-for-overhaul-in-av-2" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="As the Alliance for Open Media (AOMedia) develops AV2 to succeed the AV1 video standard, researchers are systematically re-engineering the baseline coding tools to achieve substantial bitrate reductions. While AV1 combined technologies from VP9, Daala, a" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-algorithms-slated-for-overhaul-in-av2">AV1 Algorithms Slated
+for Overhaul in AV2</h1>
+<p>As the Alliance for Open Media (AOMedia) develops AV2 to succeed the
+AV1 video standard, researchers are systematically re-engineering the
+baseline coding tools to achieve substantial bitrate reductions. While
+AV1 combined technologies from VP9, Daala, and Thor, several algorithmic
+candidates reached their practical limits or suffered from high
+computational complexity. In AV2, key coding structures—most notably
+block partitioning, intra and inter prediction modes, transform
+toolsets, and in-loop restoration filters—are slated for comprehensive
+overhauls to push compression efficiency beyond modern standards like
+VVC.</p>
+<h3 id="block-partitioning-and-superblock-architecture">Block
+Partitioning and Superblock Architecture</h3>
+<p>AV1 relies on a recursive superblock partitioning scheme (supporting
+128×128 and 64×64 trees) with 10 partition types, including 4:1 and 1:4
+rectangular splits. While flexible, this approach creates substantial
+decision complexity and lacks the spatial adaptability found in
+competing codecs.</p>
+<p>In AV2, the partitioning engine is being overhauled with more
+versatile Multi-Type Tree (MTT) and Quad-Tree plus Multi-Type Tree
+(QTMT) structures. These algorithms eliminate rigid recursive tree
+constraints by allowing ternary, asymmetric, and independent luma-chroma
+split trees. This structural change targets AV1's inability to isolate
+high-frequency edges within fine-grained boundaries without incurring
+excessive split-signaling overhead.</p>
+<h3 id="intra-frame-prediction-enhancements">Intra-Frame Prediction
+Enhancements</h3>
+<p>AV1 features 56 directional intra prediction angles paired with
+angle-delta signaling, smooth predictors, and Chroma from Luma (CfL)
+prediction. Although effective, AV1's intra prediction relies heavily on
+planar spatial continuity and struggles with complex local textures.</p>
+<p>AV2 candidates overhaul this toolset in several distinct ways:</p>
+<ul>
+<li><strong>Multi-Reference Line Prediction (MRLP):</strong> Replacing
+AV1’s single-line reference boundary, this technique allows predictors
+to sample reconstructed pixel rows and columns located further away from
+the target block.</li>
+<li><strong>Matrix-Based Intra Prediction (MIP):</strong>
+Neural-inspired linear transformations replace standard directional
+interpolation for complex geometries.</li>
+<li><strong>Expanded CfL and Cross-Component Tools:</strong>
+Cross-component linear models are being overhauled to support non-linear
+relationships and multi-model approximations, substantially improving
+chroma compression relative to AV1's simple affine scaling.</li>
+</ul>
+<h3 id="inter-prediction-affine-modeling-and-obmc">Inter Prediction,
+Affine Modeling, and OBMC</h3>
+<p>AV1 introduced Overlapped Block Motion Compensation (OBMC) and warped
+motion (affine prediction) alongside traditional motion vector
+differences. However, the implementation within AV1 is heavily
+constrained: warped motion is restricted to 8-parameter global models or
+local block-based approximations with fixed sub-sampling, and OBMC is
+limited to causal neighboring blocks.</p>
+<p>For AV2, the inter-prediction pipeline is undergoing major
+revisions:</p>
+<ul>
+<li><strong>Higher-Precision Motion Vectors:</strong> Migration toward
+1/16-pel motion vector accuracy to improve temporal continuity in
+detailed scenes.</li>
+<li><strong>Parametric Affine Motion Compensation:</strong>
+Transitioning from AV1’s limited warp mechanics to explicit 4-parameter
+and 6-parameter affine models that better capture zooming, rotation, and
+shear.</li>
+<li><strong>Advanced Bi-Prediction and Blend Modes:</strong> AV1's
+Compound Inter-Intra and Wedge prediction tools are being overhauled
+with adaptive weighting derivation (such as generalized bi-prediction),
+reducing the signaling overhead required to blend multi-frame
+references.</li>
+</ul>
+<h3 id="transform-core-and-non-separable-transforms">Transform Core and
+Non-Separable Transforms</h3>
+<p>AV1 uses up to 16 transform combinations comprising 1D Discrete
+Cosine Transforms (DCT) and Asymmetric Discrete Sine Transforms (ADST),
+ranging from 4×4 to 64×64. A known bottleneck in AV1 is its exclusive
+reliance on separable 1D transforms, which leave residual statistical
+redundancies across diagonal pixel orientations.</p>
+<p>In AV2, primary transforms are being augmented with Low-Frequency
+Non-Separable Transforms (LFNST). Applied as a secondary pass between
+the primary transform and quantization stages, LFNST decorrelates
+directional energy that AV1's separable DCT/ADST kernels fail to
+compact. Additionally, candidate toolsets include adaptive core
+transforms with dynamic matrix sizes, removing the hard truncation of
+high frequencies present in AV1’s 64×64 transform blocks.</p>
+<h3 id="in-loop-filtering-and-restoration-pipelines">In-Loop Filtering
+and Restoration Pipelines</h3>
+<p>The in-loop filtering pipeline in AV1 consists of three stages
+executed in sequence: the Deblocking Filter, the Constrained Directional
+Enhancement Filter (CDEF), and Loop Restoration (Wiener filter and
+Self-Guided filter). While CDEF and Wiener restoration delivered notable
+quality gains in AV1, their interaction is largely decoupled and incurs
+high computational complexity.</p>
+<p>AV2 overhauls this pipeline by investigating:</p>
+<ul>
+<li><strong>Unified Filtering Frameworks:</strong> Merging directional
+deringing and Wiener restoration into an integrated filtering pass to
+prevent redundant pixel modifications.</li>
+<li><strong>Cross-Component Sample Adaptive Offset (CC-SAO):</strong>
+Introducing fine-grained sample classification across color planes to
+recover edge fidelity lost during quantization.</li>
+<li><strong>Neural In-Loop Filtering:</strong> Experimental AV2
+configurations test lightweight, integer-arithmetic convolutional neural
+network (CNN) loop filters designed to replace or supplement traditional
+CDEF passes.</li>
+</ul>
+<h3 id="entropy-coding-engine">Entropy Coding Engine</h3>
+<p>AV1’s entropy coder utilizes a multi-symbol arithmetic coding engine
+derived from Daala. While computationally efficient at higher bitrates,
+its probability adaptation mechanisms and context-modeling logic
+struggle with the highly dense syntax structures introduced by
+next-generation coding tools. AV2 algorithms refine context selection
+logic, introduce multi-hypothesis probability estimators, and optimize
+symbol throughput to accommodate the denser signaling profiles demanded
+by its upgraded prediction and transform tools.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

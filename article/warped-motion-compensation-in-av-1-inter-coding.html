@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warped Motion Compensation in AV1 Inter Coding - av1</title>
+    <meta name="description" content="Warped motion compensation is an advanced inter-frame prediction technique in the AV1 video codec designed to model complex, non-translational physical movements such as camera zoom, rotation, and perspective shifts. While traditional video codecs rely a">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/warped-motion-compensation-in-av-1-inter-coding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Warped Motion Compensation in AV1 Inter Coding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/warped-motion-compensation-in-av-1-inter-coding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Warped motion compensation is an advanced inter-frame prediction technique in the AV1 video codec designed to model complex, non-translational physical movements such as camera zoom, rotation, and perspective shifts. While traditional video codecs rely a" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="warped-motion-compensation-in-av1-inter-coding">Warped Motion
+Compensation in AV1 Inter Coding</h1>
+<p>Warped motion compensation is an advanced inter-frame prediction
+technique in the AV1 video codec designed to model complex,
+non-translational physical movements such as camera zoom, rotation, and
+perspective shifts. While traditional video codecs rely almost
+exclusively on simple horizontal and vertical translation vectors, AV1
+integrates warped motion compensation to map blocks between frames using
+higher-order geometric transformations. This overview explains how
+warped motion compensation functions in AV1 inter coding, the
+mathematical models behind it, and why it significantly improves
+compression efficiency without overwhelming hardware decoders.</p>
+<h3 id="limitations-of-traditional-motion-compensation">Limitations of
+Traditional Motion Compensation</h3>
+<p>Conventional inter prediction operates under the assumption that
+objects and backgrounds move purely in straight, linear paths (<span
+class="math inline">\(x\)</span> and <span
+class="math inline">\(y\)</span> translations). In standard motion
+compensation, a macroblock or coding unit searches a reference frame for
+a matching block and records a single 2D motion vector.</p>
+<p>However, real-world video frequently contains complex motion,
+including:</p>
+<ul>
+<li>Camera zooming (scaling)</li>
+<li>Camera panning with wide-angle lenses (perspective distortion)</li>
+<li>Object or camera rotation</li>
+<li>Shearing or tilting</li>
+</ul>
+<p>When traditional translational models encounter these movements, they
+produce high residual errors. The codec must then allocate substantial
+bitrate to encode the difference between the predicted and original
+frames, reducing overall compression efficiency.</p>
+<h3 id="how-warped-motion-compensation-works-in-av1">How Warped Motion
+Compensation Works in AV1</h3>
+<p>AV1 overcomes the limits of translational motion by supporting
+higher-degree affine and projective motion models. Instead of simply
+shifting a block, the codec applies mathematical transformations to warp
+the reference block to match the target frame geometry.</p>
+<p>In AV1, warped motion operates across two primary levels:</p>
+<h4 id="1-global-motion-compensation-gmc">1. Global Motion Compensation
+(GMC)</h4>
+<p>Global motion compensation accounts for whole-frame movement caused
+by camera motion. During encoding, AV1 analyzes the entire frame to
+detect global transformations, which fall into four models:</p>
+<ul>
+<li><strong>Identity:</strong> No movement.</li>
+<li><strong>Translation:</strong> Standard <span
+class="math inline">\(x/y\)</span> movement.</li>
+<li><strong>Rotzoom (Rotation and Zoom):</strong> A 4-parameter model
+capturing translation, uniform scaling, and rotation.</li>
+<li><strong>Affine:</strong> A 6-parameter model capturing translation,
+rotation, scaling, and non-uniform shearing.</li>
+</ul>
+<p>The parameters for the global model are signaled at the frame header
+level, allowing individual coding blocks to reference the global
+transformation without repeating parameters inside each block.</p>
+<h4 id="2-local-warped-motion">2. Local Warped Motion</h4>
+<p>For localized, non-rigid movements, AV1 provides a local warped
+motion mode. Explicitly transmitting a full 6-parameter affine matrix
+for every individual block would consume excessive bitrate. To solve
+this, AV1 derives the local affine transformation parameters using the
+motion vectors of neighboring blocks that have already been decoded.</p>
+<p>By analyzing the spatial motion field around the current block, the
+decoder solves a least-squares problem to reconstruct the transformation
+matrix. This allows AV1 to achieve affine-level predictive accuracy with
+minimal signaling overhead.</p>
+<h3 id="hardware-friendly-warp-implementation">Hardware-Friendly Warp
+Implementation</h3>
+<p>Applying arbitrary perspective and affine transformations directly at
+the pixel level requires heavy floating-point arithmetic, which is
+prohibitive for real-time decoders and low-power hardware. AV1 addresses
+this challenge using shearing decomposition.</p>
+<p>Any affine transformation can be mathematically decomposed into a
+sequence of simpler operations:</p>
+<ol type="1">
+<li>A horizontal shear.</li>
+<li>A vertical shear.</li>
+<li>A scaling or interpolation step.</li>
+</ol>
+<p>AV1 restricts warping to a grid of sub-blocks (typically 8x8 pixels)
+and uses separable, one-dimensional filtering. This ensures that memory
+bandwidth remains constrained, cache utilization stays high, and
+hardware implementations can process warped blocks using existing
+pipelined interpolation hardware.</p>
+<h3 id="benefits-of-warped-motion-in-av1">Benefits of Warped Motion in
+AV1</h3>
+<ul>
+<li><strong>Bitrate Savings:</strong> On sequences featuring rotational
+motion, zooms, or complex pan shots, warped motion compensation provides
+significant BD-rate reductions, cutting the data required to represent
+complex motion residuals.</li>
+<li><strong>Reduced Blocking Artifacts:</strong> Because
+non-translational movement is mapped continuously rather than broken
+into disjointed, square translational blocks, output frames suffer from
+fewer visual discontinuities along block boundaries.</li>
+<li><strong>Zero-Vector Signaling Overhead (Local Mode):</strong> By
+deriving parameters from spatial neighbors rather than explicitly coding
+matrices into the bitstream, AV1 achieves higher-order motion modeling
+without inflating header data.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Recursive Filtering Works in AV1 Intra Modes - av1</title>
+    <meta name="description" content="This article provides an overview of how recursive filtering operates within the intra prediction framework of the AV1 video codec. It examines the mechanics of dividing blocks into smaller sub-units, applying pre-trained filter matrices, and using newly">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-recursive-filtering-works-in-av-1-intra-modes">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Recursive Filtering Works in AV1 Intra Modes - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-recursive-filtering-works-in-av-1-intra-modes" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how recursive filtering operates within the intra prediction framework of the AV1 video codec. It examines the mechanics of dividing blocks into smaller sub-units, applying pre-trained filter matrices, and using newly" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-recursive-filtering-works-in-av1-intra-modes">How Recursive
+Filtering Works in AV1 Intra Modes</h1>
+<p>This article provides an overview of how recursive filtering operates
+within the intra prediction framework of the AV1 video codec. It
+examines the mechanics of dividing blocks into smaller sub-units,
+applying pre-trained filter matrices, and using newly predicted samples
+to iteratively derive adjacent predictions. Readers will gain a clear
+technical understanding of how this approach improves compression
+efficiency compared to conventional directional intra prediction, along
+with the performance trade-offs involved.</p>
+<h3 id="the-limits-of-standard-intra-prediction">The Limits of Standard
+Intra Prediction</h3>
+<p>Standard intra prediction in modern video codecs typically relies on
+directional extrapolation. Boundary samples from previously
+reconstructed neighboring blocks (above and to the left) are projected
+straight across the target block along a specified angle. While
+efficient for simple patterns, this approach struggles over longer
+distances within large blocks. As the distance from the reference
+boundary increases, prediction accuracy decreases, often leading to
+smooth or blurry textures that require high residual bitrates to
+correct.</p>
+<h3 id="the-core-concept-of-recursive-filtering">The Core Concept of
+Recursive Filtering</h3>
+<p>Recursive filtering—most prominently realized in AV1 as Filter Intra
+Mode—addresses the degradation of reference samples by treating intra
+prediction as an iterative, autoregressive process. Instead of
+projecting outer boundary samples across the entire block in a single
+step, recursive intra prediction subdivides the block into smaller
+patches (typically 4x2 or 4x4 sub-units) and filters them
+sequentially.</p>
+<p>The primary innovation of this approach is feedback: once a sub-unit
+is predicted, its newly synthesized pixel values immediately serve as
+the reference samples for the neighboring sub-units directly to its
+right and below.</p>
+<h3 id="step-by-step-mechanics-of-the-recursive-process">Step-by-Step
+Mechanics of the Recursive Process</h3>
+<p>The recursive prediction workflow operates through the following
+discrete steps:</p>
+<ol type="1">
+<li><strong>Sub-Block Partitioning</strong>: The target block (such as
+an 8x8 or 16x16 transform block) is split into a grid of smaller
+sub-blocks, commonly sized at 4x2 pixels.</li>
+<li><strong>Initial Boundary Sampling</strong>: For the top-left
+sub-block, the algorithm extracts true reconstructed samples from the
+adjacent external boundaries (the top and left neighbor blocks).</li>
+<li><strong>Matrix-Based Filtering</strong>: Rather than using simple
+interpolation, the algorithm applies a pre-calculated linear filter
+matrix to the reference samples. This operation computes an inner
+product between the chosen filter weights and the reference pixels,
+generating the predicted pixel values for the current 4x2 patch.</li>
+<li><strong>State Update (Recursion)</strong>: The rightmost column and
+bottom row of the newly predicted 4x2 patch are fed into the prediction
+buffer, acting as virtual reference boundaries for subsequent adjacent
+patches.</li>
+<li><strong>Iterative Propagation</strong>: The algorithm moves through
+the block in raster or diagonal scan order. Each subsequent patch is
+computed using either external block boundaries, the internal synthetic
+boundaries created by previously processed patches, or a combination of
+both. This repeats until the entire block is populated.</li>
+</ol>
+<h3 id="filter-modes-and-weight-derivation">Filter Modes and Weight
+Derivation</h3>
+<p>To keep encoding and decoding computationally feasible, AV1 avoids
+deriving filter weights dynamically during runtime. Instead,
+experimental and standard recursive intra modes utilize a fixed set of
+predefined filter kernels stored in lookup tables.</p>
+<p>These filters are trained offline using machine learning techniques
+over large corpuses of video data. AV1 typically supports several
+distinct filter variations representing directional and non-directional
+characteristics, including:</p>
+<ul>
+<li>Vertical-dominated recursive filters</li>
+<li>Horizontal-dominated recursive filters</li>
+<li>Smooth and DC-like non-directional filters</li>
+</ul>
+<p>During the rate-distortion optimization (RDO) search, the encoder
+tests these predefined filter modes against standard directional modes
+and signals the optimal mode index in the bitstream.</p>
+<h3 id="advantages-and-architectural-trade-offs">Advantages and
+Architectural Trade-offs</h3>
+<p>Recursive filtering allows boundary details to propagate naturally
+into the interior of a block, producing more realistic gradients and
+localized textures than straight linear projection. This reduces the
+energy of the residual signal, resulting in lower bitrate requirements
+for complex scenes.</p>
+<p>However, the sequential nature of recursive filtering introduces
+intra-block data dependencies. Because patch <span
+class="math inline">\(N+1\)</span> cannot be calculated until patch
+<span class="math inline">\(N\)</span> finishes its matrix
+multiplication and updates the reference buffer, hardware decoders face
+serialization constraints, making internal parallelization within a
+single block more difficult compared to traditional directional
+projection.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

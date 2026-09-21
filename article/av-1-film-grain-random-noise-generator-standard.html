@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Film Grain Random Noise Generator Standard - av1</title>
+    <meta name="description" content="This article provides an overview of how film grain synthesis is standardized in the AV1 video codec, focusing on the specific random noise generator used inside compliant decoders. It explains the normative 16-bit Linear Feedback Shift Register (LFSR) a">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-film-grain-random-noise-generator-standard">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Film Grain Random Noise Generator Standard - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-film-grain-random-noise-generator-standard" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how film grain synthesis is standardized in the AV1 video codec, focusing on the specific random noise generator used inside compliant decoders. It explains the normative 16-bit Linear Feedback Shift Register (LFSR) a" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-film-grain-random-noise-generator-standard">AV1 Film Grain
+Random Noise Generator Standard</h1>
+<p>This article provides an overview of how film grain synthesis is
+standardized in the AV1 video codec, focusing on the specific random
+noise generator used inside compliant decoders. It explains the
+normative 16-bit Linear Feedback Shift Register (LFSR) algorithm, how it
+initializes and produces pseudo-random values, and how these values are
+processed through autoregressive modeling to generate realistic film
+grain across different platforms.</p>
+<h2 id="the-standardized-prng-16-bit-linear-feedback-shift-register">The
+Standardized PRNG: 16-Bit Linear Feedback Shift Register</h2>
+<p>To synthesize film grain rather than encoding it directly into the
+video stream, the AV1 specification defines a deterministic
+pseudo-random number generator (PRNG). Standardizing this generator
+ensures that every compliant hardware and software decoder outputs
+visual grain patterns that look consistent without requiring the
+transmission of high-frequency noise data.</p>
+<p>AV1 specifies a <strong>16-bit Linear Feedback Shift Register
+(LFSR)</strong> as its core random noise generator. Decoders run this
+LFSR using a specific feedback polynomial to produce a stream of
+pseudo-random bits.</p>
+<p>The bitwise operation for generating the next feedback bit is defined
+as:</p>
+<p><span class="math display">\[\text{bit} = \left( (\text{seed} \gg 0)
+\oplus (\text{seed} \gg 1) \oplus (\text{seed} \gg 3) \oplus
+(\text{seed} \gg 12) \right) \ \&amp; \ 1\]</span></p>
+<p>The register updates its state by shifting right by one bit and
+inserting the calculated feedback bit into the most significant
+position:</p>
+<p><span class="math display">\[\text{seed} = (\text{seed} \gg 1) \ | \
+(\text{bit} \ll 15)\]</span></p>
+<p>Because the state space is strictly 16 bits, the PRNG is lightweight
+and well-suited for fixed-function hardware decoders, DSPs, and
+low-power mobile chips.</p>
+<h2 id="seed-initialization-and-frame-signaling">Seed Initialization and
+Frame Signaling</h2>
+<p>The LFSR relies on a 16-bit seed parameter
+(<code>film_grain_seed_param</code> or <code>random_seed</code>)
+provided directly in the frame header bitstream:</p>
+<ul>
+<li><strong>Frame-Level Control:</strong> When film grain is enabled,
+the encoder transmits an updated seed per frame or updates it via grain
+parameter refresh intervals.</li>
+<li><strong>Deterministic Sequences:</strong> If a frame contains a
+non-zero seed, the decoder initializes the 16-bit LFSR with that exact
+value, ensuring identical sequences are computed regardless of the
+decoder architecture.</li>
+<li><strong>Seed Update Process:</strong> As grain blocks are generated
+across the image, the PRNG continuously cycles through states to prevent
+repetitive, visible tiling artifacts.</li>
+</ul>
+<h2 id="from-pseudo-random-bits-to-film-grain">From Pseudo-Random Bits
+to Film Grain</h2>
+<p>The output of the 16-bit LFSR is not applied directly to decoded
+pixels as raw white noise. Instead, AV1 uses the PRNG to populate
+synthetic grain templates via an Autoregressive (AR) process:</p>
+<ol type="1">
+<li><strong>Uniform Value Generation:</strong> The LFSR outputs integers
+that are mapped into uniform pseudo-random values within a centered
+range (typically between -128 and 127).</li>
+<li><strong>Template Synthesis:</strong> Decoders generate small blocks
+of noise (a 64×64 sample template for luma, and 32×32 templates for
+chroma).</li>
+<li><strong>Autoregressive (AR) Filtering:</strong> An AR filter of
+order 0, 1, 2, or 3 shapes the spatial correlation of the uniform noise
+values. By applying filter weights signaled in the bitstream to
+neighboring random samples, the decoder converts raw white noise into
+structured, fine, or coarse grain.</li>
+<li><strong>Luminance-Based Scaling:</strong> The generated grain is
+modulated by a piecewise linear scaling function before being added back
+to the reconstructed picture. This step ensures that noise intensity
+adapts dynamically to local pixel brightness, matching the behavior of
+physical film stock.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

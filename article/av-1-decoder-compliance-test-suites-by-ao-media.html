@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Decoder Compliance Test Suites by AOMedia - av1</title>
+    <meta name="description" content="This article provides an overview of the official compliance and validation test suites developed by the Alliance for Open Media (AOMedia) to verify AV1 decoder implementations. It outlines the core components of the AV1 Conformance Test Suite, the categ">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-decoder-compliance-test-suites-by-ao-media">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Decoder Compliance Test Suites by AOMedia - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-decoder-compliance-test-suites-by-ao-media" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the official compliance and validation test suites developed by the Alliance for Open Media (AOMedia) to verify AV1 decoder implementations. It outlines the core components of the AV1 Conformance Test Suite, the categ" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-decoder-compliance-test-suites-by-aomedia">AV1 Decoder
+Compliance Test Suites by AOMedia</h1>
+<p>This article provides an overview of the official compliance and
+validation test suites developed by the Alliance for Open Media
+(AOMedia) to verify AV1 decoder implementations. It outlines the core
+components of the AV1 Conformance Test Suite, the categories of test
+vectors used to validate profiles and levels, and the methodology
+employed to guarantee that third-party hardware and software decoders
+strictly follow the AV1 bitstream specification.</p>
+<h2 id="the-role-of-aomedia-compliance-testing">The Role of AOMedia
+Compliance Testing</h2>
+<p>AOMedia provides a comprehensive conformance framework to ensure that
+any compliant AV1 decoder can correctly parse and reconstruct pictures
+from valid AV1 bitstreams. Conformance testing prevents fragmentation
+across hardware implementations (such as GPUs, SoCs, and smart TVs) and
+software decoders by establishing an authoritative baseline for
+bitstream compliance and output fidelity.</p>
+<h2 id="the-av1-conformance-bitstream-suite">The AV1 Conformance
+Bitstream Suite</h2>
+<p>The core of AOMedia’s validation toolkit is the AV1 Conformance Test
+Suite, a curated collection of bitstreams (<code>.ivf</code> or
+<code>.obu</code> files) paired with reference outputs (raw YUV/Y4M data
+and cryptographic MD5/SHA checksums). These vectors test every normative
+feature defined in the AV1 specification, including:</p>
+<ul>
+<li><strong>Profile Coverage:</strong> Validation streams spanning the
+Main Profile (8-bit and 10-bit YUV 4:2:0), High Profile (adds YUV
+4:4:4), and Professional Profile (adds YUV 4:2:2 and 12-bit depth
+support).</li>
+<li><strong>Level and Tier Constraints:</strong> Bitstreams designed to
+operate at the exact boundary conditions of defined operational levels
+(from Level 2.0 up to Level 6.3), verifying maximum sample rates,
+bitrate caps, buffer sizes, and frame resolutions.</li>
+<li><strong>Coding Tool Verification:</strong> Individual streams
+focused on distinct AV1 coding tools, including Constrained Directional
+Enhancement Filtering (CDEF), Loop Restoration Filters (Wiener and
+self-guided), Super-Resolution, Film Grain Synthesis, and Warp
+Motion/Global Motion vectors.</li>
+<li><strong>Tiling and Scalability:</strong> Test sets validating
+uniform and non-uniform tile configurations, tile groups, and
+temporal/spatial scalability structures defined by Operating
+Points.</li>
+</ul>
+<h2 id="types-of-validation-vectors">Types of Validation Vectors</h2>
+<p>AOMedia categorizes conformance streams into distinct groups based on
+their testing objective:</p>
+<ol type="1">
+<li><strong>Functional Conformance Vectors:</strong> Standard bitstreams
+testing individual tools and syntax elements under typical operating
+conditions.</li>
+<li><strong>Stress and Boundary Vectors:</strong> Bitstreams crafted to
+hit maximum syntactic values (e.g., maximum motion vector ranges, peak
+transform sizes, extreme quantization steps) to ensure hardware
+pipelines do not overflow or bottleneck.</li>
+<li><strong>Negative and Error-Handling Vectors:</strong> Bitstreams
+containing out-of-spec parameters or malformed headers. While decoders
+are not required to decode invalid streams, these vectors verify that
+implementations reject or safely drop invalid bitstreams without
+crashing or entering undefined execution states.</li>
+</ol>
+<h2 id="the-reference-decoder-as-the-golden-standard">The Reference
+Decoder as the Golden Standard</h2>
+<p>Compliance validation relies on <code>libaom</code>, AOMedia’s
+open-source reference software library. Within this library, the
+reference decoder (<code>aomdec</code>) acts as the "golden model."</p>
+<p>To validate a target decoder:</p>
+<ul>
+<li>The target decoder parses the conformance bitstreams.</li>
+<li>It generates uncompressed YUV output frames.</li>
+<li>The generated frames are compared pixel-for-pixel against the output
+of the reference decoder.</li>
+</ul>
+<p>For normative tools requiring exact reconstruction (such as
+arithmetic entropy decoding and inverse transforms), pixel-perfect
+matching is enforced via cryptographic checksum verification. For
+features where exact floating-point determinism may vary depending on
+implementation (such as certain post-processing or color space
+transformations), acceptable tolerance thresholds are specified by the
+working group.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

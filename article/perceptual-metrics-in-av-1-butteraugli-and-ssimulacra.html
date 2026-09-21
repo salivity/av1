@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perceptual Metrics in AV1: Butteraugli and SSIMULACRA - av1</title>
+    <meta name="description" content="This article explores how advanced perceptual metrics—specifically Butteraugli and SSIMULACRA—are used to tune AV1 video encoders. While legacy metrics like PSNR and standard SSIM prioritize mathematical pixel differences, perceptual metrics model th">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/perceptual-metrics-in-av-1-butteraugli-and-ssimulacra">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Perceptual Metrics in AV1: Butteraugli and SSIMULACRA - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/perceptual-metrics-in-av-1-butteraugli-and-ssimulacra" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how advanced perceptual metrics—specifically Butteraugli and SSIMULACRA—are used to tune AV1 video encoders. While legacy metrics like PSNR and standard SSIM prioritize mathematical pixel differences, perceptual metrics model th" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="perceptual-metrics-in-av1-butteraugli-and-ssimulacra">Perceptual
+Metrics in AV1: Butteraugli and SSIMULACRA</h1>
+<p>This article explores how advanced perceptual metrics—specifically
+Butteraugli and SSIMULACRA—are used to tune AV1 video encoders. While
+legacy metrics like PSNR and standard SSIM prioritize mathematical pixel
+differences, perceptual metrics model the biological mechanics of human
+vision. In modern AV1 development, these metrics guide rate-distortion
+optimization, adaptive quantization, and psychovisual tuning, enabling
+encoders to produce visually superior video at significantly lower
+bitrates.</p>
+<h2 id="the-limitation-of-traditional-video-metrics">The Limitation of
+Traditional Video Metrics</h2>
+<p>For decades, video encoding relied on Peak Signal-to-Noise Ratio
+(PSNR) and Mean Squared Error (MSE) to assess compression quality. These
+metrics calculate the exact numerical difference between original and
+compressed pixels.</p>
+<p>However, the human visual system does not perceive artifacts
+uniformly. A mathematical error in a high-contrast, complex texture
+(such as foliage) is virtually invisible to human eyes, whereas the same
+error in a smooth gradient or a dark scene causes obvious and
+distracting banding or blocking. When an AV1 encoder optimizes strictly
+for PSNR, it often blurs textures and wastes bits preserving
+mathematical fidelity in areas where humans cannot perceive the
+difference.</p>
+<h2 id="what-are-butteraugli-and-ssimulacra">What Are Butteraugli and
+SSIMULACRA?</h2>
+<p>To overcome the blind spots of legacy metrics, researchers developed
+psychovisual models that simulate human visual perception:</p>
+<ul>
+<li><strong>Butteraugli:</strong> Originally designed by Google for
+static image evaluation, Butteraugli models the human eye's physical
+properties. It accounts for spatial frequency sensitivity, color
+perception (particularly how the human eye is less sensitive to
+high-frequency changes in blue), and visual masking (the phenomenon
+where adjacent visual noise obscures artifacts). Butteraugli outputs a
+score representing the point at which a difference becomes noticeable to
+the human eye.</li>
+<li><strong>SSIMULACRA (and SSIMULACRA2):</strong> Built upon concepts
+from Butteraugli, structural similarity, and extensive subjective
+testing databases, SSIMULACRA evaluates perceptual quality with high
+precision. SSIMULACRA2, the modernized iteration, uses deep psychovisual
+modeling to score images on a 0–100 scale, capturing compression
+artifacts like edge smearing, ringing, blockiness, and loss of texture
+that conventional SSIM overlooks.</li>
+</ul>
+<h2 id="how-perceptual-metrics-relate-to-av1-tuning">How Perceptual
+Metrics Relate to AV1 Tuning</h2>
+<p>In modern AV1 encoders, such as mainline SVT-AV1, libaom, and
+community-driven projects like SVT-AV1-PSY, Butteraugli and SSIMULACRA
+serve two primary functions: evaluating experimental features and
+guiding the encoder's internal decision-making processes.</p>
+<h3 id="1-rate-distortion-optimization-rdo">1. Rate-Distortion
+Optimization (RDO)</h3>
+<p>Encoders make thousands of decisions per frame regarding block
+partitioning, prediction modes, and transform sizes. This process, known
+as Rate-Distortion Optimization (RDO), balances the bitrate cost against
+the resulting distortion:</p>
+<p><span class="math display">\[\text{Cost} = \text{Bitrate} + \lambda
+\times \text{Distortion}\]</span></p>
+<p>Traditionally, "Distortion" was calculated using simple Sum of
+Squared Errors (SSE). In psychovisually tuned AV1 implementations,
+developers modify the distortion calculation to align with principles
+derived from Butteraugli and SSIMULACRA. Instead of minimizing raw pixel
+deviations, the encoder minimizes <em>perceptual</em> errors, allowing
+non-visible mathematical differences if it frees up bits for visible
+features.</p>
+<h3 id="2-adaptive-quantization-aq">2. Adaptive Quantization (AQ)</h3>
+<p>Adaptive Quantization determines how aggressively different areas of
+a frame are compressed. Perceptual metrics highlight the failure points
+of standard quantization:</p>
+<ul>
+<li><strong>Flat and Dark Areas:</strong> Butteraugli identifies high
+sensitivity to gradients and dark scenes. AV1 tuners use this data to
+lower quantization in flat regions to eliminate banding.</li>
+<li><strong>Edge Preservation:</strong> SSIMULACRA penalizes boundary
+blurring. Encoders adjust spatial AQ to allocate more bits to strong
+edges and line art.</li>
+<li><strong>Texture Retention:</strong> Rather than smoothing out grain
+and fine textures to save bits, perceptually tuned AQ retains
+high-frequency details that prevent the video from looking plastic or
+unnatural.</li>
+</ul>
+<h3 id="3-automated-encoder-benchmarking-and-parameter-search">3.
+Automated Encoder Benchmarking and Parameter Search</h3>
+<p>Developing AV1 presets and tuning flags requires testing thousands of
+encoding parameters. Subjective human testing is accurate but slow and
+expensive. SSIMULACRA2 and Butteraugli provide automated, reliable
+proxies for human eyes.</p>
+<p>Developers run automated regressions across large video datasets,
+scoring variations of AV1 settings against SSIMULACRA2. If a new
+encoding algorithm improves PSNR but degrades the SSIMULACRA2 score,
+developers can reject the change knowing it harms real-world viewing
+quality.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Perceptual metrics like Butteraugli and SSIMULACRA bridge the gap
+between algorithmic compression and human biology. In AV1 tuning, they
+redirect encoder priorities away from raw mathematical accuracy and
+toward visual plausibility. By targeting artifacts that human eyes
+actually perceive, these metrics allow AV1 to deliver sharper textures,
+cleaner gradients, and a more faithful visual experience at lower data
+rates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 OBU Headers: Stream Isolation and Compatibility - av1</title>
+    <meta name="description" content="The AOMedia Video 1 (AV1) bitstream relies on a modular Open Bitstream Unit (OBU) architecture to guarantee robust stream parsing isolation and seamless backward compatibility. By decoupling packet transport from syntax decoding through standardized head">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-obu-headers-stream-isolation-and-compatibility">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 OBU Headers: Stream Isolation and Compatibility - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-obu-headers-stream-isolation-and-compatibility" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AOMedia Video 1 (AV1) bitstream relies on a modular Open Bitstream Unit (OBU) architecture to guarantee robust stream parsing isolation and seamless backward compatibility. By decoupling packet transport from syntax decoding through standardized head" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-obu-headers-stream-isolation-and-compatibility">AV1 OBU
+Headers: Stream Isolation and Compatibility</h1>
+<p>The AOMedia Video 1 (AV1) bitstream relies on a modular Open
+Bitstream Unit (OBU) architecture to guarantee robust stream parsing
+isolation and seamless backward compatibility. By decoupling packet
+transport from syntax decoding through standardized headers, explicit
+payload boundaries, and extensibility flags, AV1 ensures that legacy
+decoders and lightweight demuxers can safely traverse, skip, or isolate
+data units without risking stream corruption or requiring payload-level
+decoding.</p>
+<h3 id="the-role-of-obu_has_size_field-in-stream-isolation">The Role of
+<code>obu_has_size_field</code> in Stream Isolation</h3>
+<p>The primary mechanism for parsing isolation in AV1 is the explicit
+payload size signaling in the OBU header. An OBU begins with a mandatory
+1-byte header, which contains the <code>obu_has_size_field</code>
+flag.</p>
+<p>When <code>obu_has_size_field</code> is set to 1, the header is
+followed by a variable-length integer encoded in LEB128 (Little-Endian
+Base 128) format that explicitly states the byte length of the OBU's
+payload. This design enables byte-level stream parsing isolation:</p>
+<ul>
+<li><strong>Payload Independent Skipping:</strong> Parsers, splitters,
+and decoders do not need to parse the internal syntax of an OBU to find
+where it ends. They simply read the LEB128 integer and advance the read
+pointer directly to the start of the next OBU.</li>
+<li><strong>Error Resilience:</strong> Bitstream corruption inside a
+specific OBU does not desynchronize the overall stream parser. Because
+the parser knows the boundary of the next OBU, parsing can immediately
+recover at the subsequent unit boundary.</li>
+</ul>
+<h3 id="handling-unknown-types-and-forward-compatibility">Handling
+Unknown Types and Forward Compatibility</h3>
+<p>AV1 reserves 4 bits within the base OBU header for
+<code>obu_type</code>, defining elements such as Sequence Headers, Frame
+Headers, Tile Groups, and Metadata.</p>
+<p>Because the bitstream format is expected to evolve, the specification
+mandates that decoders ignore unrecognized OBU types. Combined with the
+explicit size field, an older (legacy) decoder encountering a newly
+defined OBU type from a future standard extension can safely read the
+type, read the size, and bypass the payload entirely. This guarantees
+forward compatibility: future enhancements, non-standard private
+payloads, or new metadata types do not break existing compliant
+decoders.</p>
+<h3
+id="scalability-and-layer-isolation-via-extension-headers">Scalability
+and Layer Isolation via Extension Headers</h3>
+<p>The OBU header includes an <code>obu_extension_flag</code>. When
+asserted, a 1-byte extension header is appended directly after the base
+header, introducing two critical fields:</p>
+<ul>
+<li><code>temporal_id</code>: Identifies the temporal layer (frame rate
+hierarchy).</li>
+<li><code>spatial_id</code>: Identifies the spatial layer (resolution
+hierarchy).</li>
+</ul>
+<p>This mechanism allows middleboxes, media servers, and lightweight
+stream splitters to inspect and filter layers without reading the
+compressed video payload. A selective forwarding unit (SFU) can prune
+higher spatial or temporal layers simply by inspecting these header
+bytes and discarding the designated byte ranges, providing stream
+manipulation isolation directly at the network layer.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

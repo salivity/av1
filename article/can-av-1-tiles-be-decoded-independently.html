@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can AV1 Tiles Be Decoded Independently? - av1</title>
+    <meta name="description" content="An AV1 video frame can be partitioned into a grid of rectangular regions known as tiles, designed primarily to facilitate parallel processing and multi-threaded decoding. While AV1 tiles are architected to allow parallel entropy decoding and pixel recons">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/can-av-1-tiles-be-decoded-independently">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Can AV1 Tiles Be Decoded Independently? - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/can-av-1-tiles-be-decoded-independently" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="An AV1 video frame can be partitioned into a grid of rectangular regions known as tiles, designed primarily to facilitate parallel processing and multi-threaded decoding. While AV1 tiles are architected to allow parallel entropy decoding and pixel recons" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="can-av1-tiles-be-decoded-independently">Can AV1 Tiles Be Decoded
+Independently?</h1>
+<p>An AV1 video frame can be partitioned into a grid of rectangular
+regions known as tiles, designed primarily to facilitate parallel
+processing and multi-threaded decoding. While AV1 tiles are architected
+to allow parallel entropy decoding and pixel reconstruction, they cannot
+always be decoded <em>completely</em> independently of neighboring tiles
+by default. True independent decoding depends on specific bitstream
+configurations regarding intra-prediction boundaries, context models,
+and crucially, in-loop filtering operations across tile borders.</p>
+<h3 id="parsing-and-entropy-decoding">Parsing and Entropy Decoding</h3>
+<p>At the bitstream level, AV1 tiles are largely independent. Each tile
+contains its own payload that can be parsed by an entropy decoder
+without waiting for neighboring tiles within the same frame.</p>
+<p>AV1 utilizes Cumulative Distribution Function (CDF) contexts for
+arithmetic coding. A tile can either use a default context, inherit the
+context from a previous frame, or inherit contexts from specific
+neighboring tiles within the frame. Once the context is initialized, the
+symbol parsing within the tile proceeds entirely independently.</p>
+<h3 id="spatial-and-motion-prediction">Spatial and Motion
+Prediction</h3>
+<p>Within a single frame, spatial prediction (intra-prediction) strictly
+respects tile boundaries. An intra-coded block situated along the edge
+of a tile cannot use reconstructed pixels from an adjacent tile as
+reference samples. For prediction purposes, pixels outside the current
+tile boundary are treated as non-existent or unavailable. This isolation
+ensures that the reconstruction of motion vectors and prediction
+residuals inside one tile does not depend on the data from a neighboring
+tile in the same frame.</p>
+<h3 id="the-in-loop-filtering-barrier">The In-Loop Filtering
+Barrier</h3>
+<p>The primary obstacle preventing standard AV1 tiles from being 100%
+independently decodable is in-loop filtering. AV1 uses multiple
+filtering stages to reduce artifacts:</p>
+<ol type="1">
+<li><strong>Deblocking Filter:</strong> Smooths sharp edges along block
+boundaries.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+Rings and directional smoothing.</li>
+<li><strong>Loop Restoration:</strong> High-precision Wiener filtering
+or Self-Guided restoration.</li>
+</ol>
+<p>By default, these filters require pixel data from across tile
+boundaries to calculate filtering operations for edge pixels. If these
+filters sample adjacent tiles, a decoder must wait for neighboring tiles
+to complete reconstruction before finalizing pixel values.</p>
+<h3 id="achieving-complete-independence">Achieving Complete
+Independence</h3>
+<p>An AV1 tile can be made completely independent under specific
+conditions:</p>
+<ul>
+<li><strong>Disabling Cross-Tile Loop Filtering:</strong> The AV1
+bitstream includes a syntax element named
+<code>loop_filter_across_tiles_enabled</code>. When this flag is set to
+<code>0</code>, all in-loop filtering operations (deblocking, CDEF, and
+loop restoration) are constrained to remain strictly within the tile's
+borders. With this flag disabled, a tile can be fully parsed,
+reconstructed, and filtered without reading any data from adjacent
+tiles.</li>
+<li><strong>Large Scale Tile Decoding (Tile Lists):</strong> AV1
+includes a specialized feature called "Tile Lists," predominantly used
+in 360-degree and virtual reality streaming. In this mode, individual
+tiles are packaged so that a decoder can extract and decode only a
+specific subset of tiles representing the user's immediate field of
+view, completely ignoring the rest of the frame.</li>
+</ul>
+<p>In standard encoding configurations, AV1 tiles decode in parallel up
+to the filtering stage, requiring a final synchronization step across
+borders. However, when the encoder explicitly restricts loop filtering
+to stay within tile borders, an AV1 tile can be decoded completely
+independently from start to finish.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

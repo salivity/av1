@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AVIF Uses AV1 Keyframes to Compress Images - av1</title>
+    <meta name="description" content="The AV1 Image File Format (AVIF) achieves state-of-the-art compression efficiency by repurposing the intra-frame encoding architecture of the AV1 video codec for static pictures. Rather than inventing a distinct algorithm for still photography, AVIF enca">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-avif-uses-av-1-keyframes-to-compress-images">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AVIF Uses AV1 Keyframes to Compress Images - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-avif-uses-av-1-keyframes-to-compress-images" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 Image File Format (AVIF) achieves state-of-the-art compression efficiency by repurposing the intra-frame encoding architecture of the AV1 video codec for static pictures. Rather than inventing a distinct algorithm for still photography, AVIF enca" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-avif-uses-av1-keyframes-to-compress-images">How AVIF Uses
+AV1 Keyframes to Compress Images</h1>
+<p>The AV1 Image File Format (AVIF) achieves state-of-the-art
+compression efficiency by repurposing the intra-frame encoding
+architecture of the AV1 video codec for static pictures. Rather than
+inventing a distinct algorithm for still photography, AVIF encapsulates
+a single, self-contained AV1 keyframe within an ISO Base Media File
+Format (ISOBMFF) container. This article explains how keyframe
+compression functions within AV1, the specific intra-coding mechanisms
+that eliminate spatial redundancy, and how this architecture delivers
+higher visual fidelity at smaller file sizes than legacy formats.</p>
+<h3 id="the-concept-of-intra-frames-keyframes">The Concept of
+Intra-Frames (Keyframes)</h3>
+<p>In video compression, an intra-frame (often called a keyframe or
+I-frame) is a frame encoded entirely without reference to any past or
+future frames. While inter-frames rely on temporal prediction to record
+only the changes occurring between frames over time, keyframes rely
+entirely on spatial prediction within the boundaries of that single
+frame.</p>
+<p>AVIF capitalizes on this fundamental design. A static AVIF image is
+essentially an AV1 video stream consisting of exactly one keyframe.
+Because video standards demand extreme compression efficiency to stream
+high-resolution content over limited bandwidth, the intra-frame tools
+developed for AV1 are significantly more advanced than the decades-old
+compression methods found in formats like JPEG.</p>
+<h3 id="advanced-partitioning-and-superblocks">Advanced Partitioning and
+Superblocks</h3>
+<p>To compress an image, AV1 begins by dividing the keyframe into large
+processing units known as Superblocks, which can be up to 128×128 pixels
+in size.</p>
+<p>AV1 utilizes a recursive partitioning tree that divides these
+Superblocks into smaller sub-blocks ranging from 128×128 down to 4×4
+pixels. Unlike older formats that restrict partitioning to rigid, square
+grids (such as 8×8 or 16×16 blocks), AV1 supports flexible recursive
+splits, including non-square rectangular partitions (such as 1:2, 2:1,
+1:4, and 4:1 ratios).</p>
+<p>This flexibility allows the encoder to isolate complex textures and
+sharp edges into fine, granular blocks while grouping broad, flat areas
+(such as clear skies or smooth gradients) into massive blocks,
+drastically reducing the data required to represent uniform regions.</p>
+<h3 id="spatial-intra-prediction">Spatial Intra-Prediction</h3>
+<p>Once partitioned, the encoder minimizes spatial redundancy by
+predicting the pixel values of a target block using the reconstructed
+pixels of immediately adjacent, previously encoded blocks. AV1 keyframe
+encoding features several sophisticated intra-prediction modes:</p>
+<ul>
+<li><strong>Directional Intra-Prediction:</strong> Extends neighboring
+pixel patterns into the current block across 56 directional angles,
+allowing precise alignment with edges and contours.</li>
+<li><strong>Smooth and DC Predictors:</strong> Generates gradual
+blending across blocks for smooth surfaces or calculates a simple
+average value (DC) for flat regions.</li>
+<li><strong>Chroma-from-Luma (CfL):</strong> Because human vision is
+more sensitive to luminance (brightness) than chrominance (color), AV1
+models color values directly as a mathematical function of the
+corresponding luminance pixels. This avoids encoding redundant color
+data that mirrors existing brightness contours.</li>
+</ul>
+<p>Instead of storing raw pixel values, the encoder only records the
+selected prediction mode and the "residual"—the minor difference between
+the predicted pattern and the original image.</p>
+<h3 id="transform-and-quantization">Transform and Quantization</h3>
+<p>After prediction, the residual data is converted from the spatial
+domain into the frequency domain via transform coding. While JPEG relies
+solely on the Discrete Cosine Transform (DCT), AV1 selects from a
+variety of transforms for each block:</p>
+<ul>
+<li><strong>Discrete Cosine Transform (DCT)</strong></li>
+<li><strong>Asymmetric Discrete Sine Transform (ADST)</strong></li>
+<li><strong>Identity Transforms (flipping between spatial and frequency
+processing)</strong></li>
+</ul>
+<p>By pairing different horizontal and vertical transforms (for example,
+a DCT horizontally and an ADST vertically), the encoder efficiently
+compacts residual energy along directional edges.</p>
+<p>The resulting transform coefficients are then quantized. Quantization
+selectively rounds off high-frequency details that the human visual
+system struggles to perceive. AV1 features adaptive quantization,
+allowing the encoder to apply different degrees of compression across
+varying segments of the image based on visual complexity.</p>
+<h3 id="in-loop-filtering">In-Loop Filtering</h3>
+<p>Quantization at high compression ratios typically causes noticeable
+artifacts, such as block boundaries or ringing noise around sharp edges.
+AV1 keyframes counteract this degradation through a sequence of three
+hardware-accelerated in-loop filters applied directly during the
+encoding and decoding process:</p>
+<ol type="1">
+<li><strong>Deblocking Filter:</strong> Smooths harsh discontinuities
+along the edges of block partitions.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+Identifies the direction of primary edges within each block and applies
+directional filtering to eliminate ringing artifacts without blurring
+structural detail.</li>
+<li><strong>Loop Restoration:</strong> Emphasizes overall sharpness
+using Wiener filters or self-guided restoration, recovering lost
+contrast and high-frequency textures.</li>
+</ol>
+<h3 id="container-integration">Container Integration</h3>
+<p>Finally, the fully processed, filtered keyframe bitstream is placed
+into the ISOBMFF structure. This lightweight wrapper stores image
+metadata (such as EXIF, XMP, and color profiles), transparency
+information (via auxiliary alpha channels, which are simply secondary
+monochromatic keyframes), and instructions for High Dynamic Range (HDR)
+color spaces with bit depths of 10-bit and 12-bit. By relying directly
+on the optimized spatial processing of AV1 keyframes, AVIF delivers
+modern compression performance while retaining full architectural
+support for modern display standards.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

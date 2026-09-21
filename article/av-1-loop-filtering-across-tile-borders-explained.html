@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Loop Filtering Across Tile Borders Explained - av1</title>
+    <meta name="description" content="This article explores how the AV1 video codec manages in-loop filtering across tile boundaries, balancing multithreaded decoding performance with visual consistency. In AV1, three primary filter stages—the Deblocking Filter, the Constrained Directional">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-loop-filtering-across-tile-borders-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Loop Filtering Across Tile Borders Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-loop-filtering-across-tile-borders-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how the AV1 video codec manages in-loop filtering across tile boundaries, balancing multithreaded decoding performance with visual consistency. In AV1, three primary filter stages—the Deblocking Filter, the Constrained Directional" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-loop-filtering-across-tile-borders-explained">AV1 Loop
+Filtering Across Tile Borders Explained</h1>
+<p>This article explores how the AV1 video codec manages in-loop
+filtering across tile boundaries, balancing multithreaded decoding
+performance with visual consistency. In AV1, three primary filter
+stages—the Deblocking Filter, the Constrained Directional Enhancement
+Filter (CDEF), and the Loop Restoration filter—process reconstructed
+frames. Their behavior at tile edges is primarily controlled by the
+frame-level syntax flag <code>loop_filter_across_tiles_enabled</code>,
+which dictates whether cross-boundary pixel dependencies are processed
+or completely severed to enable independent tile processing.</p>
+<h3 id="the-role-of-tiles-and-independence">The Role of Tiles and
+Independence</h3>
+<p>Tiles in AV1 partition a frame into distinct rectangular grids,
+allowing parallel encoding and decoding. To achieve true thread
+independence during decoding, a tile cannot depend on the reconstructed
+pixel data of adjacent tiles. However, video compression artifacts often
+manifest along grid lines, making filtering across tile seams desirable
+to prevent visible boundary lines.</p>
+<p>AV1 resolves this tension through the
+<code>loop_filter_across_tiles_enabled</code> syntax element defined in
+the uncompressed frame header. When set to <code>0</code>, tile borders
+are treated as picture boundaries for the relevant filter stages. When
+set to <code>1</code>, filters access pixels from adjacent tiles,
+requiring decoder synchronization or an extra post-processing pass over
+the tile seams.</p>
+<h3 id="deblocking-filter-dbf-across-tile-borders">Deblocking Filter
+(DBF) Across Tile Borders</h3>
+<p>The deblocking filter removes block artifacts caused by transform
+block boundaries and prediction boundaries.</p>
+<ul>
+<li><strong>Enabled
+(<code>loop_filter_across_tiles_enabled = 1</code>):</strong> The
+deblocking filter processes edges on tile boundaries identically to
+regular transform or prediction block edges within a tile. Vertical and
+horizontal edges lying directly on tile borders use filter sample values
+from both the current tile and the neighboring tile.</li>
+<li><strong>Disabled
+(<code>loop_filter_across_tiles_enabled = 0</code>):</strong> Edge
+filtering on tile boundaries is skipped entirely. No boundary filtering
+is performed across the seam, preventing any inter-tile data dependency.
+Within each tile, edges close to the boundary are filtered using only
+samples available inside that tile; filter operations do not sample
+across the border.</li>
+</ul>
+<h3 id="constrained-directional-enhancement-filter-cdef">Constrained
+Directional Enhancement Filter (CDEF)</h3>
+<p>CDEF operates after the deblocking filter to eliminate ringing
+artifacts by applying non-linear filtering along identified edge
+directions. CDEF requires a 7x7 or 5x5 neighborhood of pixels around
+each 8x8 block.</p>
+<ul>
+<li><strong>Enabled:</strong> CDEF accesses reconstructed, deblocked
+pixels from adjacent tiles. Filtering continues smoothly across the
+boundary, maintaining directional continuity.</li>
+<li><strong>Disabled:</strong> CDEF treats the tile boundary as an image
+edge. Pixels that fall outside the current tile boundary are
+unavailable. To execute the filter without reading adjacent tile data,
+AV1 uses sample padding (repeating the nearest valid boundary pixel,
+similar to edge clamping) for any required taps that lie across the tile
+line.</li>
+</ul>
+<h3 id="loop-restoration-filter-lr">Loop Restoration Filter (LR)</h3>
+<p>Loop Restoration applies either a Wiener filter or a Self-Guided
+filter to restore fine details and high frequencies. It operates on
+large processing zones called Restoration Units (typically 64x64,
+128x128, or 256x256 pixels).</p>
+<ul>
+<li><strong>Enabled:</strong> Restoration filter kernels draw source
+samples freely across tile lines. Intermediate line buffers can extend
+into adjacent tiles to construct the required filtering
+neighborhood.</li>
+<li><strong>Disabled:</strong> Restoration units are clipped at the tile
+boundary. When filter taps require samples located outside the current
+tile, the reference samples are extended by replicating border samples.
+Furthermore, loop restoration parameters cannot be derived using
+statistics gathered from neighboring tiles.</li>
+</ul>
+<h3 id="performance-and-quality-trade-offs">Performance and Quality
+Trade-offs</h3>
+<p>Disabling loop filtering across tiles guarantees zero-wait
+multithreading, allowing decoders to finish tiles completely out of
+order without inter-thread synchronization during the filtering stages.
+The drawback is potential boundary artifacts ("grid lines") along tile
+divisions, especially at low bitrates.</p>
+<p>Enabling filtering across borders improves visual quality and
+objective metrics (PSNR, VMAF) by eliminating tile seams, but it
+mandates a synchronized filtering stage or multi-pass architecture where
+tile decoding must complete prior to executing cross-boundary filter
+taps.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

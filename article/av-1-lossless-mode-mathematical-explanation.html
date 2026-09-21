@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Lossless Mode: Mathematical Explanation - av1</title>
+    <meta name="description" content="This article provides an overview of the lossless coding mode in the AOMedia Video 1 (AV1) codec, detailing the technical architecture that enables bit-exact reconstruction of source video. It explains how AV1 eliminates information loss by bypassing irr">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-lossless-mode-mathematical-explanation">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Lossless Mode: Mathematical Explanation - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-lossless-mode-mathematical-explanation" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the lossless coding mode in the AOMedia Video 1 (AV1) codec, detailing the technical architecture that enables bit-exact reconstruction of source video. It explains how AV1 eliminates information loss by bypassing irr" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-lossless-mode-mathematical-explanation">AV1 Lossless Mode:
+Mathematical Explanation</h1>
+<p>This article provides an overview of the lossless coding mode in the
+AOMedia Video 1 (AV1) codec, detailing the technical architecture that
+enables bit-exact reconstruction of source video. It explains how AV1
+eliminates information loss by bypassing irreversible transforms and
+quantization, utilizing exact integer spatial predictions, and
+preserving absolute numerical precision through entropy coding.</p>
+<h2 id="what-is-lossless-mode-in-av1">What is Lossless Mode in AV1?</h2>
+<p>In standard video compression, codecs achieve high efficiency by
+discarding visually imperceptible details through lossy compression. AV1
+lossless mode disables this data reduction mechanism, ensuring that the
+decoded output is numerically identical—bit for bit—to the original
+uncompressed input.</p>
+<p>Lossless encoding is primarily used in archival workflows, medical
+imaging, screen content capture, and video editing pipelines where
+compression artifacts or generational loss cannot be tolerated.</p>
+<h2 id="the-lossy-video-pipeline-vs-lossless-mode">The Lossy Video
+Pipeline vs. Lossless Mode</h2>
+<p>To understand how lossless mode works mathematically, it is necessary
+to examine the standard compression pipeline, which consists of four
+primary stages:</p>
+<ol type="1">
+<li><strong>Prediction:</strong> Inter-frame (motion compensation) or
+intra-frame (spatial) prediction creates an estimate of the block.</li>
+<li><strong>Residual Calculation:</strong> The predicted block is
+subtracted from the original block to produce a residual.</li>
+<li><strong>Frequency Transform:</strong> Transforms (such as Discrete
+Cosine Transform or Asymmetric Discrete Sine Transform) convert spatial
+residuals into frequency coefficients.</li>
+<li><strong>Quantization:</strong> High-frequency coefficients are
+divided by a quantization step size and rounded to nearest integers,
+discarding information.</li>
+<li><strong>Entropy Coding:</strong> A symbol-level coder compresses the
+remaining quantized values losslessly.</li>
+</ol>
+<p>In standard encoding, <strong>Quantization</strong> is the primary
+source of loss, while non-reversible floating-point approximations in
+the <strong>Transform</strong> stage can introduce secondary drift.
+AV1's lossless mode restructures this pipeline to ensure full
+reversibility.</p>
+<h2 id="mathematical-implementation-of-av1-lossless-mode">Mathematical
+Implementation of AV1 Lossless Mode</h2>
+<p>Lossless compression in AV1 is triggered when the quantizer parameter
+is set to zero (<code>qindex = 0</code>), which enables a bit-exact
+integer processing path.</p>
+<h3 id="1-the-zero-quantization-step-q_step--1">1. The Zero Quantization
+Step (<span class="math inline">\(Q_{step} = 1\)</span>)</h3>
+<p>Quantization is defined mathematically as:</p>
+<p><span class="math display">\[q(x, y) = \text{round}\left(\frac{C(x,
+y)}{Q_{step}}\right)\]</span></p>
+<p>Where <span class="math inline">\(C(x, y)\)</span> is the coefficient
+and <span class="math inline">\(Q_{step}\)</span> is the scale factor.
+Reconstruction in a lossy decoder approximates the coefficient:</p>
+<p><span class="math display">\[\hat{C}(x, y) = q(x, y) \times
+Q_{step}\]</span></p>
+<p>Information is permanently lost whenever <span
+class="math inline">\(C(x, y) / Q_{step}\)</span> is non-integer.</p>
+<p>In AV1 lossless mode, the quantization index is mapped such that the
+effective step size is exactly unity (<span
+class="math inline">\(Q_{step} = 1\)</span>) with zero offset:</p>
+<p><span class="math display">\[q(x, y) = C(x, y)\]</span></p>
+<p>Because no division or rounding takes place, <span
+class="math inline">\(q(x, y)\)</span> maintains exact numerical
+equality with the input coefficient <span class="math inline">\(C(x,
+y)\)</span>.</p>
+<h3 id="2-transform-skip-mode-spatial-domain-residuals">2. Transform
+Skip Mode (Spatial Domain Residuals)</h3>
+<p>Frequency transforms often introduce rounding errors due to
+irrational transform matrix constants. AV1 solves this in lossless mode
+by using <strong>Transform Skip</strong>.</p>
+<p>Instead of applying a 2D transform matrix <span
+class="math inline">\(T\)</span>:</p>
+<p><span class="math display">\[C = T \cdot R \cdot T^T\]</span></p>
+<p>The transform step is replaced with the identity operation:</p>
+<p><span class="math display">\[C(x, y) = R(x, y)\]</span></p>
+<p>Where <span class="math inline">\(R(x, y)\)</span> is the raw integer
+residual in the spatial domain. This avoids integer-rounding
+approximations and processes the spatial pixel differences directly.</p>
+<h3 id="3-bit-exact-prediction-and-invertibility">3. Bit-Exact
+Prediction and Invertibility</h3>
+<p>AV1 calculates the prediction <span class="math inline">\(P(x,
+y)\)</span> using neighboring reconstructed pixels via strictly defined
+integer arithmetic (such as directional intra-prediction or block
+matching).</p>
+<p>The residual <span class="math inline">\(R(x, y)\)</span> is computed
+via simple subtraction:</p>
+<p><span class="math display">\[R(x, y) = S(x, y) - P(x, y)\]</span></p>
+<p>Where <span class="math inline">\(S(x, y)\)</span> is the original
+integer pixel value.</p>
+<p>Because transform and quantization stages are identity operations,
+the residual decoded by the receiver <span
+class="math inline">\(\hat{R}(x, y)\)</span> is mathematically identical
+to <span class="math inline">\(R(x, y)\)</span>:</p>
+<p><span class="math display">\[\hat{R}(x, y) = R(x, y)\]</span></p>
+<p>The decoder reconstructs the original pixel <span
+class="math inline">\(\hat{S}(x, y)\)</span> by adding the
+prediction:</p>
+<p><span class="math display">\[\hat{S}(x, y) = P(x, y) + \hat{R}(x,
+y)\]</span></p>
+<p>Substituting the encoded residual into the reconstruction
+equation:</p>
+<p><span class="math display">\[\hat{S}(x, y) = P(x, y) + (S(x, y) -
+P(x, y)) = S(x, y)\]</span></p>
+<p>The prediction term cancels out entirely, guaranteeing that the
+reconstructed pixel <span class="math inline">\(\hat{S}(x, y)\)</span>
+equals the source pixel <span class="math inline">\(S(x, y)\)</span>
+without drift.</p>
+<h3 id="4-entropy-coding-via-daala-multi-symbol-arithmetic-coder">4.
+Entropy Coding via Daala Multi-Symbol Arithmetic Coder</h3>
+<p>Once spatial residuals are produced, they are compressed using AV1’s
+entropy coder—an advanced multi-symbol arithmetic coder derived from the
+Daala project.</p>
+<p>Arithmetic coding represents a sequence of discrete integer symbols
+as a single fractional value within a defined range <span
+class="math inline">\([0, 1)\)</span>. Because arithmetic coding is a
+bijection (a one-to-one mapping between symbol sequences and encoded bit
+intervals), it compresses data strictly according to its statistical
+entropy without altering symbol values.</p>
+<h3 id="5-color-space-considerations">5. Color Space Considerations</h3>
+<p>True lossless encoding requires preserving the original color space.
+Standard video often converts RGB sources to YUV 4:2:0, introducing
+chroma subsampling loss before encoding begins.</p>
+<p>In AV1 lossless mode, full 4:4:4 sampling or native RGB coding is
+typically used. When color space transformations are required to
+decorrelate color channels, AV1 uses Reversible Color Transforms (RCT)
+implemented with integer lifting steps:</p>
+<p><span class="math display">\[Y = \lfloor (R + 2G + B) / 4
+\rfloor\]</span> <span class="math display">\[U = R - G\]</span> <span
+class="math display">\[V = B - G\]</span></p>
+<p>All operations are reversible using exact inverse integer arithmetic,
+preventing color degradation.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

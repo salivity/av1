@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Best Deinterlacing Filters for AV1 Video Encoding - av1</title>
+    <meta name="description" content="This article outlines the most effective preprocessing deinterlacing filters to use before compressing video with the AV1 codec. Because AV1 lacks native support for interlaced video, converting fields into progressive frames prior to encoding is mandato">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/best-deinterlacing-filters-for-av-1-video-encoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Best Deinterlacing Filters for AV1 Video Encoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/best-deinterlacing-filters-for-av-1-video-encoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article outlines the most effective preprocessing deinterlacing filters to use before compressing video with the AV1 codec. Because AV1 lacks native support for interlaced video, converting fields into progressive frames prior to encoding is mandato" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="best-deinterlacing-filters-for-av1-video-encoding">Best
+Deinterlacing Filters for AV1 Video Encoding</h1>
+<p>This article outlines the most effective preprocessing deinterlacing
+filters to use before compressing video with the AV1 codec. Because AV1
+lacks native support for interlaced video, converting fields into
+progressive frames prior to encoding is mandatory. Below is an overview
+of the best-performing spatial and temporal filters, software
+implementations via FFmpeg and VapourSynth, and best practices for
+preserving motion fluidity and detail.</p>
+<h2 id="why-deinterlacing-is-mandatory-for-av1">Why Deinterlacing Is
+Mandatory for AV1</h2>
+<p>Unlike legacy standards such as MPEG-2 and H.264, the AV1
+specification does not include interlaced coding tools. Supplying
+interlaced content directly to an AV1 encoder (such as SVT-AV1,
+libaom-av1, or rav1e) results in severe visual comb artifacts
+permanently baked into the progressive stream. To achieve high coding
+efficiency and clean visual quality, interlaced video must undergo
+deinterlacing or inverse telecine (IVTC) as a preprocessing step.</p>
+<h2 id="top-recommended-deinterlacing-filters">Top Recommended
+Deinterlacing Filters</h2>
+<h3 id="1-qtgmc-vapoursynth--avisynth">1. QTGMC (VapourSynth /
+AviSynth)</h3>
+<p>QTGMC is widely regarded as the gold-standard deinterlacer for
+archival-quality conversions. It employs sophisticated motion analysis
+and temporal smoothing to reconstruct progressive frames without the
+flickering, shimmer, and staircase artifacts common to simpler
+algorithms.</p>
+<ul>
+<li><strong>Best For:</strong> Archival sources, home video
+(VHS/Hi8/DV), broadcast content, and cases where output quality takes
+priority over encoding speed.</li>
+<li><strong>Key Strengths:</strong> Exceptional edge reconstruction,
+noise reduction, and temporal consistency.</li>
+<li><strong>Usage Tip:</strong> Always output at double frame rate
+(e.g., 59.94 fps for NTSC or 50 fps for PAL) using presets such as
+<code>Slower</code> or <code>Medium</code> to retain full temporal
+resolution.</li>
+</ul>
+<h3 id="2-bwdif-bob-weaver-deinterlacing-filter">2. Bwdif (Bob Weaver
+Deinterlacing Filter)</h3>
+<p>Bwdif is an advanced motion-adaptive deinterlacer available natively
+within FFmpeg. It builds upon the algorithms of Yadif and Weston 3-Field
+Deinterlacer (W3FDIF), evaluating spatial and temporal variations to
+generate clean progressive frames at very high speeds.</p>
+<ul>
+<li><strong>Best For:</strong> Fast, high-volume encoding pipelines,
+modern digital interlaced video, and users seeking a balance between
+speed and quality without external scripting environments like
+VapourSynth.</li>
+<li><strong>Key Strengths:</strong> Integrated into FFmpeg
+(<code>-vf bwdif</code>), significantly fewer residual comb artifacts
+than standard Yadif, and negligible performance overhead.</li>
+<li><strong>FFmpeg Example:</strong>
+<code>-vf bwdif=mode=send_field:parity=auto:deint=all</code></li>
+</ul>
+<h3 id="3-nnedi3-neural-network-edge-directed-interpolation">3. NNEDI3
+(Neural Network Edge Directed Interpolation)</h3>
+<p>NNEDI3 uses a neural network to predict missing lines by examining
+local neighborhood pixels. It excels at preserving sharp, diagonal lines
+without stepping artifacts.</p>
+<ul>
+<li><strong>Best For:</strong> High-detail static sequences and
+anime/animation that does not require complex temporal motion
+tracking.</li>
+<li><strong>Key Strengths:</strong> Industry-leading spatial
+interpolation on edges.</li>
+<li><strong>Usage Tip:</strong> NNEDI3 alone is a spatial interpolator;
+it is most effective when paired with temporal processing (as
+implemented internally by QTGMC) or used via the VapourSynth
+<code>znedi3</code> plugin.</li>
+</ul>
+<h3 id="4-yadif-yet-another-deinterlacing-filter">4. Yadif (Yet Another
+Deinterlacing Filter)</h3>
+<p>Yadif is a check-and-interpolate filter that operates on spatial and
+temporal differences. While largely superseded in image quality by
+Bwdif, Yadif remains common due to its legacy support and minimal CPU
+requirements.</p>
+<ul>
+<li><strong>Best For:</strong> Low-power systems or preliminary test
+renders where encoding speed is critical.</li>
+<li><strong>Drawbacks:</strong> Tends to exhibit edge flicker and jagged
+diagonals compared to Bwdif and QTGMC.</li>
+</ul>
+<h2 id="inverse-telecine-vs-deinterlacing">Inverse Telecine vs.
+Deinterlacing</h2>
+<p>Before applying a deinterlacer, verify whether the source is truly
+interlaced (captured at 50/60 fields per second from a video camera) or
+telecined (24 fps progressive film transferred into a 60i stream using a
+3:2 pulldown pattern).</p>
+<ul>
+<li><strong>For Telecined Film Content:</strong> Do not use standard
+deinterlacers like Bwdif or QTGMC directly, as this causes frame
+blending and stutter. Instead, apply an Inverse Telecine (IVTC) filter,
+such as FFmpeg's <code>fieldmatch</code> and <code>decimate</code>
+filters (<code>-vf fieldmatch,decimate</code>), to cleanly restore the
+original 23.976 fps progressive frames.</li>
+<li><strong>For Native Interlaced Video:</strong> Apply motion-adaptive
+deinterlacing outputting double frame rate (e.g., 29.97i to
+59.94p).</li>
+</ul>
+<h2 id="encoding-recommendations-for-av1">Encoding Recommendations for
+AV1</h2>
+<ol type="1">
+<li><strong>Always Bob (Double Frame Rate):</strong> Interlacing samples
+motion at twice the apparent frame rate. Converting 29.97i to 29.97p
+drops half the temporal motion data, making motion look choppy.
+Deinterlace to 59.94p (or 50p for PAL) prior to AV1 compression.</li>
+<li><strong>Filter Order:</strong> Place the deinterlacer at the very
+beginning of your filtering chain. Scaling, color conversion, or
+cropping interlaced frames before deinterlacing destroys field parity
+and makes proper reconstruction impossible.</li>
+<li><strong>Chroma Resampling:</strong> Interlaced video often uses
+specific chroma field locations (such as 4:2:0 top-field-first). Ensure
+your pipeline explicitly handles interlaced chroma placements during
+import to prevent color ghosting after deinterlacing.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

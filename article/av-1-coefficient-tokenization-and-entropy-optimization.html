@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Coefficient Tokenization and Entropy Optimization - av1</title>
+    <meta name="description" content="This article explores the mechanics of transform coefficient tokenization in modern video compression, focusing specifically on the AOMedia Video 1 (AV1) codec. It breaks down how quantized frequency coefficients are mapped into compact syntax elements a">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-coefficient-tokenization-and-entropy-optimization">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Coefficient Tokenization and Entropy Optimization - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-coefficient-tokenization-and-entropy-optimization" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores the mechanics of transform coefficient tokenization in modern video compression, focusing specifically on the AOMedia Video 1 (AV1) codec. It breaks down how quantized frequency coefficients are mapped into compact syntax elements a" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-coefficient-tokenization-and-entropy-optimization">AV1
+Coefficient Tokenization and Entropy Optimization</h1>
+<p>This article explores the mechanics of transform coefficient
+tokenization in modern video compression, focusing specifically on the
+AOMedia Video 1 (AV1) codec. It breaks down how quantized frequency
+coefficients are mapped into compact syntax elements and details how AV1
+optimizes symbol probability distributions to maximize the efficiency of
+its entropy coding engine.</p>
+<h2 id="understanding-coefficient-tokenization">Understanding
+Coefficient Tokenization</h2>
+<p>In video coding, residual data—the difference between a predicted
+frame and the original frame—is converted into the frequency domain
+using transforms like the Discrete Cosine Transform (DCT) or Asymmetric
+Discrete Sine Transform (ADST). After transformation, the resulting
+frequency coefficients are quantized, leaving a two-dimensional grid
+populated predominantly by zeros and small integers, with occasional
+high-magnitude values at low frequencies.</p>
+<p>Coefficient tokenization is the process of converting these
+two-dimensional arrays of numerical values into a structured stream of
+symbols (tokens) suitable for an entropy coder. Rather than transmitting
+raw numerical amplitudes directly, tokenization abstracts the values
+into logical components:</p>
+<ul>
+<li><strong>Significance:</strong> Whether a coefficient is
+non-zero.</li>
+<li><strong>Signs:</strong> Positive or negative values.</li>
+<li><strong>Magnitudes:</strong> Small values vs. large values.</li>
+<li><strong>Run-lengths:</strong> The distance between consecutive
+non-zero coefficients.</li>
+</ul>
+<p>By structuring coefficients into standardized categories, the encoder
+can group similar statistical events together, allowing the entropy
+engine to assign shorter codes to frequently occurring patterns.</p>
+<h2 id="av1s-non-binary-entropy-coding-model">AV1’s Non-Binary Entropy
+Coding Model</h2>
+<p>Earlier standards like H.264 and HEVC rely heavily on binary
+arithmetic coding engines (such as CABAC), which require non-binary
+values to be completely binarized into trees of single-bit decisions
+before encoding.</p>
+<p>AV1 diverges from this approach by using a multi-symbol arithmetic
+coder derived from the Daala project. AV1 can encode non-binary
+alphabets—up to 16 symbols per cycle—using cumulative distribution
+functions (CDFs). Tokenization in AV1 is tailored specifically to fit
+this multi-symbol model, reducing serialization overhead and enabling
+parallel hardware processing.</p>
+<h2 id="how-av1-optimizes-symbol-distribution">How AV1 Optimizes Symbol
+Distribution</h2>
+<p>Entropy coding operates on the principle that rare symbols cost more
+bits than common symbols. To achieve maximum compression, the
+distribution of symbols must be shaped so that the actual probabilities
+closely match the model's expected probabilities. AV1 employs several
+key techniques to condition and optimize this distribution.</p>
+<h3 id="1-multi-level-representation-level-splitting">1. Multi-Level
+Representation (Level Splitting)</h3>
+<p>Instead of tokenizing a coefficient's entire magnitude as a single
+large symbol, AV1 decomposes it into progressively deeper layers:</p>
+<ul>
+<li><strong><code>eob_pt</code> (End-of-Block Position):</strong> The
+index of the last non-zero coefficient in the transform block, allowing
+the encoder to skip coding trailing zeros entirely.</li>
+<li><strong>Base Levels (<code>abs_level_gt1</code>,
+<code>abs_level_gt2</code>):</strong> Binary flags indicating if the
+magnitude is greater than 1, greater than 2, etc.</li>
+<li><strong>Remainder Levels:</strong> Values exceeding the initial
+thresholds are encoded using an adaptive base-4 alphabet or Exp-Golomb
+codes for the extreme tails.</li>
+</ul>
+<p>This splitting ensures that the most common values (zeros, ones, and
+twos) dominate the low-entropy symbols, while the rarer, computationally
+expensive magnitudes are isolated into separate code spaces.</p>
+<h3 id="2-context-modeling-based-on-spatial-neighbors">2. Context
+Modeling Based on Spatial Neighbors</h3>
+<p>A symbol’s distribution changes depending on where it appears in the
+block. AV1 optimizes probability modeling by assigning context states
+derived from neighboring coefficients.</p>
+<p>When evaluating a specific coefficient, the encoder samples:</p>
+<ul>
+<li>The magnitudes of previously decoded immediate spatial neighbors
+(left and above).</li>
+<li>The transform block size and transform type (e.g., DCT, identity, or
+directional transforms).</li>
+<li>The frequency position (low-frequency vs. high-frequency).</li>
+</ul>
+<p>If adjacent neighbors contain large values, the probability of the
+current coefficient being non-zero increases. By selecting a CDF tied
+specifically to that local context, AV1 flattens prediction error and
+sharpens the probability peak of the symbol, driving down entropy.</p>
+<h3 id="3-dynamic-cdf-adaptation">3. Dynamic CDF Adaptation</h3>
+<p>Instead of relying on fixed static probability tables or performing
+costly, slow updates on every single bit, AV1 adapts its CDFs on the fly
+after decoding symbols.</p>
+<p>AV1 uses a fast adaptation rule that updates context-specific CDFs
+throughout the frame. The rate of adaptation scales based on the
+frequency of the context: rarely used contexts adapt slowly to avoid
+overreacting to noise, while frequently accessed contexts quickly
+converge to the true statistical distribution of the current frame
+content.</p>
+<h3 id="4-reverse-scan-order">4. Reverse Scan Order</h3>
+<p>AV1 processes coefficients in a reverse zigzag or coordinate-specific
+scan order, starting from the highest-frequency non-zero coefficient
+(the End-of-Block) and working backwards toward the DC component
+(top-left).</p>
+<p>Scanning in reverse stabilizes the statistical distribution: because
+higher-frequency values are predominantly zeros or small integers,
+scanning backward establishes a clean baseline of context that makes
+predicting the transition toward larger low-frequency values far more
+accurate.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

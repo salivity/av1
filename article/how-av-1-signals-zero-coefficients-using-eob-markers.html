@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Signals Zero Coefficients Using EOB Markers - av1</title>
+    <meta name="description" content="This article explains how the AV1 video codec efficiently signals trailing zero transform coefficients using End-Of-Block (EOB) markers. In transform coding, quantizing residual data produces sparse coefficient blocks with large clusters of zeros, partic">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-signals-zero-coefficients-using-eob-markers">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Signals Zero Coefficients Using EOB Markers - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-signals-zero-coefficients-using-eob-markers" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how the AV1 video codec efficiently signals trailing zero transform coefficients using End-Of-Block (EOB) markers. In transform coding, quantizing residual data produces sparse coefficient blocks with large clusters of zeros, partic" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-signals-zero-coefficients-using-eob-markers">How AV1
+Signals Zero Coefficients Using EOB Markers</h1>
+<p>This article explains how the AV1 video codec efficiently signals
+trailing zero transform coefficients using End-Of-Block (EOB) markers.
+In transform coding, quantizing residual data produces sparse
+coefficient blocks with large clusters of zeros, particularly in higher
+frequencies. Rather than transmitting each zero individual coefficient,
+AV1 identifies the position of the last non-zero coefficient along a
+predetermined scan path, allowing decoders to infer that all subsequent
+values are zero.</p>
+<h3 id="the-role-of-end-of-block-eob-in-transform-coding">The Role of
+End-Of-Block (EOB) in Transform Coding</h3>
+<p>During video compression, spatial residuals are converted into
+frequency domain coefficients using transforms such as the Discrete
+Cosine Transform (DCT) or the Asymmetric Discrete Sine Transform (ADST).
+After quantization, most energy concentrates in the low-frequency
+positions, leaving high frequencies populated almost entirely by
+zeros.</p>
+<p>To convert the two-dimensional transform matrix into a
+one-dimensional array for entropy coding, AV1 arranges coefficients
+using specific scan orders. The End-Of-Block (EOB) marker represents the
+1D index of the final non-zero coefficient along this scan path. All
+indices beyond the EOB contain only zero-value coefficients.</p>
+<h3 id="signaling-eob-position">Signaling EOB Position</h3>
+<p>AV1 avoids coding trailing zeros by determining and transmitting the
+EOB index before decoding the individual coefficient magnitudes. The
+signaling process follows a structured syntax:</p>
+<ol type="1">
+<li><strong>All-Zero Block Check</strong>: If an entire transform block
+contains no non-zero values, this is signaled immediately at the block
+level (often via a transform skip or coded block flag). In this
+scenario, the EOB is zero, and no further transform data is
+processed.</li>
+<li><strong>EOB Prefix (<code>eob_pt</code>)</strong>: When non-zero
+coefficients exist, AV1 splits the EOB position into a prefix category
+(<code>eob_pt</code>) and extra bits. The <code>eob_pt</code> defines a
+logarithmic range or bucket for the EOB index (for instance, whether the
+index falls in ranges like 1, 2, 3, 4–7, 8–15, etc.).</li>
+<li><strong>Context-Adaptive Entropy Coding</strong>: The
+<code>eob_pt</code> syntax element is encoded using AV1's multi-symbol
+arithmetic coder. Contexts for modeling <code>eob_pt</code>
+probabilities are derived from transform block size, plane type (luma
+vs. chroma), and transform type.</li>
+<li><strong>Extra Bits (<code>eob_extra</code>)</strong>: If the bucket
+defined by <code>eob_pt</code> contains more than one possible index,
+explicit offset bits are read to resolve the exact index within that
+range.</li>
+</ol>
+<h3 id="decoding-trailing-zeros">Decoding Trailing Zeros</h3>
+<p>Once the decoder reconstructs the exact EOB index:</p>
+<ul>
+<li><strong>Implicit Zeros</strong>: All positions from index
+<code>EOB</code> up to the total block capacity (<span
+class="math inline">\(N \times M\)</span> coefficients) are
+automatically set to zero without reading any entropy-coded data from
+the bitstream.</li>
+<li><strong>Active Decoding</strong>: The decoder processes only the
+coefficients located from index <code>0</code> up to
+<code>EOB - 1</code>.</li>
+</ul>
+<p>AV1 decodes these active coefficients in reverse scan order (from
+<code>EOB - 1</code> down to <code>0</code>). Because the coefficient at
+<code>EOB - 1</code> is guaranteed to be non-zero by definition, the
+codec saves additional signaling overhead by bypassing the zero/non-zero
+classification flag for that specific terminal position.</p>
+<h3 id="compression-efficiency">Compression Efficiency</h3>
+<p>In medium to high quantization scenarios, trailing zeros frequently
+constitute over 80% of a transform block's coefficients. By
+encapsulating these redundant values into a single parameterized EOB
+symbol, AV1 minimizes bitstream overhead and reduces the computational
+complexity required to parse sparse frequency blocks.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

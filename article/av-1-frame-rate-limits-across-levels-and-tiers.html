@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Frame Rate Limits Across Levels and Tiers - av1</title>
+    <meta name="description" content="This article provides an overview of how the AV1 video codec handles frame rate limitations across its standardized Levels and Tiers. In the AV1 specification, maximum frame rates are fundamentally determined by Level definitions—specifically through m">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-frame-rate-limits-across-levels-and-tiers">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Frame Rate Limits Across Levels and Tiers - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-frame-rate-limits-across-levels-and-tiers" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AV1 video codec handles frame rate limitations across its standardized Levels and Tiers. In the AV1 specification, maximum frame rates are fundamentally determined by Level definitions—specifically through m" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-frame-rate-limits-across-levels-and-tiers">AV1 Frame Rate
+Limits Across Levels and Tiers</h1>
+<p>This article provides an overview of how the AV1 video codec handles
+frame rate limitations across its standardized Levels and Tiers. In the
+AV1 specification, maximum frame rates are fundamentally determined by
+Level definitions—specifically through maximum luma sample rates and
+decode capabilities—while Tiers determine the maximum bitrate limits
+required to sustain those frame rates. The breakdown below details the
+frame rate caps achievable from standard definition up to 8K, along with
+the distinct operational roles played by the Main and High Tiers.</p>
+<h2 id="understanding-levels-vs-tiers-in-av1">Understanding Levels vs.
+Tiers in AV1</h2>
+<p>In the AV1 standard, performance limitations are split into two
+concepts:</p>
+<ul>
+<li><strong>Levels:</strong> Specify the hardware processing workload,
+defining maximum picture size (in luma samples), maximum display rate,
+and maximum decode rate. The combination of picture size and sample
+rates establishes the maximum frame rate for any specific
+resolution.</li>
+<li><strong>Tiers:</strong> Specify the maximum bitrate and buffer size
+(CPB). AV1 specifies two tiers: <strong>Main Tier</strong> (for consumer
+playback and typical streaming) and <strong>High Tier</strong> (for
+demanding applications, professional broadcast, and capture). High Tier
+is only defined starting at Level 4.0 and higher.</li>
+</ul>
+<p>While Tiers do not alter the maximum temporal frequency (frame rate)
+calculations directly, High Tier provides the higher bitrate ceilings
+necessary to encode high-frame-rate (HFR) content at higher resolutions
+without severe compression artifacts.</p>
+<h2 id="av1-level-specifications-and-frame-rate-limits">AV1 Level
+Specifications and Frame Rate Limits</h2>
+<p>Because AV1 dictates limits via <code>MaxPicSizeLuma</code> (maximum
+samples per frame) and <code>MaxDisplayRate</code> (maximum samples per
+second), the maximum frame rate is calculated by dividing the maximum
+display rate by the frame's total sample count.</p>
+<h3 id="levels-20-to-23-standard-definition">Levels 2.0 to 2.3 (Standard
+Definition)</h3>
+<ul>
+<li><strong>Level 2.0:</strong> Designed for resolutions up to 426×240
+at up to 30 frames per second (fps).</li>
+<li><strong>Level 2.1:</strong> Increases throughput to support 480p
+(854×480) at up to 30 fps or 240p at up to 60 fps.</li>
+<li><strong>Level 2.2 – 2.3:</strong> Handles up to 480p at 60 fps or
+low-tier 720p content at 30 fps.</li>
+</ul>
+<h3 id="levels-30-to-33-high-definition---720p--1080p">Levels 3.0 to 3.3
+(High Definition - 720p &amp; 1080p)</h3>
+<ul>
+<li><strong>Level 3.0:</strong> Supports 720p (1280×720) at up to 30
+fps.</li>
+<li><strong>Level 3.1:</strong> Increases the sample rate to support
+720p at up to 60 fps or 1080p (1920×1080) at up to 30 fps.</li>
+<li><strong>Level 3.2 – 3.3:</strong> Bridges performance for
+high-frame-rate 720p (up to 120 fps) and standard 1080p at 30 fps.</li>
+</ul>
+<h3 id="levels-40-to-43-full-hd-to-4k-entry">Levels 4.0 to 4.3 (Full HD
+to 4K Entry)</h3>
+<p><em>High Tier support begins at Level 4.0.</em></p>
+<ul>
+<li><strong>Level 4.0:</strong> Supports 1080p at up to 60 fps.</li>
+<li><strong>Level 4.1:</strong> Increases limits to support 1080p at up
+to 120 fps or 4K UHD (3840×2160) at up to 30 fps.</li>
+<li><strong>Level 4.2 – 4.3:</strong> Optimizes high-frame-rate 1080p
+delivery up to 120 fps with broader profile compatibility.</li>
+</ul>
+<h3 id="levels-50-to-53-4k-ultra-hd">Levels 5.0 to 5.3 (4K Ultra
+HD)</h3>
+<ul>
+<li><strong>Level 5.0:</strong> Standard 4K UHD (3840×2160) playback up
+to 30 fps.</li>
+<li><strong>Level 5.1:</strong> Standard 4K UHD playback up to 60
+fps.</li>
+<li><strong>Level 5.2:</strong> High-frame-rate 4K UHD playback up to
+120 fps.</li>
+<li><strong>Level 5.3:</strong> High-frame-rate 4K UHD up to 120 fps
+with elevated decode processing requirements.</li>
+</ul>
+<h3 id="levels-60-to-63-8k-ultra-hd">Levels 6.0 to 6.3 (8K Ultra
+HD)</h3>
+<ul>
+<li><strong>Level 6.0:</strong> Supports 8K UHD (7680×4320) playback at
+up to 30 fps.</li>
+<li><strong>Level 6.1:</strong> Supports 8K UHD playback at up to 60
+fps.</li>
+<li><strong>Level 6.2:</strong> Supports 8K UHD playback at up to 120
+fps.</li>
+<li><strong>Level 6.3:</strong> Maximum defined performance tier
+supporting 8K UHD at up to 120 fps under the highest data and compute
+constraints.</li>
+</ul>
+<h2 id="impact-of-main-tier-vs-high-tier-on-frame-rates">Impact of Main
+Tier vs. High Tier on Frame Rates</h2>
+<p>While both Main and High Tier share the same maximum frame rate caps
+within a given Level, they diverge in available bandwidth:</p>
+<ul>
+<li><strong>Main Tier:</strong> Caps bitrates to levels suitable for
+public internet streaming. For example, Level 5.1 Main Tier caps at 40
+Mbps, which is suitable for standard 4K 60 fps video delivery.</li>
+<li><strong>High Tier:</strong> Significantly scales maximum bitrates.
+At Level 5.1, High Tier allows up to 100 Mbps, and at Level 6.2/6.3,
+bitrates can exceed 800 Mbps.</li>
+</ul>
+<p>Consequently, maintaining high frame rates (such as 120 fps at 4K or
+60/120 fps at 8K) often requires targeting the High Tier to prevent
+bit-budget starvation, ensuring high-motion scenes maintain visual
+fidelity at elevated temporal frequencies.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

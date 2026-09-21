@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Over CMAF Fragmentation Headers Explained - av1</title>
+    <meta name="description" content="Streaming AV1 video over the Common Media Application Format (CMAF) requires packaging AV1 bitstreams into standardized ISO Base Media File Format (ISOBMFF) structures. To achieve seamless adaptive bitrate streaming and low-latency delivery, CMAF divides">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-over-cmaf-fragmentation-headers-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Over CMAF Fragmentation Headers Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-over-cmaf-fragmentation-headers-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Streaming AV1 video over the Common Media Application Format (CMAF) requires packaging AV1 bitstreams into standardized ISO Base Media File Format (ISOBMFF) structures. To achieve seamless adaptive bitrate streaming and low-latency delivery, CMAF divides" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-over-cmaf-fragmentation-headers-explained">AV1 Over CMAF
+Fragmentation Headers Explained</h1>
+<p>Streaming AV1 video over the Common Media Application Format (CMAF)
+requires packaging AV1 bitstreams into standardized ISO Base Media File
+Format (ISOBMFF) structures. To achieve seamless adaptive bitrate
+streaming and low-latency delivery, CMAF divides media into an
+Initialization Segment and a sequence of Media Fragments. This guide
+outlines the exact fragmentation headers and ISOBMFF boxes required to
+package and stream AV1 content within CMAF containers.</p>
+<h3 id="the-cmaf-segmentation-model">The CMAF Segmentation Model</h3>
+<p>CMAF standardizes media delivery by splitting streams into two
+primary components:</p>
+<ol type="1">
+<li><strong>CMAF Header (Initialization Segment):</strong> Contains
+track metadata, codec configuration, and initialization parameters, but
+no media samples.</li>
+<li><strong>CMAF Fragment (Media Segment / Chunk):</strong> Contains a
+movie fragment header followed by media data, encapsulating AV1 Open
+Bitstream Units (OBUs).</li>
+</ol>
+<h3 id="1-initialization-segment-headers">1. Initialization Segment
+Headers</h3>
+<p>The Initialization Segment must contain the following hierarchy of
+boxes to initialize the AV1 decoder:</p>
+<ul>
+<li><strong><code>ftyp</code> (File Type Box):</strong> Defines the file
+profile and compatibility. For CMAF AV1, the major brand is typically
+set to <code>cmfc</code> (CMAF Track), with compatible brands including
+<code>cmfc</code>, <code>iso8</code>, and <code>av01</code>.</li>
+<li><strong><code>moov</code> (Movie Box):</strong> Encapsulates all
+presentation metadata.
+<ul>
+<li><strong><code>mvhd</code> (Movie Header Box):</strong> Declares
+overall presentation characteristics, such as timescale and
+duration.</li>
+<li><strong><code>trak</code> (Track Box):</strong> Defines the
+individual AV1 video track.
+<ul>
+<li><strong><code>tkhd</code> (Track Header Box):</strong> Provides
+visual presentation dimensions (width and height) and track
+identification.</li>
+<li><strong><code>mdia</code> (Media Box):</strong> Contains
+media-specific operational parameters.
+<ul>
+<li><strong><code>mdhd</code> (Media Header Box):</strong> Specifies
+track-specific timescale and language.</li>
+<li><strong><code>hdlr</code> (Handler Reference Box):</strong> Declares
+the media type, set to <code>vide</code> for video.</li>
+<li><strong><code>minf</code> (Media Information Box):</strong> Holds
+handler-specific information.
+<ul>
+<li><strong><code>vmhd</code> (Video Media Header Box):</strong>
+Required video-specific configuration.</li>
+<li><strong><code>stbl</code> (Sample Table Box):</strong> In fragmented
+media, this box acts primarily as a container for codec configuration.
+<ul>
+<li><strong><code>stsd</code> (Sample Description Box):</strong>
+Contains the sample entry for the track.
+<ul>
+<li><strong><code>av01</code> (AV1 Sample Entry):</strong> Identifies
+the video as AV1.</li>
+<li><strong><code>av1C</code> (AV1 Configuration Box):</strong> Crucial
+AV1-specific box inside <code>av01</code>. It carries profile details,
+level, tier, bit depth, color space, and may contain the initial AV1
+Sequence Header OBU.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><strong><code>mvex</code> (Movie Extends Box):</strong> Explicitly
+indicates that the media is fragmented and that samples will be
+delivered via subsequent <code>moof</code> boxes.
+<ul>
+<li><strong><code>trex</code> (Track Extends Box):</strong> Defines
+default sample values (such as duration, size, and sample flags) for
+fragments.</li>
+</ul></li>
+</ul></li>
+</ul>
+<h3 id="2-media-fragment-headers">2. Media Fragment Headers</h3>
+<p>Each playable media segment or chunk begins with metadata headers
+followed by the raw media samples:</p>
+<ul>
+<li><strong><code>styp</code> (Segment Type Box):</strong> Functions
+similarly to <code>ftyp</code> but is designated for segment files. It
+typically includes <code>cmfs</code> (CMAF Segment) and
+<code>msdh</code> (Media Segment) in the compatible brands list.</li>
+<li><strong><code>moof</code> (Movie Fragment Box):</strong> Contains
+all metadata detailing the media samples located in the immediately
+following <code>mdat</code> box.
+<ul>
+<li><strong><code>mfhd</code> (Movie Fragment Header Box):</strong>
+Carries a monotonically increasing <code>sequence_number</code> to
+ensure proper packet and fragment ordering.</li>
+<li><strong><code>traf</code> (Track Fragment Box):</strong> Contains
+track-level parameters for the current fragment.
+<ul>
+<li><strong><code>tfhd</code> (Track Fragment Header Box):</strong>
+References the <code>track_ID</code> defined in the initialization
+<code>trak</code> box and specifies default flags for the fragment's
+samples.</li>
+<li><strong><code>tfdt</code> (Track Fragment Base Media Decode Time
+Box):</strong> Provides the absolute decode timestamp
+(<code>baseMediaDecodeTime</code>) for the first sample in the fragment.
+Using version 1 of <code>tfdt</code> is standard practice to support
+64-bit timestamps, preventing overflow during continuous live
+streaming.</li>
+<li><strong><code>trun</code> (Track Run Box):</strong> Details the
+individual sample records. It specifies the number of samples,
+individual sample durations, sample sizes, presentation time offsets
+(composition offsets, if B-frames are used), and sample flags
+(identifying keyframes vs. non-keyframes via
+<code>sample_is_non_sync_sample</code>).</li>
+</ul></li>
+</ul></li>
+</ul>
+<h3 id="3-media-data-payload-mdat">3. Media Data Payload
+(<code>mdat</code>)</h3>
+<p>Directly following the <code>moof</code> box is the
+<strong><code>mdat</code> (Media Data Box)</strong>:</p>
+<ul>
+<li><strong>Payload Format:</strong> Contains the raw byte stream of AV1
+samples described by the <code>trun</code> box.</li>
+<li><strong>OBU Encapsulation:</strong> In an ISOBMFF AV1 container,
+each sample in the <code>mdat</code> represents an AV1 temporal unit
+consisting of one or more OBUs (such as Sequence Headers, Frame Headers,
+and Tile Groups). The length-delimited format is applied, meaning each
+OBU within the sample must include an explicit size field or use
+length-delimited framing to enable proper parsing by the decoder.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

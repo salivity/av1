@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychovisual Rate Distortion in AV1 Encoders - av1</title>
+    <meta name="description" content="This article explains the concept of psychovisual rate distortion optimization (Psy-RDO) and its practical implementation within modern AV1 video encoders such as SVT-AV1 and libaom. While traditional rate-distortion optimization relies on purely mathema">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/psychovisual-rate-distortion-in-av-1-encoders">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Psychovisual Rate Distortion in AV1 Encoders - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/psychovisual-rate-distortion-in-av-1-encoders" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains the concept of psychovisual rate distortion optimization (Psy-RDO) and its practical implementation within modern AV1 video encoders such as SVT-AV1 and libaom. While traditional rate-distortion optimization relies on purely mathema" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="psychovisual-rate-distortion-in-av1-encoders">Psychovisual Rate
+Distortion in AV1 Encoders</h1>
+<p>This article explains the concept of psychovisual rate distortion
+optimization (Psy-RDO) and its practical implementation within modern
+AV1 video encoders such as SVT-AV1 and libaom. While traditional
+rate-distortion optimization relies on purely mathematical error metrics
+that often introduce visual softness, psychovisual rate distortion
+models the human visual system to preserve textures, edges, and
+perceived clarity. The following sections explore how classical
+optimization falls short, the mechanics behind perceptual distortion
+modeling, and the specific algorithms AV1 encoders use to balance visual
+quality against bitrate.</p>
+<h3
+id="understanding-classical-rate-distortion-optimization-rdo">Understanding
+Classical Rate-Distortion Optimization (RDO)</h3>
+<p>In digital video compression, an encoder must constantly choose
+between multiple coding options—such as block partition sizes,
+prediction modes, and transform types. Rate-Distortion Optimization
+(RDO) is the decision-making framework used to select the best option
+using the Lagrangian cost function:</p>
+<p><span class="math display">\[J = D + \lambda R\]</span></p>
+<p>In this equation, <span class="math inline">\(R\)</span> represents
+the rate (the number of bits required), <span
+class="math inline">\(D\)</span> represents the distortion (the
+difference between the original and reconstructed block), and <span
+class="math inline">\(\lambda\)</span> (lambda) is the Lagrange
+multiplier balancing the two based on the target quantizer.</p>
+<p>Historically, encoders measure distortion (<span
+class="math inline">\(D\)</span>) using mathematical metrics like Mean
+Squared Error (MSE) or Sum of Absolute Differences (SAD). While
+computationally efficient, these metrics assume that all pixel-level
+errors are equally noticeable to the human eye. In reality, MSE heavily
+penalizes high-frequency deviations, leading the encoder to favor
+smoothed, blurred reconstructions that minimize raw numerical variance
+over textured reconstructions that appear sharper to human
+observers.</p>
+<h3 id="what-is-psychovisual-rate-distortion">What is Psychovisual Rate
+Distortion?</h3>
+<p>Psychovisual rate distortion incorporates principles of the Human
+Visual System (HVS) directly into the RDO cost calculation. Instead of
+treating every pixel deviation equally, Psy-RDO adjusts the distortion
+term <span class="math inline">\(D\)</span> (or biases the cost <span
+class="math inline">\(J\)</span>) based on perceptual impact:</p>
+<ul>
+<li><strong>Spatial Masking:</strong> Artifacts and noise are far less
+perceptible in busy, high-texture areas (like foliage or water) than in
+smooth gradients (like clear skies or skin tones).</li>
+<li><strong>Contrast Sensitivity:</strong> The human eye is more
+sensitive to structural degradations and edge alignment than to subtle
+global luminance shifts.</li>
+<li><strong>Temporal Masking:</strong> Rapidly moving objects or scene
+cuts reduce the eye's resolving power, allowing more compression
+artifacts to pass unnoticed compared to static scenes.</li>
+</ul>
+<p>By modeling these factors, Psy-RDO allows higher mathematical error
+in areas where the eye cannot perceive it, saving bits to preserve fine
+edges, grain, and high-frequency structural details elsewhere.</p>
+<h3 id="implementation-of-psy-rdo-in-av1-encoders">Implementation of
+Psy-RDO in AV1 Encoders</h3>
+<p>AV1 encoders, predominantly SVT-AV1 and libaom, implement
+psychovisual optimization across multiple stages of the encoding
+pipeline.</p>
+<h4 id="1-perceptual-block-variance-and-adaptive-quantization">1.
+Perceptual Block Variance and Adaptive Quantization</h4>
+<p>Before mode evaluation occurs, AV1 encoders analyze spatial
+complexity using variance-based adaptive quantization (often termed
+<code>aq-mode</code> in AV1 implementations):</p>
+<ul>
+<li><strong>Flatness Detection:</strong> Low-variance blocks are
+assigned lower quantization parameters (finer quantization) to prevent
+banding and blockiness in smooth areas.</li>
+<li><strong>Texture Weighting:</strong> Highly textured blocks receive
+slightly higher quantization parameters because the natural chaos of the
+texture masks slight quantization noise.</li>
+</ul>
+<h4 id="2-psy-rdo-in-transform-and-mode-decision">2. Psy-RDO in
+Transform and Mode Decision</h4>
+<p>During the exhaustive evaluation of prediction modes and transform
+sizes, encoders like SVT-AV1 employ explicit Psy-RDO scoring
+heuristics.</p>
+<p>Instead of evaluating <span class="math inline">\(D\)</span> purely
+as MSE, the distortion metric is blended with an energy-matching or
+cross-correlation term:</p>
+<p><span class="math display">\[D_{psy} = D_{MSE} - \beta \cdot
+C_{energy}\]</span></p>
+<p>Here, <span class="math inline">\(C_{energy}\)</span> measures how
+well the reconstructed block preserves the AC energy (high-frequency
+detail) of the original source block, and <span
+class="math inline">\(\beta\)</span> is a tuning coefficient. If an
+encoding mode completely smooths out fine grain or sharp lines, <span
+class="math inline">\(C_{energy}\)</span> drops, increasing <span
+class="math inline">\(D_{psy}\)</span> and causing the encoder to
+discard that mode in favor of one that retains texture, even if the raw
+bit cost is higher.</p>
+<h4 id="3-transform-domain-psychovisual-weighting">3. Transform Domain
+Psychovisual Weighting</h4>
+<p>AV1 supports multiple transform types, including DCT, asymmetric
+discrete sine transforms (ADST), and identity transforms across sizes
+from 4x4 to 64x64. Encoders adjust the distortion calculation in the
+frequency domain:</p>
+<ul>
+<li>Coefficients corresponding to high spatial frequencies are scaled
+based on Contrast Sensitivity Function (CSF) curves.</li>
+<li>Quantization matrices (QM) in AV1 scale quantization steps per
+frequency band, ensuring that visually critical mid-to-low frequencies
+are prioritized over frequencies beyond normal human visual acuity.</li>
+</ul>
+<h4 id="4-temporal-psy-rdo-via-lookahead">4. Temporal Psy-RDO via
+Lookahead</h4>
+<p>AV1 encoders leverage deep lookahead buffers to evaluate temporal
+dependencies. In SVT-AV1, temporal RDO tracks how well details persist
+across frames:</p>
+<ul>
+<li>Static or slow-panning backgrounds are given high visual priority
+because the human eye has time to track and inspect stationary
+details.</li>
+<li>In chaotic scenes with high motion, temporal Psy-RDO raises the
+quantization parameter, accepting lower fidelity per frame because the
+temporal masking effect of the human eye hides the degraded detail.</li>
+</ul>
+<h3 id="impact-on-metrics-and-subjective-quality">Impact on Metrics and
+Subjective Quality</h3>
+<p>Enabling psychovisual rate distortion in AV1 encoders alters
+traditional quality benchmarks. Because Psy-RDO deliberately accepts
+higher mathematical deviation to preserve visual structure, traditional
+metrics like PSNR (Peak Signal-to-Noise Ratio) almost invariably
+decrease.</p>
+<p>However, subjective viewing tests and perception-oriented
+metrics—such as SSIM, VMAF (Video Multi-Method Assessment Fusion), and
+butteraugli—consistently show substantial improvements. The result is a
+stream that eliminates plastic-looking skin, retains natural film grain,
+and prevents muddy motion artifacts at identical or lower bitrates.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

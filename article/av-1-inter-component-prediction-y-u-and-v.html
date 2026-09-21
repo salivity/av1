@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Inter-Component Prediction: Y, U, and V - av1</title>
+    <meta name="description" content="This article provides an overview of how the AV1 video codec leverages correlation between color channels to boost compression efficiency. Specifically, it explores Chroma from Luma (CfL) prediction, detailing the mathematical and structural methods AV1">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-inter-component-prediction-y-u-and-v">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Inter-Component Prediction: Y, U, and V - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-inter-component-prediction-y-u-and-v" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the AV1 video codec leverages correlation between color channels to boost compression efficiency. Specifically, it explores Chroma from Luma (CfL) prediction, detailing the mathematical and structural methods AV1" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-inter-component-prediction-y-u-and-v">AV1 Inter-Component
+Prediction: Y, U, and V</h1>
+<p>This article provides an overview of how the AV1 video codec
+leverages correlation between color channels to boost compression
+efficiency. Specifically, it explores Chroma from Luma (CfL) prediction,
+detailing the mathematical and structural methods AV1 uses to
+reconstruct the chroma (<span class="math inline">\(U\)</span> and <span
+class="math inline">\(V\)</span>) planes directly from the reconstructed
+luma (<span class="math inline">\(Y\)</span>) plane.</p>
+<h3 id="the-role-of-chroma-from-luma-cfl">The Role of Chroma from Luma
+(CfL)</h3>
+<p>In digital video compression, color is typically represented in the
+<span class="math inline">\(YCbCr\)</span> (or <span
+class="math inline">\(YUV\)</span>) color space. Human vision is
+significantly more sensitive to brightness (<span
+class="math inline">\(Y\)</span>) than to color deviations (<span
+class="math inline">\(U\)</span> and <span
+class="math inline">\(V\)</span>). Consequently, the luma channel
+contains the sharpest edges, contours, and textures. Traditional video
+codecs often predict chroma blocks using directional intra modes
+independently from luma. AV1 introduces Chroma from Luma (CfL), an
+intra-prediction tool that allows the encoder to model chroma sample
+values directly as a linear function of the coincident reconstructed
+luma samples.</p>
+<p>CfL operates strictly in one direction: from luma to chroma. AV1 does
+not perform prediction between the two chroma channels (<span
+class="math inline">\(U\)</span> to <span
+class="math inline">\(V\)</span> or vice versa), nor does it predict
+luma from chroma.</p>
+<h3 id="alignment-and-downsampling">Alignment and Downsampling</h3>
+<p>Because video is commonly encoded in 4:2:0 subsampling, the chroma
+components have half the horizontal and vertical resolution of the luma
+plane. Before luma details can be used to predict chroma, they must be
+spatially aligned:</p>
+<ol type="1">
+<li><strong>Reconstruction:</strong> The corresponding luma block is
+fully reconstructed (predicted, transformed, quantized, and
+inverse-transformed) before chroma prediction occurs.</li>
+<li><strong>Subsampling:</strong> The reconstructed luma block is
+downsampled to match the resolution of the target chroma block. AV1 uses
+standard box filtering or simple averaging depending on the subsampling
+format (e.g., averaging a <span class="math inline">\(2 \times
+2\)</span> block of luma samples to produce a single value matching a
+<span class="math inline">\(4:2:0\)</span> chroma sample position).</li>
+</ol>
+<h3 id="the-linear-model-formulation">The Linear Model Formulation</h3>
+<p>Once the luma component is downsampled, AV1 models the chroma
+prediction as a scaled version of the AC (alternating current, or
+detail) component of the luma signal, offset by an intra DC
+baseline.</p>
+<p>The mathematical formulation for a chroma sample <span
+class="math inline">\(C(x, y)\)</span> is:</p>
+<p><span class="math display">\[C_{pred}(x, y) = DC_{chroma} + \alpha
+\cdot (L(x, y) - \mu_L)\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(L(x, y)\)</span> represents the
+downsampled reconstructed luma sample.</li>
+<li><span class="math inline">\(\mu_L\)</span> is the average (DC value)
+of the downsampled reconstructed luma block.</li>
+<li><span class="math inline">\((L(x, y) - \mu_L)\)</span> isolates the
+AC component, representing the edges and textures without the absolute
+brightness offset.</li>
+<li><span class="math inline">\(\alpha\)</span> is a scaling factor
+signaled in the bitstream.</li>
+<li><span class="math inline">\(DC_{chroma}\)</span> is the standard
+intra DC prediction calculated from neighboring reconstructed chroma
+pixels.</li>
+</ul>
+<h3 id="parameter-signaling">Parameter Signaling</h3>
+<p>To minimize bitrate overhead, the scaling factor (<span
+class="math inline">\(\alpha\)</span>) is quantized and transmitted
+explicitly for each chroma plane (<span class="math inline">\(U\)</span>
+and <span class="math inline">\(V\)</span>) independently.</p>
+<ul>
+<li>The sign and magnitude of <span
+class="math inline">\(\alpha\)</span> are coded into the bitstream.</li>
+<li>A value of <span class="math inline">\(\alpha = 0\)</span>
+effectively turns off CfL, falling back to regular DC prediction.</li>
+<li>Signaling <span class="math inline">\(\alpha\)</span> separately for
+<span class="math inline">\(U\)</span> and <span
+class="math inline">\(V\)</span> allows the codec to adapt to varying
+color relationships, such as when one chroma channel is positively
+correlated with brightness while the other is negatively
+correlated.</li>
+</ul>
+<p>By relying on the already-transmitted texture details in the luma
+plane and only sending the scaling parameter <span
+class="math inline">\(\alpha\)</span>, AV1 eliminates redundant edge
+signaling across color planes and significantly reduces the bitrate
+required for chroma intra coding.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

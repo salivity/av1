@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Segments for Localized Parameter Adaptation - av1</title>
+    <meta name="description" content="This article provides an overview of the segmentation capabilities in the AV1 video codec, focusing on the maximum number of unique segments supported per frame for localized parameter adaptation. It explains the technical limits defined by the AV1 speci">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-segments-for-localized-parameter-adaptation">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Segments for Localized Parameter Adaptation - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-segments-for-localized-parameter-adaptation" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the segmentation capabilities in the AV1 video codec, focusing on the maximum number of unique segments supported per frame for localized parameter adaptation. It explains the technical limits defined by the AV1 speci" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-segments-for-localized-parameter-adaptation">AV1 Segments
+for Localized Parameter Adaptation</h1>
+<p>This article provides an overview of the segmentation capabilities in
+the AV1 video codec, focusing on the maximum number of unique segments
+supported per frame for localized parameter adaptation. It explains the
+technical limits defined by the AV1 specification, the specific encoding
+parameters that can be adjusted on a per-segment basis, and the
+practical benefits segmentation offers for video compression efficiency
+and visual quality.</p>
+<h2 id="maximum-number-of-segments-in-av1">Maximum Number of Segments in
+AV1</h2>
+<p>Under the AV1 specification, a single frame can support up to
+<strong>8 unique segments</strong> (indexed from 0 to 7) for localized
+parameter adaptation.</p>
+<p>Segmentation allows the encoder to partition a frame into distinct
+regions and apply custom coding parameters to each region, rather than
+relying strictly on global, frame-level settings. Every block within the
+frame can be assigned to one of these eight segment IDs via a
+segmentation map.</p>
+<h2 id="parameters-controlled-per-segment">Parameters Controlled Per
+Segment</h2>
+<p>Each of the 8 segments can independently enable or disable specific
+features and apply relative or absolute parameter offsets. The primary
+parameters governed by AV1 segmentation include:</p>
+<ul>
+<li><strong>Quantization Offsets (ALT_Q):</strong> Applies an alternate
+quantizer index to individual segments. This allows higher fidelity
+(lower quantization) on critical areas and heavier compression on less
+important background areas.</li>
+<li><strong>Loop Filter Strength:</strong> Adjusts the deblocking loop
+filter level per segment, preventing over-smoothing in sharp,
+high-detail regions or reducing blocking artifacts in flat regions.</li>
+<li><strong>Reference Frame Selection:</strong> Restricts or biases
+motion prediction to specific reference frames for blocks belonging to a
+given segment.</li>
+<li><strong>Skip Mode:</strong> Forces blocks within a segment to skip
+transform coding and residual signaling, which is useful for static
+backgrounds or uniform areas.</li>
+<li><strong>Global Motion/In-Loop Processing:</strong> Influences how
+specific in-loop restoration and motion vector predictions are handled
+across different spatial regions.</li>
+</ul>
+<h2 id="how-av1-signals-segmentation">How AV1 Signals Segmentation</h2>
+<p>The segmentation framework in AV1 operates through two primary
+components:</p>
+<ol type="1">
+<li><strong>Segment Feature Data:</strong> Defined in the frame header,
+this data specifies which features are active across the segments and
+sets the quantitative values (such as delta values for quantization or
+loop filter levels) for each active segment ID.</li>
+<li><strong>Segmentation Map:</strong> Assigns each coding unit (down to
+the block level) to one of the 8 segment IDs. AV1 can transmit an
+entirely new map, update the map differentially, or reuse the
+segmentation map from a previous reference frame to conserve
+bitrate.</li>
+</ol>
+<h2 id="practical-applications">Practical Applications</h2>
+<p>Supporting up to 8 unique segments allows AV1 encoders to implement
+advanced optimizations, including:</p>
+<ul>
+<li><strong>Region of Interest (ROI) Encoding:</strong> Prioritizing
+faces or text by assigning them to lower-quantization segments while
+allocating fewer bits to peripheral areas.</li>
+<li><strong>Background Subtraction:</strong> Flagging static background
+elements for skip modes and reduced filtering.</li>
+<li><strong>Temporal Consistency:</strong> Carrying segment structures
+across frames to prevent flickering and maintain uniform quality across
+successive scenes.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Support in Premiere Pro and Media Frameworks - av1</title>
+    <meta name="description" content="The AV1 video codec offers royalty-free, high-efficiency compression designed to succeed HEVC (H.265) and AVC (H.264), but its adoption differs significantly across professional software and open ecosystems. While open-source media frameworks have fully">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-support-in-premiere-pro-and-media-frameworks">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Support in Premiere Pro and Media Frameworks - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-support-in-premiere-pro-and-media-frameworks" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec offers royalty-free, high-efficiency compression designed to succeed HEVC (H.265) and AVC (H.264), but its adoption differs significantly across professional software and open ecosystems. While open-source media frameworks have fully" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-support-in-premiere-pro-and-media-frameworks">AV1 Support in
+Premiere Pro and Media Frameworks</h1>
+<p>The AV1 video codec offers royalty-free, high-efficiency compression
+designed to succeed HEVC (H.265) and AVC (H.264), but its adoption
+differs significantly across professional software and open ecosystems.
+While open-source media frameworks have fully embraced both software and
+hardware implementations of AV1 for recording, transcoding, and
+streaming, commercial non-linear editors like Adobe Premiere Pro have
+taken a slower, phased approach to native integration. This article
+examines the current state of AV1 support in Adobe Premiere Pro
+alongside leading open-source frameworks like FFmpeg, GStreamer, and OBS
+Studio.</p>
+<h3 id="av1-support-in-adobe-premiere-pro">AV1 Support in Adobe Premiere
+Pro</h3>
+<p>Adobe Premiere Pro's native AV1 implementation focuses primarily on
+playback and decoding rather than full-pipeline authoring:</p>
+<ul>
+<li><strong>Hardware Decoding:</strong> Premiere Pro supports
+hardware-accelerated AV1 decoding on supported systems, such as Intel
+11th-generation processors and newer, NVIDIA GeForce RTX 30-series and
+newer, AMD Radeon RX 7000-series, and Apple M3-series chips. This allows
+editors to import and edit AV1 footage natively without mandatory
+pre-transcoding.</li>
+<li><strong>Software Decoding:</strong> Systems lacking dedicated
+hardware decoders may experience sluggish timeline playback, as software
+decoding of AV1 is computationally demanding inside a timeline
+environment.</li>
+<li><strong>Exporting and Encoding:</strong> Native AV1 export options
+remain largely absent or limited in the default Adobe Media Encoder
+presets. Editors who need to output directly to AV1 from Premiere Pro
+typically rely on third-party export plugins, most notably Voukoder,
+which acts as a bridge to open-source encoding libraries.</li>
+</ul>
+<h3 id="av1-in-open-media-frameworks">AV1 in Open Media Frameworks</h3>
+<p>Open media frameworks lead the industry in AV1 implementation, driven
+directly by members and contributors of the Alliance for Open Media
+(AOMedia).</p>
+<ul>
+<li><strong>FFmpeg:</strong> FFmpeg provides comprehensive,
+production-grade support for AV1. It integrates <code>dav1d</code>,
+widely recognized as the fastest software AV1 decoder available. For
+encoding, FFmpeg supports SVT-AV1 (Scalable Video Technology for AV1),
+which offers an optimal balance between compression efficiency and
+speed, alongside hardware-accelerated encoders such as
+<code>av1_nvenc</code> (NVIDIA), <code>av1_qsv</code> (Intel), and
+<code>av1_amf</code> (AMD).</li>
+<li><strong>OBS Studio:</strong> OBS provides native AV1 recording and
+live streaming. Users with modern GPUs from NVIDIA, AMD, or Intel can
+capture content directly in AV1 using hardware encoders. OBS also
+supports software encoding via SVT-AV1 for streaming to compatible
+platforms like YouTube.</li>
+<li><strong>GStreamer:</strong> GStreamer includes robust plugins for
+AV1 parsing, decoding, and muxing within media pipelines. It supports
+both software decoders (<code>dav1d</code>) and hardware interfaces
+(VA-API, NVCODEC), making it a standard choice for embedded systems,
+media servers, and Linux-based multimedia applications.</li>
+</ul>
+<h3 id="the-ecosystem-divide">The Ecosystem Divide</h3>
+<p>The disparity between Premiere Pro and open media frameworks stems
+from different design priorities:</p>
+<ol type="1">
+<li><strong>Agility:</strong> Open-source projects like FFmpeg and OBS
+can quickly adopt emerging standards and hardware APIs without waiting
+for long commercial release cycles.</li>
+<li><strong>Resource Allocation:</strong> Commercial suites prioritize
+timeline stability, color management pipelines, and broad hardware
+acceleration over early adoption of complex software encoders that can
+severely burden CPU resources.</li>
+</ol>
+<h3 id="current-workflow-recommendations">Current Workflow
+Recommendations</h3>
+<p>For video professionals working with AV1 today:</p>
+<ul>
+<li><strong>In Premiere Pro:</strong> Import AV1 clips directly if your
+system has dedicated hardware decoding; otherwise, transcode source
+footage to an editing-friendly intermediate codec like ProRes or DNxHR.
+For exports, render to an intermediate format and use FFmpeg or
+HandBrake to compress the final deliverable into AV1.</li>
+<li><strong>In Open Frameworks:</strong> Use <code>dav1d</code> for
+reading files and SVT-AV1 or modern hardware encoders (NVENC/QSV/AMF)
+for rapid, high-quality encoding and live distribution.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

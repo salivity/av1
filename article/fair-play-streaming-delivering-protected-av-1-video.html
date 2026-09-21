@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairPlay Streaming: Delivering Protected AV1 Video - av1</title>
+    <meta name="description" content="Apple’s FairPlay Streaming (FPS) technology secures premium video playback across Apple devices using robust digital rights management (DRM) integrated into HTTP Live Streaming (HLS). With the addition of hardware-accelerated AV1 decoding in Apple Sili">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/fair-play-streaming-delivering-protected-av-1-video">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="FairPlay Streaming: Delivering Protected AV1 Video - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/fair-play-streaming-delivering-protected-av-1-video" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Apple’s FairPlay Streaming (FPS) technology secures premium video playback across Apple devices using robust digital rights management (DRM) integrated into HTTP Live Streaming (HLS). With the addition of hardware-accelerated AV1 decoding in Apple Sili" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="fairplay-streaming-delivering-protected-av1-video">FairPlay
+Streaming: Delivering Protected AV1 Video</h1>
+<p>Apple’s FairPlay Streaming (FPS) technology secures premium video
+playback across Apple devices using robust digital rights management
+(DRM) integrated into HTTP Live Streaming (HLS). With the addition of
+hardware-accelerated AV1 decoding in Apple Silicon, FairPlay Streaming
+manages protected AV1 assets by combining standard HLS packaging, Common
+Encryption (CENC) using the CBCS scheme, and secure hardware-based key
+exchange. This article examines the technical workflow required to
+package, license, and decrypt protected AV1 video streams using
+FairPlay.</p>
+<h3 id="av1-packaging-and-encryption">AV1 Packaging and Encryption</h3>
+<p>FairPlay Streaming requires AV1 content to be encapsulated within
+fragmented MP4 (fMP4) containers, which serve as media segments within
+an HLS stream.</p>
+<p>Content protection relies on the Common Encryption (CENC) standard
+using the <code>cbcs</code> protection scheme (AES-128 in Cipher Block
+Chaining with 10% pattern protection). In an AV1 stream, the video
+payload consists of Open Bitstream Units (OBUs). When encrypting
+AV1:</p>
+<ul>
+<li>The container isolates the AV1 OBUs within <code>mdat</code>
+boxes.</li>
+<li>Uncompressed headers and critical metadata (such as Sequence Headers
+and Frame Headers) remain in the clear to allow decoders to parse
+structural properties.</li>
+<li>The video data (Tile Group OBUs or Frame OBUs) is encrypted using
+AES-CBC with specific crypt and skip byte patterns, matching the
+<code>cbcs</code> profile required by Apple platforms.</li>
+</ul>
+<h3 id="hls-manifest-signaling">HLS Manifest Signaling</h3>
+<p>To deliver protected AV1 streams, the HLS multivariant (master)
+playlist must properly declare both the AV1 codec and the FairPlay DRM
+parameters:</p>
+<ol type="1">
+<li><strong>Codec Declaration</strong>: The <code>CODECS</code>
+attribute in the <code>#EXT-X-STREAM-INF</code> tag specifies the AV1
+profile, level, and tier using standard naming conventions (for example,
+<code>codecs="av01.0.08M.10"</code>).</li>
+<li><strong>Key Tag</strong>: The media playlists must declare the
+FairPlay DRM key specification using the <code>#EXT-X-KEY</code>
+tag.</li>
+<li><strong>Key Attributes</strong>: The tag specifies
+<code>METHOD=SAMPLE-AES</code>,
+<code>KEYFORMAT="com.apple.streamingkeydelivery"</code>, and
+<code>KEYFORMATVERSIONS="1"</code>, along with a URI pointing to the
+application's license acquisition endpoint or key identifier.</li>
+</ol>
+<p>This signaling enables the AVPlayer framework to identify that the
+upcoming AV1 video segments require a FairPlay-compliant decryption key
+before playback can begin.</p>
+<h3 id="key-exchange-and-license-workflow">Key Exchange and License
+Workflow</h3>
+<p>The delivery and playback workflow follows the standard FairPlay
+Streaming protocol:</p>
+<ol type="1">
+<li><strong>Initialization Data</strong>: When playback starts, AVPlayer
+reads the encryption metadata (such as the <code>sinf</code> and
+<code>pssh</code> boxes in the fMP4 initialization segment) and requests
+an encrypted Server Playback Context (SPC) from the device’s Secure
+Enclave.</li>
+<li><strong>License Request</strong>: The host application captures the
+SPC and forwards it to the content provider’s Key Security Module (KSM)
+alongside the asset ID and user authorization tokens.</li>
+<li><strong>CKC Generation</strong>: The KSM unwraps the SPC using its
+private key, retrieves the appropriate AV1 content decryption key from
+the Key Management System, and packages it into an encrypted Content Key
+Context (CKC).</li>
+<li><strong>License Delivery</strong>: The application passes the CKC
+back to AVPlayer, which loads it directly into the secure hardware
+pipeline.</li>
+</ol>
+<h3 id="secure-hardware-decryption-and-playback">Secure Hardware
+Decryption and Playback</h3>
+<p>Once the CKC is delivered to the operating system, FairPlay manages
+the decryption and decoding entirely inside isolated hardware:</p>
+<ul>
+<li><strong>Hardware Boundary</strong>: On supported devices (such as
+devices featuring the A17 Pro chip, M3 family, or later), the
+hardware-accelerated AV1 decoder is directly linked to the Secure
+Enclave.</li>
+<li><strong>Key Decryption</strong>: The AV1 content key is extracted
+inside secure memory and is never exposed to user-space applications or
+system memory.</li>
+<li><strong>Decoding Pipeline</strong>: The encrypted AV1 OBUs are
+streamed directly into the hardware decoder. The hardware decrypts the
+<code>cbcs</code> blocks and decodes the AV1 frames within protected
+memory buffers.</li>
+<li><strong>Display Output</strong>: The decoded video frames are sent
+through a protected display pipeline (enforcing HDCP over external
+connections) to prevent unauthorized capture or interception.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encapsulating PCM and Opus Audio with AV1 - av1</title>
+    <meta name="description" content="This article explains how uncompressed PCM and high-resolution Opus audio streams are paired and encapsulated alongside AV1 video. Because AV1 is strictly a video coding format rather than a multimedia container, it does not package audio on its own. Ins">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/encapsulating-pcm-and-opus-audio-with-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Encapsulating PCM and Opus Audio with AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/encapsulating-pcm-and-opus-audio-with-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explains how uncompressed PCM and high-resolution Opus audio streams are paired and encapsulated alongside AV1 video. Because AV1 is strictly a video coding format rather than a multimedia container, it does not package audio on its own. Ins" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="encapsulating-pcm-and-opus-audio-with-av1">Encapsulating PCM and
+Opus Audio with AV1</h1>
+<p>This article explains how uncompressed PCM and high-resolution Opus
+audio streams are paired and encapsulated alongside AV1 video. Because
+AV1 is strictly a video coding format rather than a multimedia
+container, it does not package audio on its own. Instead, it relies on
+standardized container formats—primarily the ISO Base Media File Format
+(MP4) and Matroska (MKV/WebM)—to interleave, synchronize, and transport
+AV1 video tracks with audio data.</p>
+<h3 id="the-role-of-av1-and-media-containers">The Role of AV1 and Media
+Containers</h3>
+<p>AOMedia Video 1 (AV1) defines only the bitstream syntax and decoding
+process for video frames. Audio codecs like Opus and uncompressed Linear
+Pulse-Code Modulation (LPCM) operate entirely independently of the AV1
+compression engine. To play audio and AV1 video together, multiplexers
+wrap the individual elementary streams into container tracks using
+specific track headers, sample descriptions, and timestamps.</p>
+<h3 id="encapsulating-opus-with-av1">Encapsulating Opus with AV1</h3>
+<p>Opus is a lossy, low-latency audio format capable of handling
+high-resolution signals up to a 48 kHz sampling rate with dynamic
+bitrates. Encapsulating Opus alongside AV1 varies by container:</p>
+<ul>
+<li><strong>ISO Base Media File Format (ISOBMFF / MP4):</strong> Under
+standard specifications governed by the Alliance for Open Media
+(AOMedia), an Opus track inside an MP4 file uses the sample entry
+four-character code <code>'Opus'</code>. The track includes an Opus
+Specific Box (<code>dOps</code>) containing essential initialization
+data: the version, channel count, pre-skip (codec delay samples that
+must be discarded upon decoding), original sample rate, and output
+channel mapping. Individual Opus packets are stored as discrete samples
+mapped to presentation timestamps (PTS) matching the AV1 composition
+times.</li>
+<li><strong>Matroska (MKV) and WebM:</strong> Matroska-based containers
+identify Opus tracks via the <code>CodecID</code> set to
+<code>A_OPUS</code>. The track's <code>CodecPrivate</code> element holds
+the Opus identification header, detailing channel configuration and
+pre-skip values. Opus packets are written directly into Matroska
+<code>SimpleBlock</code> or <code>Block</code> structures, interleaved
+chronologically with AV1 video blocks to maintain low buffer
+requirements during streaming and playback.</li>
+</ul>
+<h3 id="encapsulating-uncompressed-pcm-with-av1">Encapsulating
+Uncompressed PCM with AV1</h3>
+<p>PCM audio contains raw, uncompressed sample values that require
+precise format definitions regarding endianness, bit depth, and
+layout.</p>
+<ul>
+<li><strong>ISO Base Media File Format (ISOBMFF / MP4):</strong> PCM
+audio encapsulation in MP4 relies on specific audio sample entries.
+Historical QuickTime-derived implementations use <code>'sowt'</code>
+(little-endian signed integer) or <code>'twos'</code> (big-endian signed
+integer). The modern standardized approach uses the <code>'lpcm'</code>
+or <code>'in24'</code>/<code>'in32'</code> boxes, which declare
+parameters such as sample size (e.g., 16-bit, 24-bit, 32-bit), channel
+count, and sampling rate (e.g., 96 kHz, 192 kHz). PCM samples are packed
+into chunks with fixed durations, allowing decoders to linearly map
+audio samples to AV1 video frames.</li>
+<li><strong>Matroska (MKV):</strong> Matroska explicitly supports
+uncompressed audio via defined <code>CodecID</code> strings:
+<ul>
+<li><code>A_PCM/INT/LIT</code> for signed, little-endian integer
+data.</li>
+<li><code>A_PCM/INT/BIG</code> for big-endian integer data.</li>
+<li><code>A_PCM/FLOAT/IEEE</code> for 32-bit or 64-bit floating-point
+audio. Track settings define the bit depth and sampling frequency. While
+Matroska fully supports high-resolution multichannel PCM combined with
+AV1, the subset format WebM excludes raw PCM, restricting audio tracks
+strictly to Opus and Vorbis.</li>
+</ul></li>
+</ul>
+<h3 id="synchronization-and-multiplexing">Synchronization and
+Multiplexing</h3>
+<p>Synchronization between AV1 video and the chosen audio stream is
+maintained at the container level through common timebases and
+presentation timestamps:</p>
+<ul>
+<li><strong>Timestamp Alignment:</strong> Containers assign timestamps
+relative to a global clock (such as the Matroska
+<code>TimecodeScale</code> or MP4 <code>timescale</code>). Demuxers use
+these values to feed the AV1 decoder and the audio decoder
+simultaneously, compensating for playback drift.</li>
+<li><strong>Preroll and Delay Compensation:</strong> High-resolution
+Opus relies on encoder delay and pre-skip data to achieve seamless frame
+transitions. The container communicates this preroll data to ensure the
+audio timeline begins at the exact microsecond the first AV1 video frame
+displays.</li>
+<li><strong>Interleaving Strategy:</strong> Multiplexers interleave
+audio and video chunks at small intervals (typically 0.5 to 1 second of
+media per chunk). This guarantees that client players buffer raw PCM or
+Opus data in parallel with AV1 temporal units without excessive memory
+overhead.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

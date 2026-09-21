@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 CDEF Uses Primary and Secondary Taps - av1</title>
+    <meta name="description" content="The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec removes ringing artifacts and preserves edge sharpness by filtering along the dominant direction of image features. By partitioning reconstructed frames into blocks, determining">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-cdef-uses-primary-and-secondary-taps">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 CDEF Uses Primary and Secondary Taps - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-cdef-uses-primary-and-secondary-taps" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Constrained Directional Enhancement Filter (CDEF) in the AV1 video codec removes ringing artifacts and preserves edge sharpness by filtering along the dominant direction of image features. By partitioning reconstructed frames into blocks, determining" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-cdef-uses-primary-and-secondary-taps">How AV1 CDEF Uses
+Primary and Secondary Taps</h1>
+<p>The Constrained Directional Enhancement Filter (CDEF) in the AV1
+video codec removes ringing artifacts and preserves edge sharpness by
+filtering along the dominant direction of image features. By
+partitioning reconstructed frames into blocks, determining the primary
+signal orientation, and applying non-linear primary and secondary filter
+taps along and across that direction, CDEF prevents the blurring of
+genuine edges while smoothing out high-frequency compression noise.</p>
+<h3 id="direction-search">Direction Search</h3>
+<p>Before any filtering occurs, CDEF determines the dominant orientation
+of edges within each 8x8 block (subdivided into 4x4 sub-blocks for
+processing). The encoder or decoder tests eight possible directions,
+spanning angles from 0° to 157.5° in 22.5° increments.</p>
+<p>The algorithm calculates the variance of pixel values along lines
+following each candidate direction. The direction with the lowest
+variance—meaning the pixels along that line are the most uniform—is
+selected as the primary direction. If a block has low contrast or no
+discernible pattern, the algorithm identifies it as non-directional, and
+filtering adjusts accordingly.</p>
+<h3 id="primary-filter-taps">Primary Filter Taps</h3>
+<p>Once the primary direction is established, CDEF aligns a 1D filter
+kernel directly along this axis. The primary filter taps sample two
+neighboring pixels on either side of the target pixel following the
+exact angle detected during the direction search.</p>
+<p>Because these taps operate exclusively parallel to edges rather than
+across them, they smooth out ringing noise along lines and contours
+without blending foreground and background colors together. Smoothing
+parallel to an edge reduces coding artifacts while preserving the
+contrast and crispness of the boundary.</p>
+<h3 id="secondary-filter-taps">Secondary Filter Taps</h3>
+<p>To suppress artifacts that primary taps alone cannot eliminate, CDEF
+employs secondary filter taps. These taps form a cross-shaped pattern
+oriented at 45-degree angles relative to the detected primary
+direction.</p>
+<p>The secondary taps pull samples from four additional neighbors
+located off the primary axis. Because these taps inevitably cross edge
+boundaries, they are configured with significantly lower filter weights
+and tighter constraints than the primary taps. This configuration allows
+them to reduce ringing in flatter surrounding regions without dulling
+the primary edge.</p>
+<h3 id="non-linear-thresholding-and-clamping">Non-Linear Thresholding
+and Clamping</h3>
+<p>The defining feature of CDEF is its conditional, non-linear clamping
+function, which dictates how the primary and secondary taps modify the
+target pixel:</p>
+<p><span class="math display">\[\text{Pixel}_{\text{filtered}} =
+\text{Pixel} + \sum_{i} w_i \cdot f(\text{Neighbor}_i - \text{Pixel}, S,
+D)\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(w_i\)</span> represents the tap
+weight.</li>
+<li><span class="math inline">\(S\)</span> is the filter strength
+parameter (signaled separately for primary and secondary taps).</li>
+<li><span class="math inline">\(D\)</span> is a damping parameter
+configured at the frame level.</li>
+<li><span class="math inline">\(f(d, S, D)\)</span> is a non-linear
+threshold function that clamps the pixel difference.</li>
+</ul>
+<p>If a neighboring pixel's value differs significantly from the target
+pixel—exceeding the threshold dictated by <span
+class="math inline">\(S\)</span> and <span
+class="math inline">\(D\)</span>—the function clamps its contribution to
+zero or near zero. This prevents out-of-boundary details from bleeding
+into the target pixel.</p>
+<p>By running non-linear primary taps along the edge and secondary taps
+at diagonal offsets, CDEF achieves targeted smoothing where signals
+correlate, while immediately cutting off filter weights where genuine
+object boundaries exist.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

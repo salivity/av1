@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Tiles Enable Parallel Wavefront Processing - av1</title>
+    <meta name="description" content="AV1 decoders achieve high-throughput decoding on multi-core processors by dividing video frames into a grid of tile rows and columns. This structural partitioning limits intra-frame data dependencies, allowing decoders to deploy parallel wavefront proces">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-tiles-enable-parallel-wavefront-processing">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Tiles Enable Parallel Wavefront Processing - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-tiles-enable-parallel-wavefront-processing" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="AV1 decoders achieve high-throughput decoding on multi-core processors by dividing video frames into a grid of tile rows and columns. This structural partitioning limits intra-frame data dependencies, allowing decoders to deploy parallel wavefront proces" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-tiles-enable-parallel-wavefront-processing">How AV1
+Tiles Enable Parallel Wavefront Processing</h1>
+<p>AV1 decoders achieve high-throughput decoding on multi-core
+processors by dividing video frames into a grid of tile rows and
+columns. This structural partitioning limits intra-frame data
+dependencies, allowing decoders to deploy parallel wavefront processing
+within individual tiles or across multiple tiles simultaneously. By
+isolating entropy coding contexts and spatial prediction vectors within
+these boundaries, AV1 enables multiple execution threads to parse and
+reconstruct macroblocks concurrently without pipeline stalls.</p>
+<h3 id="spatial-and-entropy-partitioning-with-tiles">Spatial and Entropy
+Partitioning with Tiles</h3>
+<p>An AV1 frame can be partitioned into a uniform or non-uniform grid of
+rectangular regions defined by tile rows and tile columns. Each tile
+contains an integer number of Superblocks (typically 64x64 or 128x128
+pixels).</p>
+<p>The primary function of tile rows and columns is to establish clear
+boundaries for data dependencies:</p>
+<ul>
+<li><strong>Entropy Coding Isolation:</strong> Each tile has its own
+independent bitstream payload. In the baseline configuration, the symbol
+probability models (represented by Cumulative Distribution Functions, or
+CDFs) can be reset at the start of a tile, eliminating entropy-decoding
+dependencies between adjacent tiles.</li>
+<li><strong>Spatial Prediction Containment:</strong> Intra-frame
+prediction typically does not cross tile boundaries unless specifically
+configured, preventing reconstruction dependencies from serializing the
+decoding process across the frame.</li>
+<li><strong>Loop Filtering Decoupling:</strong> Although in-loop filters
+(deblocking, CDEF, and loop restoration) can operate across tile
+boundaries, the parsing and reconstruction stages remain fully isolated
+within each tile.</li>
+</ul>
+<h3 id="the-mechanics-of-wavefront-parallel-processing">The Mechanics of
+Wavefront Parallel Processing</h3>
+<p>Wavefront Parallel Processing (WPP) exploits the geometric nature of
+spatial dependencies. Within a block-based video frame, decoding a given
+superblock generally requires reconstructed data and updated entropy
+contexts from the left, top-left, top, and top-right neighboring
+superblocks.</p>
+<p>Instead of decoding a frame line by line in strict raster order,
+wavefront processing staggers the execution:</p>
+<ol type="1">
+<li>Thread 0 begins decoding Superblock (0,0) in Row 0.</li>
+<li>Once Thread 0 finishes Superblock (0,1) and updates the necessary
+context, Thread 1 can begin decoding Superblock (1,0) in Row 1.</li>
+<li>This creates a diagonal "wavefront" of execution where Row <span
+class="math inline">\(N\)</span> is always processed at least two
+superblocks ahead of Row <span class="math inline">\(N+1\)</span>.</li>
+</ol>
+<h3 id="how-tile-rows-and-columns-enhance-wavefront-execution">How Tile
+Rows and Columns Enhance Wavefront Execution</h3>
+<p>Without tiles, a wavefront spans the entire width of a frame, which
+introduces two bottlenecks: high synchronization overhead across a large
+horizontal span and large cache footprints that degrade memory
+performance. Tile rows and columns resolve these limitations in three
+specific ways:</p>
+<h4 id="1-multi-wavefront-concurrency">1. Multi-Wavefront
+Concurrency</h4>
+<p>Tile columns divide the horizontal expanse of the frame into bounded
+sub-regions. Because each tile column acts as an independent bitstream
+unit, a decoder can instantiate distinct wavefronts for each tile. A 4x4
+tile layout allows up to 16 separate wavefront engines to execute in
+parallel, scaling core utilization significantly beyond what a single
+frame-wide wavefront can support.</p>
+<h4 id="2-shorter-dependency-chains">2. Shorter Dependency Chains</h4>
+<p>In a full-frame wavefront, an error, cache miss, or complex block in
+an upper row delays every dependent thread down the diagonal chain. Tile
+boundaries truncate these dependency chains. Tile rows cap the vertical
+propagation of wavefront dependencies, while tile columns limit the
+horizontal delay required before the next row's processing can
+initiate.</p>
+<h4 id="3-cdf-context-synchronization-control">3. CDF Context
+Synchronization Control</h4>
+<p>AV1 allows tiles to either reset their CDF states or pass them
+predictably. When tile rows and columns are configured for parallel
+execution, threads processing different tiles do not need to wait for
+CDF updates from adjacent regions. Each thread reads its dedicated
+bitstream offset, decodes symbols, updates local CDF tables, and
+reconstructs pixels within its designated tile boundaries, ensuring
+deterministic, lock-free parallel execution.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

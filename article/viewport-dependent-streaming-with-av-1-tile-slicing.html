@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewport-Dependent Streaming with AV1 Tile Slicing - av1</title>
+    <meta name="description" content="This article explores how viewport-dependent streaming optimizes bandwidth for immersive media like 360-degree video, and how the AV1 video codec's native tile slicing architecture dramatically improves this process. Viewport-dependent delivery works by">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/viewport-dependent-streaming-with-av-1-tile-slicing">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Viewport-Dependent Streaming with AV1 Tile Slicing - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/viewport-dependent-streaming-with-av-1-tile-slicing" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article explores how viewport-dependent streaming optimizes bandwidth for immersive media like 360-degree video, and how the AV1 video codec's native tile slicing architecture dramatically improves this process. Viewport-dependent delivery works by" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1
+id="viewport-dependent-streaming-with-av1-tile-slicing">Viewport-Dependent
+Streaming with AV1 Tile Slicing</h1>
+<p>This article explores how viewport-dependent streaming optimizes
+bandwidth for immersive media like 360-degree video, and how the AV1
+video codec's native tile slicing architecture dramatically improves
+this process. Viewport-dependent delivery works by allocating the
+highest resolution only to the specific field of view the user is
+currently watching, while AV1 tile slicing enables this approach using a
+single, efficient hardware decoder pipeline without the overhead and
+synchronization issues of older multi-stream techniques.</p>
+<h2 id="understanding-viewport-dependent-streaming">Understanding
+Viewport-Dependent Streaming</h2>
+<p>Streaming immersive, high-resolution media—such as virtual reality
+(VR), augmented reality (AR), and 360-degree panoramic video—requires
+massive amounts of data. In a standard 360-degree video stream,
+transmitting an entire 8K sphere at full quality wastes significant
+network bandwidth because a viewer only observes a fraction of that
+sphere (typically a 90- to 110-degree field of view) at any given
+moment.</p>
+<p>Viewport-dependent streaming solves this inefficiency. By tracking
+the user’s head position or gaze, the streaming client requests
+high-quality video exclusively for the active viewport. The remainder of
+the 360-degree environment—the areas behind and to the sides of the
+viewer—is either transmitted in low resolution or reconstructed
+dynamically. When the user turns their head, the system rapidly shifts
+the high-quality focus to the newly targeted region.</p>
+<h2 id="the-bottlenecks-of-traditional-tiled-streaming">The Bottlenecks
+of Traditional Tiled Streaming</h2>
+<p>Early implementations of viewport-dependent streaming divided the
+video canvas into a grid of distinct, independently encoded video
+streams (spatial tiles). While effective in reducing bandwidth, this
+approach introduced significant client-side bottlenecks:</p>
+<ul>
+<li><strong>Multiple Decoders:</strong> Decoding multiple separate video
+streams simultaneously requires either multiple hardware decoders or an
+intensive software decoding pipeline, causing high CPU/GPU load and
+battery drain on mobile VR headsets.</li>
+<li><strong>Synchronization Challenges:</strong> Synchronizing audio,
+timestamps, and frame boundaries across multiple distinct streams
+creates stutter, visible seams, or boundary artifacts.</li>
+<li><strong>Switching Latency:</strong> Moving between different
+resolution levels often required waiting for the next full keyframe (IDR
+frame), causing noticeable delays when users quickly turned their
+heads.</li>
+</ul>
+<h2 id="how-av1-tile-slicing-optimizes-viewport-delivery">How AV1 Tile
+Slicing Optimizes Viewport Delivery</h2>
+<p>The AOMedia Video 1 (AV1) codec introduces native support for uniform
+and non-uniform spatial tiling directly within a single bitstream.
+Rather than treating tiles as separate video streams, AV1 allows a
+single frame to be partitioned into a grid of independently decodable
+rectangular units known as tiles.</p>
+<h3 id="1-single-hardware-decoder-pipeline">1. Single Hardware Decoder
+Pipeline</h3>
+<p>AV1 tiles are encoded with spatial and temporal independence, meaning
+pixels within a tile do not rely on pixels from neighboring tiles for
+prediction (using restricted motion vectors). A server can dynamically
+package high-resolution tiles for the viewport and low-resolution tiles
+for the periphery into a single, cohesive bitstream. The client device
+receives this unified stream and processes it using just one hardware
+decoder instance, drastically reducing thermal throttling, power
+consumption, and processing latency.</p>
+<h3 id="2-fine-grained-bandwidth-allocation">2. Fine-Grained Bandwidth
+Allocation</h3>
+<p>AV1 supports flexible tile grid configurations (up to 64 columns and
+64 rows). This granularity allows streaming platforms to construct
+precise boundary buffers around the user's field of view. A typical
+implementation uses:</p>
+<ul>
+<li><strong>Primary Viewport:</strong> Full-resolution, high-bitrate AV1
+tiles.</li>
+<li><strong>Peripheral Margin:</strong> Medium-resolution tiles to
+accommodate rapid head movement before new segments arrive.</li>
+<li><strong>Invisible Background:</strong> Low-resolution, highly
+compressed tiles ensuring continuity if a user makes a full turn.</li>
+</ul>
+<h3 id="3-seamless-tile-merging-at-the-edge">3. Seamless Tile Merging at
+the Edge</h3>
+<p>Because AV1 headers define tile configurations at the frame level,
+edge servers or CDNs can perform lightweight bitstream rewriting.
+Instead of re-encoding content on the fly, edge nodes assemble
+pre-encoded tile tracks—pulling high-quality chunks for the current
+viewport coordinates and low-quality chunks for the background—and
+concatenate them into a standard AV1 bitstream on demand.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Viewport-dependent streaming eliminates the massive data overhead of
+immersive media, and AV1 tile slicing provides the architectural
+foundation to make it practical on consumer hardware. By consolidating
+spatial video slicing into a single decode pipeline with restricted
+motion dependencies, AV1 enables ultra-low-latency, high-fidelity
+immersive streaming over conventional broadband and mobile networks.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

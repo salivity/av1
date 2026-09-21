@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composing Hardware-Decoded AV1 Video into the DOM - av1</title>
+    <meta name="description" content="Modern web browsers offload AV1 video decoding to dedicated GPU hardware to enable power-efficient, high-resolution playback. However, integrating raw decoded video frames into the Document Object Model (DOM) alongside CSS styling, animations, and other">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/composing-hardware-decoded-av-1-video-into-the-dom">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Composing Hardware-Decoded AV1 Video into the DOM - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/composing-hardware-decoded-av-1-video-into-the-dom" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Modern web browsers offload AV1 video decoding to dedicated GPU hardware to enable power-efficient, high-resolution playback. However, integrating raw decoded video frames into the Document Object Model (DOM) alongside CSS styling, animations, and other" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="composing-hardware-decoded-av1-video-into-the-dom">Composing
+Hardware-Decoded AV1 Video into the DOM</h1>
+<p>Modern web browsers offload AV1 video decoding to dedicated GPU
+hardware to enable power-efficient, high-resolution playback. However,
+integrating raw decoded video frames into the Document Object Model
+(DOM) alongside CSS styling, animations, and other HTML elements
+requires a sophisticated multi-process rendering architecture. This
+article details the step-by-step technical pipeline browser engines use
+to transition hardware-decoded AV1 video frames into the final visual
+compositing layer without introducing costly memory copies.</p>
+<h2 id="the-multi-process-separation">The Multi-Process Separation</h2>
+<p>Browser engines like Chromium (Blink) and Firefox (Gecko) separate
+media decoding, page layout, and GPU rendering into isolated processes
+for security and stability:</p>
+<ul>
+<li><strong>Render Process:</strong> Executes JavaScript, builds the DOM
+tree, computes CSS styles, and calculates layout boundaries.</li>
+<li><strong>Media / Utility Process:</strong> Demuxes the media
+container (e.g., WebM or MP4), extracts the AV1 bitstream, and feeds it
+to platform-specific APIs.</li>
+<li><strong>GPU Process:</strong> Coordinates hardware access, manages
+GPU memory surfaces, executes WebGL/WebGPU tasks, and runs the final
+compositor.</li>
+</ul>
+<p>Because raw 4K or 8K AV1 video consumes massive bandwidth, pixel data
+is never transferred back to the CPU-bound render process. Instead,
+rendering engines pass lightweight handles and metadata referencing GPU
+memory locations.</p>
+<h2 id="hardware-decoding-and-surface-creation">Hardware Decoding and
+Surface Creation</h2>
+<p>When the browser encounters an AV1 video, the media engine negotiates
+with the operating system’s hardware-accelerated video decoding API:</p>
+<ul>
+<li><strong>Windows:</strong> Microsoft Direct3D 11/12 Video API
+(DXVA-HD / D3D11VA)</li>
+<li><strong>macOS:</strong> VideoToolbox</li>
+<li><strong>Linux / Android:</strong> VA-API or Android MediaCodec
+(using NDK AImageReader)</li>
+</ul>
+<p>The hardware decoder (e.g., Intel Quick Sync, NVIDIA NVDEC, AMD VCN)
+writes decoded AV1 frames directly into VRAM. These are typically output
+in YUV color formats—specifically <strong>NV12</strong> for 8-bit AV1
+and <strong>P010</strong> for 10-bit AV1. The output exists as an
+OS-level GPU surface: an <code>ID3D11Texture2D</code> on Windows, an
+<code>IOSurface</code> on macOS, or a <code>dma-buf</code> on Linux.</p>
+<h2 id="representing-the-video-in-the-compositor-tree">Representing the
+Video in the Compositor Tree</h2>
+<p>In the Render process, the <code>&lt;video&gt;</code> element is
+represented as a specialized compositor layer (such as a
+<code>cc::VideoLayer</code> in Chromium).</p>
+<ol type="1">
+<li><strong>Geometry Computation:</strong> The layout engine determines
+the element’s screen-space transform, clip paths, opacity, and CSS
+filters (such as <code>blur()</code>, <code>contrast()</code>, or 3D
+rotations).</li>
+<li><strong>Frame Metadata Exchange:</strong> The media pipeline informs
+the compositor layer of new frame availability via shared memory,
+providing the surface identifier and presentation timestamp (PTS).</li>
+<li><strong>Layer Assignment:</strong> The compositor attaches the
+shared GPU surface handle to a visual quad—a textured rectangle mapped
+into the browser's global compositing scene graph.</li>
+</ol>
+<h2 id="zero-copy-texture-sharing">Zero-Copy Texture Sharing</h2>
+<p>To composite the frame efficiently, the browser avoids memory copies
+by mapping the decoder's surface directly into the GPU compositor:</p>
+<ul>
+<li><strong>Cross-API Sharing:</strong> On Windows, the decoded Direct3D
+11 texture is wrapped into a shared DXGI handle, allowing the compositor
+to bind it as a shader resource.</li>
+<li><strong>Zero-Copy Unix Primitives:</strong> On Linux,
+<code>dma-buf</code> file descriptors are imported into OpenGL/Vulkan as
+external textures via <code>EGLImage</code> or
+<code>VkSamplerYcbcrConversion</code>.</li>
+<li><strong>Apple Silicon:</strong> <code>IOSurface</code> handles are
+bound directly to <code>MTLTexture</code> instances in the Metal-based
+compositor.</li>
+</ul>
+<p>By relying on unified GPU memory and hardware handles, the decoded
+AV1 pixels never leave video memory.</p>
+<h2 id="the-composition-paths-direct-overlays-vs-shader-blending">The
+Composition Paths: Direct Overlays vs. Shader Blending</h2>
+<p>Once the GPU process receives the frame reference, it selects one of
+two rendering paths based on the surrounding CSS properties:</p>
+<h3 id="1-hardware-overlays-the-fast-path">1. Hardware Overlays (The
+Fast Path)</h3>
+<p>If the <code>&lt;video&gt;</code> element is an unrotated rectangle
+with standard opacity, no overlapping DOM content, and no complex CSS
+filters, the browser promotes the video surface to an independent
+<strong>hardware overlay plane</strong>.</p>
+<p>Using OS composition features (such as DirectComposition on Windows
+or Wayland subsurfaces on Linux), the browser delegates display
+composition directly to the GPU's display controller. The display
+hardware fetches the AV1 YUV surface and scans it directly onto the
+screen, bypassing the browser's graphics pipeline and fragment shaders
+entirely. This path maximizes battery life and reduces latency.</p>
+<h3 id="2-shader-based-composition-the-fallback-path">2. Shader-Based
+Composition (The Fallback Path)</h3>
+<p>If the video intersects with other DOM layers, uses CSS blend modes,
+applies CSS filters, or has complex transforms:</p>
+<ol type="1">
+<li>The compositor samples the decoded YUV texture inside a custom
+fragment shader.</li>
+<li>The shader executes standard matrix multiplication to convert NV12
+or P010 YUV values into linear sRGB or scRGB.</li>
+<li>Tone mapping is applied if the AV1 stream includes High Dynamic
+Range (HDR) metadata (such as SMPTE ST 2086/BT.2020) and the output
+display is Standard Dynamic Range (SDR).</li>
+<li>The transformed video pixels are blended into the browser’s main
+render target alongside the rest of the web page contents.</li>
+</ol>
+<h2 id="synchronization-and-presentation">Synchronization and
+Presentation</h2>
+<p>To prevent screen tearing and frame drops, synchronization primitives
+(such as Direct3D fences, Metal event listeners, or
+<code>EGLSyncKHR</code> / sync points) ensure that the hardware AV1
+decoder has fully completed writing a frame before the compositor or
+display engine attempts to sample it. Once synchronized, the composite
+frame is handed to the window system during the display's VSync
+cycle.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

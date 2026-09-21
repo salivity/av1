@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How ADST Improves Edge Coding in AV1 - av1</title>
+    <meta name="description" content="The AV1 video codec incorporates the Asymmetric Discrete Sine Transform (ADST) alongside the traditional Discrete Cosine Transform (DCT) to significantly optimize compression efficiency near block boundaries. In intra-prediction, pixel values are predict">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-adst-improves-edge-coding-in-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How ADST Improves Edge Coding in AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-adst-improves-edge-coding-in-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec incorporates the Asymmetric Discrete Sine Transform (ADST) alongside the traditional Discrete Cosine Transform (DCT) to significantly optimize compression efficiency near block boundaries. In intra-prediction, pixel values are predict" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-adst-improves-edge-coding-in-av1">How ADST Improves Edge
+Coding in AV1</h1>
+<p>The AV1 video codec incorporates the Asymmetric Discrete Sine
+Transform (ADST) alongside the traditional Discrete Cosine Transform
+(DCT) to significantly optimize compression efficiency near block
+boundaries. In intra-prediction, pixel values are predicted using
+previously decoded neighboring blocks to the top and left, which creates
+a residual error that is asymmetric—typically near zero at the reference
+boundary and increasing farther away. By matching this non-uniform
+residual profile, the ADST minimizes high-frequency coefficients,
+suppresses edge artifacts, and significantly reduces the bitrate
+required to encode sharp boundaries.</p>
+<p>In conventional video codecs like H.264 and standard HEVC, the
+Discrete Cosine Transform (DCT-2) serves as the primary tool for spatial
+energy compaction. The DCT operates under the assumption of even
+symmetry at block borders, implying that the statistical distribution of
+residual errors is uniform across the entire transform block. However,
+directional intra-prediction breaks this symmetry. Because predictors
+directly extrapolate from adjacent pixels, the prediction error directly
+adjacent to the reference edge is virtually zero, while prediction
+accuracy degrades toward the opposite side of the block. Forcing a
+symmetric transform like the DCT onto an asymmetric residual
+distribution introduces high-frequency components that require more bits
+to encode and often generate visible ringing artifacts around edges.</p>
+<p>The ADST resolves this physical limitation by relying on sine basis
+functions characterized by odd symmetry. In continuous mathematics, a
+sine wave naturally approaches zero at its origin. The discrete variant
+used in AV1 is tailored so that the transform basis vectors inherently
+force a near-zero boundary condition at the predicted edge, while
+allowing the opposite edge to vary freely without artificial boundary
+constraints. This directly mirrors the physical behavior of
+intra-prediction residuals.</p>
+<p>AV1 expands this functionality by implementing separable, hybrid
+transform combinations. Because a block has both a horizontal and a
+vertical component, AV1 can mix and match transform types across
+dimensions:</p>
+<ul>
+<li><strong>1D ADST paired with 1D DCT:</strong> Ideal for blocks with
+unidirectional prediction, such as pure horizontal or vertical
+prediction modes where only one axis exhibits boundary error decay.</li>
+<li><strong>ADST in both directions (ADST + ADST):</strong> Used for
+diagonal intra-prediction modes where both top and left boundaries serve
+as immediate reference points.</li>
+<li><strong>FlipADST:</strong> Reverses the spatial orientation of the
+transform to account for prediction modes that extrapolate from the
+bottom or right boundaries, ensuring the zero-error constraint remains
+anchored to the correct reference edge.</li>
+</ul>
+<p>By accurately modeling the decaying nature of boundary residuals, the
+ADST concentrates the majority of signal energy into fewer low-frequency
+transform coefficients. This compact energy representation allows the
+AV1 quantizer to discard high-frequency noise without blurring sharp
+edge transitions, providing crisper edges, fewer boundary
+discontinuities, and superior overall rate-distortion performance.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Decoder Vulnerabilities Uncovered by Fuzzing - av1</title>
+    <meta name="description" content="Early implementations of the AV1 video codec, notably reference libraries like AOMedia’s libaom and the VideoLAN-led dav1d project, were subjected to extensive automated testing through fuzzing frameworks such as Google's OSS-Fuzz, AFL, and LibFuzzer.">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-decoder-vulnerabilities-uncovered-by-fuzzing">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Decoder Vulnerabilities Uncovered by Fuzzing - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-decoder-vulnerabilities-uncovered-by-fuzzing" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Early implementations of the AV1 video codec, notably reference libraries like AOMedia’s libaom and the VideoLAN-led dav1d project, were subjected to extensive automated testing through fuzzing frameworks such as Google's OSS-Fuzz, AFL, and LibFuzzer." />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-decoder-vulnerabilities-uncovered-by-fuzzing">AV1 Decoder
+Vulnerabilities Uncovered by Fuzzing</h1>
+<p>Early implementations of the AV1 video codec, notably reference
+libraries like AOMedia’s <code>libaom</code> and the VideoLAN-led
+<code>dav1d</code> project, were subjected to extensive automated
+testing through fuzzing frameworks such as Google's OSS-Fuzz, AFL, and
+LibFuzzer. This article outlines the primary security vulnerabilities
+exposed by these fuzzing tools, detailing how issues such as
+out-of-bounds memory operations, integer overflows, unhandled edge
+cases, and memory exhaustion bugs were identified and remediated before
+AV1 achieved ubiquitous deployment across modern web browsers and
+operating systems.</p>
+<h3 id="out-of-bounds-reads-and-writes">Out-of-Bounds Reads and
+Writes</h3>
+<p>The most prevalent class of vulnerabilities identified by fuzzers
+involved memory safety violations, specifically out-of-bounds (OOB) heap
+reads and writes. Video decoders must parse dense, variable-length
+bitstreams and map them into fixed memory structures.</p>
+<p>Fuzzing engines systematically generated malformed bitstreams with
+mutated Open Bitstream Unit (OBU) headers, corrupted tile lists, and
+invalid partition trees. These inputs caused decoders to calculate
+incorrect array indices during motion vector prediction,
+inter/intra-frame interpolation, and coefficient decoding. In several
+instances within <code>libaom</code>, an unexpected block size or
+transform type caused pointers to write past the bounds of allocated
+frame buffers, creating potential avenues for arbitrary code execution
+or process crashes.</p>
+<h3 id="integer-overflows-and-calculation-wraparounds">Integer Overflows
+and Calculation Wraparounds</h3>
+<p>The AV1 specification introduced advanced features such as dynamic
+frame scaling, super-resolution, and complex loop restoration filters
+(such as Wiener filters and self-guided restoration). These algorithms
+rely on fixed-point arithmetic and coordinate scaling calculations.</p>
+<p>Fuzzers repeatedly exposed integer overflow and underflow conditions
+in early decoder codebases. Malformed headers specifying extreme or
+non-standard frame dimensions, cropping parameters, or scaling factors
+caused arithmetic operations to wrap around. These calculations
+frequently determined the size of subsequent memory allocations. When an
+integer overflow caused a memory allocator to receive a truncated size
+value, it resulted in undersized buffers that were immediately overrun
+by the decoder, yielding critical heap-based buffer overflows.</p>
+<h3
+id="unhandled-parsing-states-and-null-pointer-dereferences">Unhandled
+Parsing States and Null Pointer Dereferences</h3>
+<p>AV1 bitstreams are divided into discrete units (OBUs) that define
+sequence configurations, metadata, frame headers, and tile groups.
+Fuzzing tools tested unexpected sequencing, omission, and duplication of
+these units.</p>
+<p>Early decoder versions frequently assumed a strict, compliant order
+of syntax elements. By supplying mutated files where crucial
+configuration headers (such as sequence headers or color configuration
+metadata) were missing or prematurely terminated, fuzzers triggered null
+pointer dereferences and assertion failures. While rarely exploitable
+for code execution, these parsing bugs consistently produced
+reproducible remote Denial-of-Service (DoS) crashes in applications
+embedding the decoders, including Chromium and Mozilla Firefox.</p>
+<h3 id="loop-filtering-and-boundary-violations">Loop Filtering and
+Boundary Violations</h3>
+<p>AV1 employs three distinct in-loop filtering stages: the deblocking
+filter, the Constrained Directional Enhancement Filter (CDEF), and the
+loop restoration filter. These filters operate across block and tile
+boundaries and require synchronization with neighboring reconstruction
+buffers.</p>
+<p>Fuzzing uncovered multiple edge cases where boundary checks failed,
+particularly around non-standard frame edges, 128x128 superblocks, or
+when tiles were decoded in parallel across multiple worker threads. When
+mutated bitstreams signaled filter strengths or directional parameters
+on incomplete frame borders, decoders occasionally sampled uninitialized
+memory or attempted to read pixels beyond the reference picture
+boundaries.</p>
+<h3 id="resource-exhaustion-and-algorithmic-complexity">Resource
+Exhaustion and Algorithmic Complexity</h3>
+<p>Beyond traditional memory corruption, fuzzing frameworks uncovered
+algorithmic complexity vulnerabilities and excessive resource allocation
+states.</p>
+<p>Attackers could construct miniature bitstreams—often only a few
+kilobytes in size—that instructed decoders to allocate gigantic
+multi-plane reference frame buffers or instantiate an unsustainable
+number of spatial and temporal operating points. Fuzzers caught
+instances where decoders attempted memory allocations before validating
+that the bitstream actually contained the corresponding frame payload,
+making host systems susceptible to out-of-memory (OOM) denial-of-service
+conditions.</p>
+<p>Continuous integration with automated fuzzing platforms ultimately
+identified hundreds of low-level memory defects and logic errors in
+early AV1 decoders. This continuous testing hardened libraries like
+<code>libaom</code> and <code>dav1d</code>, establishing rigorous input
+validation boundaries and bounds checking prior to their widespread
+adoption in modern consumer hardware and web platforms.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

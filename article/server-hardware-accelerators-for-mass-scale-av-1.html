@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Hardware Accelerators for Mass-Scale AV1 - av1</title>
+    <meta name="description" content="This article provides a direct breakdown of the leading server-side hardware accelerator cards designed for high-density, mass-scale AV1 video transcoding. It details the dedicated PCIe-based solutions from Intel, AMD, NVIDIA, and specialized ASIC vendor">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/server-hardware-accelerators-for-mass-scale-av-1">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Server Hardware Accelerators for Mass-Scale AV1 - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/server-hardware-accelerators-for-mass-scale-av-1" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides a direct breakdown of the leading server-side hardware accelerator cards designed for high-density, mass-scale AV1 video transcoding. It details the dedicated PCIe-based solutions from Intel, AMD, NVIDIA, and specialized ASIC vendor" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="server-hardware-accelerators-for-mass-scale-av1">Server Hardware
+Accelerators for Mass-Scale AV1</h1>
+<p>This article provides a direct breakdown of the leading server-side
+hardware accelerator cards designed for high-density, mass-scale AV1
+video transcoding. It details the dedicated PCIe-based solutions from
+Intel, AMD, NVIDIA, and specialized ASIC vendors like NETINT, examining
+their architectures, target throughput capabilities, and
+power-efficiency metrics for modern data center video pipelines.</p>
+<h3 id="intel-data-center-gpu-flex-series">Intel Data Center GPU Flex
+Series</h3>
+<p>Intel’s Flex Series, powered by the Xe-HPG microarchitecture, was
+among the first data-center-focused hardware platforms to introduce
+native hardware AV1 encoding.</p>
+<ul>
+<li><strong>Flex 140:</strong> A low-profile, 75W PCIe Gen 4 card
+housing two independent GPUs. It is optimized for high-density live
+streaming and transcode farms, capable of handling up to 86 simultaneous
+720p30 streams or up to 8 simultaneous 4K60 real-time streams across its
+dual-GPU setup.</li>
+<li><strong>Flex 170:</strong> A single, higher-compute 150W card
+designed for heavier workloads and complex multi-pass transcoding jobs,
+offering high throughput per server rack unit.</li>
+</ul>
+<p>Both cards rely on the Intel oneAPI Video Processing Library (oneVPL)
+and have native upstream integration in FFmpeg and GStreamer.</p>
+<h3 id="amd-alveo-ma35d">AMD Alveo MA35D</h3>
+<p>The AMD Alveo MA35D is a purpose-built, ASIC-based media accelerator
+engineered explicitly for massive-scale, low-latency live streaming.
+Rather than using general-purpose GPU compute, it relies on dedicated
+video processing units.</p>
+<ul>
+<li><strong>Architecture:</strong> Features two 5nm Video Processing
+Units (VPUs) on a single half-height, half-length 35W PCIe card.</li>
+<li><strong>Performance:</strong> Delivers up to 32 streams of 1080p60
+AV1 transcoding per card. In a standard 1U server equipped with four
+MA35D cards, operators can achieve up to 128 channels of real-time
+1080p60 transcode capacity within a sub-300W total envelope.</li>
+<li><strong>Key Features:</strong> Native support for 8-bit and 10-bit
+AV1, integrated AI engines for dynamic content-aware bitrate management,
+and ultra-low latency pipelines tailored for interactive platforms.</li>
+</ul>
+<h3 id="nvidia-l4-tensor-core-gpu">NVIDIA L4 Tensor Core GPU</h3>
+<p>The NVIDIA L4, built on the Ada Lovelace architecture, serves as
+NVIDIA’s primary mainstream server accelerator for video processing, AI,
+and graphics.</p>
+<ul>
+<li><strong>Architecture:</strong> A half-height, single-slot 72W PCIe
+Gen 4 card with 24GB of GDDR6 memory.</li>
+<li><strong>AV1 Capabilities:</strong> Equipped with two independent
+8th-generation NVENC hardware encoders and dual NVDEC units, supporting
+native 4K and 8K AV1 hardware encode.</li>
+<li><strong>Performance:</strong> Provides up to four times the video
+streaming density of the previous-generation T4 card. It is supported by
+the NVIDIA Video Codec SDK and DeepStream SDK, making it popular for
+environments combining real-time AV1 transcode pipelines with generative
+AI or computer vision tasks.</li>
+</ul>
+<h3 id="netint-quadra-video-processing-units">NETINT Quadra Video
+Processing Units</h3>
+<p>NETINT manufactures dedicated ASIC hardware acceleration cards
+designed directly for hyperscale video transcoding infrastructure.</p>
+<ul>
+<li><strong>Quadra T1U and T2A:</strong> Packaged in standard U.2/U.3
+NVMe and low-profile PCIe form factors, these cards draw between 15W and
+40W.</li>
+<li><strong>Performance:</strong> A single Quadra ASIC can decode and
+encode multiple 4K60 or 1080p60 AV1 streams in real time. Because of the
+U.2 storage-like form factor, high-density servers can accommodate up to
+24 Quadra modules in a 2U chassis, providing thousands of real-time AV1
+transcode lanes per server rack.</li>
+<li><strong>Deployment:</strong> Interfaces via standard FFmpeg forks,
+enabling drop-in software replacement for software-based
+(SVT-AV1/libaom) workflows.</li>
+</ul>
+<h3 id="proprietary-hyperscaler-asics">Proprietary Hyperscaler
+ASICs</h3>
+<p>At hyper-scale tiers, operators often deploy in-house, non-commercial
+accelerator cards:</p>
+<ul>
+<li><strong>Google Argos VCU (Video Coding Unit):</strong> Deployed
+across Google data centers to handle YouTube's real-time and VOD
+ingestion. The second-generation Argos chip incorporates custom AV1
+hardware blocks to cut compute loads from x86 CPU clusters.</li>
+<li><strong>Meta Scalable Video Processor (MSVP):</strong> An in-house
+processing ASIC that targets massive video workloads on Facebook and
+Instagram, balancing high-efficiency AV1 processing with low operating
+power.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

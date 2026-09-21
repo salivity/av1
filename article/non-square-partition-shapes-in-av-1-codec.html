@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-Square Partition Shapes in AV1 Codec - av1</title>
+    <meta name="description" content="The AOMedia Video 1 (AV1) specification enhances coding efficiency by introducing a flexible block partitioning structure that departs from traditional purely square quad-tree splits. This article details the non-square partition shapes implemented in AV">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/non-square-partition-shapes-in-av-1-codec">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Non-Square Partition Shapes in AV1 Codec - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/non-square-partition-shapes-in-av-1-codec" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AOMedia Video 1 (AV1) specification enhances coding efficiency by introducing a flexible block partitioning structure that departs from traditional purely square quad-tree splits. This article details the non-square partition shapes implemented in AV" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="non-square-partition-shapes-in-av1-codec">Non-Square Partition
+Shapes in AV1 Codec</h1>
+<p>The AOMedia Video 1 (AV1) specification enhances coding efficiency by
+introducing a flexible block partitioning structure that departs from
+traditional purely square quad-tree splits. This article details the
+non-square partition shapes implemented in AV1, including standard 2:1
+and 1:2 rectangles, extended 4:1 and 1:4 partitions, and asymmetrical
+"T-shaped" partitions, explaining how these geometric options enable the
+codec to better match natural image features and motion.</p>
+<h2 id="the-evolution-of-block-partitioning-in-av1">The Evolution of
+Block Partitioning in AV1</h2>
+<p>In modern video coding, frames are divided into large units called
+Superblocks (typically 128x128 or 64x64 pixels in AV1). Earlier
+standards like VP9 and H.264 heavily favored symmetric square blocks,
+with limited rectangular support.</p>
+<p>AV1 expands on this by offering a 10-way partition tree. While square
+partitions (<code>PARTITION_NONE</code> and
+<code>PARTITION_SPLIT</code>) remain the baseline, AV1 introduces
+several non-square shapes to better isolate directional edges, text, and
+moving boundaries.</p>
+<h2 id="21-and-12-rectangular-partitions">2:1 and 1:2 Rectangular
+Partitions</h2>
+<p>AV1 includes fundamental two-way rectangular divisions:</p>
+<ul>
+<li><strong>Horizontal Split (<code>PARTITION_HORZ</code>)</strong>:
+Divides a square block horizontally into two equal rectangular blocks,
+each with a 2:1 aspect ratio (width is twice the height).</li>
+<li><strong>Vertical Split (<code>PARTITION_VERT</code>)</strong>:
+Divides a square block vertically into two equal rectangular blocks,
+each with a 1:2 aspect ratio (height is twice the width).</li>
+</ul>
+<p>These blocks can often be further recursively partitioned down to
+sizes as small as 4x8 or 8x4 pixels.</p>
+<h2 id="41-and-14-extended-aspect-ratio-partitions">4:1 and 1:4 Extended
+Aspect Ratio Partitions</h2>
+<p>To handle fine horizontal or vertical structures—such as scrolling
+tickers, sharp horizons, or vertical stripes—AV1 introduces 4:1 and 1:4
+aspect ratio partitions:</p>
+<ul>
+<li><strong>Horizontal 4:1 (<code>PARTITION_HORZ_4</code>)</strong>:
+Splits a parent block horizontally into four equal strips, each with a
+4:1 width-to-height ratio.</li>
+<li><strong>Vertical 1:4 (<code>PARTITION_VERT_4</code>)</strong>:
+Splits a parent block vertically into four equal strips, each with a 1:4
+width-to-height ratio.</li>
+</ul>
+<p>These extended shapes allow the encoder to isolate narrow, continuous
+directional details without needlessly splitting the surrounding uniform
+areas into tiny square blocks.</p>
+<h2 id="asymmetrical-t-shaped-partitions">Asymmetrical "T-Shaped"
+Partitions</h2>
+<p>AV1 adds four non-symmetric partition types, often referred to as
+"T-type" or "AB-type" partitions. These modes divide a square block into
+three sub-blocks: one half-sized rectangle and two quarter-sized squares
+or rectangles.</p>
+<ul>
+<li><strong><code>PARTITION_HORZ_A</code></strong>: The top half is
+split vertically into two blocks, while the bottom half remains an
+undivided 2:1 rectangle.</li>
+<li><strong><code>PARTITION_HORZ_B</code></strong>: The top half remains
+an undivided 2:1 rectangle, while the bottom half is split vertically
+into two blocks.</li>
+<li><strong><code>PARTITION_VERT_A</code></strong>: The left half is
+split horizontally into two blocks, while the right half remains an
+undivided 1:2 rectangle.</li>
+<li><strong><code>PARTITION_VERT_B</code></strong>: The left half
+remains an undivided 1:2 rectangle, while the right half is split
+horizontally into two blocks.</li>
+</ul>
+<p>These shapes accommodate image regions where detail or motion occurs
+predominantly on one side of a block, eliminating the requirement to
+split the entire area uniformly.</p>
+<h2 id="coding-benefits-of-non-square-shapes">Coding Benefits of
+Non-Square Shapes</h2>
+<p>The addition of these non-square partitions provides clear
+benefits:</p>
+<ul>
+<li><strong>Reduced Overhead</strong>: Encoders can cover irregular
+image edges with fewer total transform blocks, significantly lowering
+signaling overhead.</li>
+<li><strong>Better Prediction Accuracy</strong>: Intra prediction and
+inter-frame motion compensation perform better when block boundaries
+align closely with natural object boundaries.</li>
+<li><strong>Optimal Transform Sizing</strong>: Non-square partitions map
+directly to AV1's extended library of 2:1, 1:2, 4:1, and 1:4 2D discrete
+cosine transforms (DCT) and asymmetric discrete sine transforms
+(ADST).</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

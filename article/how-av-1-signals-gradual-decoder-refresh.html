@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Signals Gradual Decoder Refresh - av1</title>
+    <meta name="description" content="Gradual Decoder Refresh (GDR) in AV1 is a mechanism that enables random access and channel-change recovery without the bandwidth spikes caused by full Key Frames (intra frames). Instead of refreshing an entire picture at once, AV1 spreads intra-coded blo">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-signals-gradual-decoder-refresh">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Signals Gradual Decoder Refresh - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-signals-gradual-decoder-refresh" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Gradual Decoder Refresh (GDR) in AV1 is a mechanism that enables random access and channel-change recovery without the bandwidth spikes caused by full Key Frames (intra frames). Instead of refreshing an entire picture at once, AV1 spreads intra-coded blo" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-signals-gradual-decoder-refresh">How AV1 Signals Gradual
+Decoder Refresh</h1>
+<p>Gradual Decoder Refresh (GDR) in AV1 is a mechanism that enables
+random access and channel-change recovery without the bandwidth spikes
+caused by full Key Frames (intra frames). Instead of refreshing an
+entire picture at once, AV1 spreads intra-coded blocks across a sequence
+of inter frames while strictly isolating reference dependencies. This
+article explains how the AV1 bitstream orchestrates GDR by utilizing
+standard inter-frame signaling, motion vector constraints, and
+error-resilient syntax settings to achieve complete decoder
+synchronization over time.</p>
+<h3 id="the-limitation-of-traditional-key-frames">The Limitation of
+Traditional Key Frames</h3>
+<p>In conventional video encoding, random access points require an IDR
+or Key Frame where every block is strictly intra-coded. While this
+provides an immediate recovery point for decoders, it introduces
+significant bitrate spikes that challenge low-latency streaming,
+real-time communications, and constant-bitrate (CBR) network
+allocations.</p>
+<p>Gradual Decoder Refresh eliminates these spikes by distributing the
+intra-refresh process across <span class="math inline">\(N\)</span>
+consecutive frames, maintaining a smooth bitrate profile while still
+guaranteeing that a newly joined decoder will produce a completely
+clean, artifact-free frame after the refresh cycle completes.</p>
+<h3 id="signaling-gdr-through-inter-frame-syntax">Signaling GDR Through
+Inter-Frame Syntax</h3>
+<p>Unlike legacy codecs that rely on dedicated recovery point
+Supplemental Enhancement Information (SEI) messages within the
+elementary stream, AV1 does not introduce a specialized "GDR frame
+type." Instead, AV1 signals and executes GDR through the standard frame
+header syntax:</p>
+<ul>
+<li><strong>Frame Type Assignment:</strong> Frames participating in a
+GDR cycle are signaled as <code>INTER_FRAME</code>
+(<code>frame_type = 1</code>). Because an AV1 <code>KEY_FRAME</code>
+(<code>frame_type = 0</code>) mandatorily flushes and resets all
+reference frame buffers and requires all blocks to be intra-coded, GDR
+must avoid the <code>KEY_FRAME</code> designation.</li>
+<li><strong>Intra-Refresh Regions:</strong> Within these inter-coded
+frames, the encoder designates a moving spatial region (such as a
+horizontal or vertical band, or specific tile columns) that is forced to
+use intra prediction modes.</li>
+<li><strong>Retaining Reference State:</strong> By maintaining the
+<code>INTER_FRAME</code> structure, the decoder keeps its reference
+buffers active and updates them progressively as clean data replaces
+stale data.</li>
+</ul>
+<h3
+id="constrained-reference-boundaries-and-motion-clamping">Constrained
+Reference Boundaries and Motion Clamping</h3>
+<p>The foundational requirement of GDR is preventing unrefreshed
+(corrupt or missing) data from contaminating refreshed regions. AV1
+enforces this through encoder-side reference isolation and
+bitstream-level motion vector constraints:</p>
+<ol type="1">
+<li><strong>Intra Boundary Isolation:</strong> The moving intra band
+moves progressively across the frame over the refresh interval (e.g.,
+from left to right).</li>
+<li><strong>Motion Vector Restrictions:</strong> For any blocks coded
+with inter prediction within the already-refreshed spatial zone, motion
+vectors are strictly restricted. The encoder clamps motion vectors so
+they cannot point to unrefreshed areas in previous reference
+buffers.</li>
+<li><strong>Tile Boundary Filtering:</strong> AV1 can use its native
+tile architecture to set up independent tile columns. By enabling
+<code>loop_filter_across_tiles_v_enabled = 0</code>, cross-tile in-loop
+filtering (such as deblocking, CDEF, and loop restoration) is disabled
+at the refresh edge, preventing clean pixels from blending with
+unrefreshed pixels.</li>
+</ol>
+<h3 id="enabling-error-resilience">Enabling Error Resilience</h3>
+<p>For a newly connected decoder to parse GDR frames without prior state
+information, the elementary stream must decouple temporal entropy and
+motion estimation dependencies. In AV1, this is handled via the
+<code>error_resilient_mode</code> flag in the Frame Header:</p>
+<ul>
+<li><strong>Entropy Context Resets:</strong> When
+<code>error_resilient_mode</code> is set to <code>1</code>, the decoder
+does not adapt its Cumulative Distribution Functions (CDFs) based on the
+previous frame's terminal state. Instead, CDFs are reset to default
+values or updated solely based on frame-internal statistics.</li>
+<li><strong>Disabling Temporal Motion Field Estimation:</strong> Setting
+<code>error_resilient_mode = 1</code> also disables Motion Field Motion
+Vector (MFMV) prediction, which normally tracks motion trajectories
+across multiple past frames. This ensures the decoder does not attempt
+to read motion data from frames it never received.</li>
+</ul>
+<h3
+id="synchronization-detection-and-container-level-signaling">Synchronization
+Detection and Container-Level Signaling</h3>
+<p>Because the AV1 bitstream manages GDR organically through syntax
+constraints rather than a single normative in-band trigger, decoders
+identify the exact convergence point (the frame where all pixels are
+fully refreshed) through transport and container layers:</p>
+<ul>
+<li><strong>ISOBMFF Roll Recovery:</strong> In MP4 containers, AV1 GDR
+intervals are signaled using the <code>roll</code> sample grouping
+(<code>VisualRollRecoveryEntry</code>). The <code>roll_count</code>
+field explicitly tells the demuxer and decoder how many frames must be
+decoded from the start of the roll before the output is fully refreshed
+and presentable.</li>
+<li><strong>RTP and WebRTC Signaling:</strong> In real-time transport,
+application-level feedback (such as Picture Loss Indication or Full
+Intra Request negotiations) coordinates with the encoder to initiate a
+GDR cycle, with synchronization markers embedded in RTP payload header
+extensions.</li>
+</ul>
+<p>By combining <code>INTER_FRAME</code> labeling, spatial motion vector
+bounding, tile isolation, and <code>error_resilient_mode</code>, AV1
+achieves clean random access without ever transmitting a full intra
+frame.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

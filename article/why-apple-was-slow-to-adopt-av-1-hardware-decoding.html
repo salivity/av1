@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Apple Was Slow to Adopt AV1 Hardware Decoding - av1</title>
+    <meta name="description" content="Despite joining the Alliance for Open Media (AOMedia) as a founding-level board member in 2018, Apple did not introduce hardware-accelerated AV1 decoding until late 2023 with the A17 Pro and M3 processors. While competitor platforms began introducing AV1">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/why-apple-was-slow-to-adopt-av-1-hardware-decoding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Why Apple Was Slow to Adopt AV1 Hardware Decoding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/why-apple-was-slow-to-adopt-av-1-hardware-decoding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Despite joining the Alliance for Open Media (AOMedia) as a founding-level board member in 2018, Apple did not introduce hardware-accelerated AV1 decoding until late 2023 with the A17 Pro and M3 processors. While competitor platforms began introducing AV1" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="why-apple-was-slow-to-adopt-av1-hardware-decoding">Why Apple Was
+Slow to Adopt AV1 Hardware Decoding</h1>
+<p>Despite joining the Alliance for Open Media (AOMedia) as a
+founding-level board member in 2018, Apple did not introduce
+hardware-accelerated AV1 decoding until late 2023 with the A17 Pro and
+M3 processors. While competitor platforms began introducing AV1 hardware
+support years earlier, Apple’s deliberate, gradual hardware roadmap was
+governed by strict architectural trade-offs, silicon transistor
+allocation priorities, thermal and battery efficiency standards,
+multi-year chip design cycles, and the availability of mature silicon
+intellectual property (IP).</p>
+<h3 id="die-area-budgeting-and-transistor-constraints">Die Area
+Budgeting and Transistor Constraints</h3>
+<p>Every millimetre of silicon on an Apple A-series or M-series System
+on Chip (SoC) is tightly contested. Adding dedicated, fixed-function
+hardware decoders requires allocating physical die space and millions of
+transistors away from the CPU, GPU, or Neural Engine. In the late 2010s
+and early 2020s, the vast majority of consumer video was encoded in
+H.264 or HEVC (H.265). Dedicating silicon area to an AV1 decoder block
+offered minimal real-world performance return for the average user
+compared to expanding GPU compute units or cache sizes. Apple waited
+until the shift to advanced 3nm fabrication nodes provided the
+transistor density required to add AV1 decode blocks without sacrificing
+other essential compute logic.</p>
+<h3 id="thermal-budgets-and-power-efficiency-metrics">Thermal Budgets
+and Power Efficiency Metrics</h3>
+<p>Software decoding of AV1 is notoriously compute-intensive, requiring
+significantly more processing power than HEVC. Apple’s product design
+philosophy strictly avoids software fallbacks that drain battery life or
+cause thermal throttling on mobile devices. Early iterations of
+third-party AV1 fixed-function decoder logic were not yet fully
+optimized for ultra-low-power mobile operation. Apple required a fully
+mature, power-efficient hardware implementation that met their internal
+efficiency-per-watt thresholds, ensuring that 4K and 8K AV1 playback
+would not adversely impact battery metrics on thin, fanless devices like
+the iPhone and MacBook Air.</p>
+<h3 id="multi-year-chip-development-cycles">Multi-Year Chip Development
+Cycles</h3>
+<p>Apple's silicon architecture roadmap operates on a three-to-four-year
+planning horizon. The AV1 specification was finalized by AOMedia in
+2018, but stable, validated silicon-level IP cores suitable for
+high-volume consumer production were not widely available until 2020.
+Incorporating a new fixed-function hardware block into an existing
+microarchitecture requires extensive verification, silicon tape-out
+cycles, and deep integration with Apple's unified memory architecture.
+By the time the standard reached market maturity, the chips released
+between 2020 and 2022 (A14–A16 and M1–M2) had already locked their media
+engine architectures.</p>
+<h3 id="ecosystem-maturity-and-content-pipeline-needs">Ecosystem
+Maturity and Content Pipeline Needs</h3>
+<p>Apple prioritizes technologies that directly serve its closed
+ecosystem. The primary beneficiaries of AV1’s 20–30% compression
+efficiency advantage over HEVC were ultra-scale streaming platforms such
+as YouTube and Netflix, where bandwidth costs are massive. In contrast,
+Apple’s own services, including Apple TV+ and the native iOS/macOS
+camera pipelines, were already deeply optimized around HEVC. Because
+Apple controls both its hardware and operating system distribution, it
+faced less market urgency to support the new format until content
+providers significantly shifted their delivery streams to AV1.</p>
+<h3 id="legal-and-intellectual-property-landscape">Legal and
+Intellectual Property Landscape</h3>
+<p>Although AV1 was marketed as an open-source, royalty-free codec, it
+faced early legal challenges from external patent pools such as Sisvel,
+which claimed that AV1 infringed on various existing video compression
+patents. As a company with significant exposure to patent litigation,
+Apple historically approaches unproven licensing frameworks with
+caution. Delaying hardware implementation allowed the legal landscape
+surrounding AOMedia's royalty-free claims to stabilize before committing
+dedicated silicon logic to the standard.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

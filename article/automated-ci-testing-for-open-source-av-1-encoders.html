@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated CI Testing for Open-Source AV1 Encoders - av1</title>
+    <meta name="description" content="Testing AV1 encoders requires balancing software stability, encoding speed, and complex rate-distortion performance across vast sets of video data. The open-source community accomplishes this by integrating continuous automated testing pipelines into cod">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/automated-ci-testing-for-open-source-av-1-encoders">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Automated CI Testing for Open-Source AV1 Encoders - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/automated-ci-testing-for-open-source-av-1-encoders" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="Testing AV1 encoders requires balancing software stability, encoding speed, and complex rate-distortion performance across vast sets of video data. The open-source community accomplishes this by integrating continuous automated testing pipelines into cod" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="automated-ci-testing-for-open-source-av1-encoders">Automated CI
+Testing for Open-Source AV1 Encoders</h1>
+<p>Testing AV1 encoders requires balancing software stability, encoding
+speed, and complex rate-distortion performance across vast sets of video
+data. The open-source community accomplishes this by integrating
+continuous automated testing pipelines into code repositories to run
+standard unit tests, bitstream conformance verifications, and objective
+visual quality evaluations on every code revision. By leveraging
+distributed compute clusters, specialized test harnesses, and
+standardized metrics like BD-rate and VMAF, developers detect
+algorithmic regressions, ensure specification compliance, and track
+compression efficiency gains in real time.</p>
+<h3 id="automated-test-harnesses-the-role-of-awcy">Automated Test
+Harnesses: The Role of AWCY</h3>
+<p>The primary tool used for testing open-source AV1 encoders (such as
+libaom, rav1e, and SVT-AV1) is "Are We Compressed Yet?" (AWCY), an
+open-source benchmarking service originally developed by Xiph.Org and
+Mozilla.</p>
+<p>When a developer submits a pull request, CI triggers can send a build
+to AWCY. The system distributes encoding workloads across an array of
+worker nodes. These nodes encode standardized video test sets using both
+the target commit and a baseline branch (typically the master or main
+branch), comparing the results to quantify exactly how changes impact
+encoding speed and video quality.</p>
+<h3 id="common-test-conditions-ctc-and-video-sets">Common Test
+Conditions (CTC) and Video Sets</h3>
+<p>To make benchmarks statistically meaningful, the community relies on
+Common Test Conditions defined by the Alliance for Open Media (AOMedia).
+CI pipelines execute tests using standard video sequences categorized by
+resolution, frame rate, and dynamic range:</p>
+<ul>
+<li><strong>objective-1-fast:</strong> A short, diverse clip set used
+for rapid smoke tests on individual pull requests.</li>
+<li><strong>Full CTC Sets:</strong> Comprehensive test suites containing
+4K, 1080p, 720p, and standard-definition footage, typically run nightly
+or prior to major releases due to the high computational cost of
+full-depth encoding.</li>
+</ul>
+<h3 id="measuring-rate-distortion-with-objective-metrics">Measuring
+Rate-Distortion with Objective Metrics</h3>
+<p>Continuous integration for video encoders goes beyond simple
+pass/fail assertions. It must measure compression efficiency via
+rate-distortion (RD) performance. Automated pipelines parse outputs to
+compute:</p>
+<ol type="1">
+<li><strong>Visual Quality Scores:</strong> Traditional metrics like
+PSNR and SSIM are calculated alongside perceptual models like VMAF
+(Video Multi-Method Assessment Fusion) and Butteraugli.</li>
+<li><strong>Bjøntegaard Delta Rate (BD-rate):</strong> Pipelines
+automatically plot RD curves across multiple quantization parameters
+(QPs) or target bitrates. The calculated BD-rate shows the percentage of
+bitrate saved or added for an equivalent visual quality level. A
+negative BD-rate indicates improved efficiency, while a positive BD-rate
+flags a regression.</li>
+</ol>
+<h3 id="bitstream-conformance-and-decoder-interoperability">Bitstream
+Conformance and Decoder Interoperability</h3>
+<p>Producing an unreadable or non-compliant bitstream is a critical
+failure. Automated workflows validate generated streams through multiple
+steps:</p>
+<ul>
+<li><strong>Reference Decoders:</strong> Automated tasks feed the newly
+encoded bitstreams into strictly compliant reference decoders like
+<code>aomdec</code> to ensure standard conformance.</li>
+<li><strong>Alternative Decoders:</strong> Streams are tested against
+fast, independent decoders such as <code>dav1d</code> to ensure
+cross-decoder compatibility.</li>
+<li><strong>Fuzzing and Sanitizers:</strong> Tools like Google’s
+OSS-Fuzz continuously test encoder inputs using Clang sanitizers
+(AddressSanitizer, MemorySanitizer, UndefinedBehaviorSanitizer) to catch
+memory leaks, out-of-bounds reads, and integer overflows.</li>
+</ul>
+<h3
+id="multi-architecture-and-simd-regression-checks">Multi-Architecture
+and SIMD Regression Checks</h3>
+<p>AV1 encoders rely heavily on hand-written assembly optimizations
+(AVX2, AVX-512, ARM Neon) to make encoding speeds practical. Standard CI
+platforms (such as GitHub Actions and GitLab CI) automatically build and
+test code across multiple target architectures and operating systems.
+These jobs run deterministic unit tests that compare the output of
+optimized SIMD functions directly against C fallback implementations to
+ensure identical output and prevent architecture-specific
+corruption.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Color Volume Transformations for WCG Displays - av1</title>
+    <meta name="description" content="The AV1 video codec provides robust architectural support for wide color gamut (WCG) and high dynamic range (HDR) displays through standardized color signaling and dynamic metadata delivery. By leveraging Coding Independent Code Points (CICP), mastering">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-color-volume-transformations-for-wcg-displays">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Color Volume Transformations for WCG Displays - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-color-volume-transformations-for-wcg-displays" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec provides robust architectural support for wide color gamut (WCG) and high dynamic range (HDR) displays through standardized color signaling and dynamic metadata delivery. By leveraging Coding Independent Code Points (CICP), mastering" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-color-volume-transformations-for-wcg-displays">AV1 Color
+Volume Transformations for WCG Displays</h1>
+<p>The AV1 video codec provides robust architectural support for wide
+color gamut (WCG) and high dynamic range (HDR) displays through
+standardized color signaling and dynamic metadata delivery. By
+leveraging Coding Independent Code Points (CICP), mastering display
+color volume parameters, and frame-level metadata carried via Open
+Bitstream Units (OBUs), AV1 enables decoders and display processors to
+map expansive source color volumes—such as ITU-R BT.2020—into the
+specific color volumes and luminance capabilities of target displays
+without clipping or color distortion.</p>
+<h3 id="standardized-color-signaling-via-cicp">Standardized Color
+Signaling via CICP</h3>
+<p>AV1 specifies color properties within the sequence header using
+Coding Independent Code Points (CICP), defined in ITU-T H.273 and
+ISO/IEC 23091-2. This framework explicitly conveys three essential
+parameters:</p>
+<ul>
+<li><strong>Color Primaries:</strong> Defines the chromaticity
+coordinates of the red, green, and blue source primaries (such as
+BT.709, DCI-P3, or BT.2020) and the reference white point (typically
+D65).</li>
+<li><strong>Transfer Characteristics:</strong> Identifies the
+Electro-Optical Transfer Function (EOTF), distinguishing standard gamma
+from HDR transfer curves like Perceptual Quantizer (PQ / SMPTE ST 2084)
+and Hybrid Log-Gamma (HLG / BT.2100).</li>
+<li><strong>Matrix Coefficients:</strong> Directs the mathematical
+conversion between the encoded luma/chroma signals (typically YCbCr) and
+full-gamut RGB color spaces.</li>
+</ul>
+<p>By decoupling these identifiers from proprietary formats, AV1 ensures
+the receiving display pipeline knows the exact bounds of the source
+color space before rendering begins.</p>
+<h3 id="static-color-volume-metadata">Static Color Volume Metadata</h3>
+<p>To perform accurate gamut compression and luminance remapping,
+displays must know the environment in which the content was originally
+authored. AV1 supports static mastering metadata through dedicated
+Metadata OBUs:</p>
+<ul>
+<li><strong>Mastering Display Color Volume (MDCV):</strong> Based on
+SMPTE ST 2086, this metadata defines the exact chromaticity coordinates
+of the mastering display's RGB primaries, its white point, and its
+minimum and maximum luminance (measured in candelas per square meter, or
+nits).</li>
+<li><strong>Content Light Level Information (CLLI):</strong> Carries the
+Maximum Content Light Level (MaxCLL) and Maximum Frame-Average Light
+Level (MaxFALL), providing aggregate brightness boundaries across the
+entire bitstream.</li>
+</ul>
+<p>Display processing engines evaluate this static data against their
+own native color volume limits, calculating static 3D Look-Up Tables (3D
+LUTs) or transformation matrices to prevent out-of-gamut hue shifts.</p>
+<h3 id="dynamic-color-volume-transformations">Dynamic Color Volume
+Transformations</h3>
+<p>For environments with varying dynamic range and color saturation,
+static boundaries can lead to aggressive, uniform dimming. AV1 solves
+this by supporting dynamic metadata via ITU-T T.35 standard messaging
+inside Metadata OBUs.</p>
+<p>This enables standards such as HDR10+ (SMPTE ST 2094-40) and Dolby
+Vision (SMPTE ST 2094-10). These dynamic instruction sets provide
+scene-by-scene or frame-by-frame color volume transform parameters.
+Instead of assuming the entire stream uses the maximum mastering
+boundaries, the display applies tailored tone-mapping and saturation
+algorithms that preserve highlight details and color vibrancy only when
+a specific scene requires it.</p>
+<h3 id="the-transformation-pipeline-in-practice">The Transformation
+Pipeline in Practice</h3>
+<p>When an AV1 bitstream is prepared for presentation on a WCG display,
+the rendering pipeline executes a systematic series of mathematical
+transformations:</p>
+<ol type="1">
+<li><strong>Decoding &amp; De-quantization:</strong> AV1 decodes YCbCr
+data using bit-depths up to 12 bits to avoid color banding within wide
+gamut spaces.</li>
+<li><strong>RGB Conversion:</strong> Using the signaled Matrix
+Coefficients, the signal is converted to non-linear RGB.</li>
+<li><strong>Linearization:</strong> The signaled EOTF linearizes the
+signal, translating encoded code values into actual optical luminance
+values.</li>
+<li><strong>Gamut Mapping &amp; Tone Mapping:</strong> The display
+engine uses the source CICP, MDCV, and dynamic ST 2094 metadata
+alongside the display's own EDID/DisplayID profiles. A color
+transformation matrix translates source chromaticities to the display’s
+native primaries, while dynamic tone curves compress out-of-range
+luminance values to protect saturation and hue accuracy.</li>
+<li><strong>Re-quantization for Panel Output:</strong> The mapped linear
+light data is transformed by the target display’s native transfer curve
+and directed to the panel.</li>
+</ol>
+<p>Through this combination of standardized syntax, static volume
+definitions, and frame-accurate dynamic metadata, AV1 provides an
+adaptable pipeline that ensures high-fidelity color volume reproduction
+across diverse display hardware.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

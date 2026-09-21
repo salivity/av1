@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Context Models for Transform Coefficient Coding - av1</title>
+    <meta name="description" content="This article provides an overview of the context modeling architecture used for transform coefficient coding within the AOMedia Video 1 (AV1) entropy engine. AV1 replaces traditional binary arithmetic coding (such as CABAC) with a symbol-adaptive multi-s">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-context-models-for-transform-coefficient-coding">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Context Models for Transform Coefficient Coding - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-context-models-for-transform-coefficient-coding" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of the context modeling architecture used for transform coefficient coding within the AOMedia Video 1 (AV1) entropy engine. AV1 replaces traditional binary arithmetic coding (such as CABAC) with a symbol-adaptive multi-s" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-context-models-for-transform-coefficient-coding">AV1 Context
+Models for Transform Coefficient Coding</h1>
+<p>This article provides an overview of the context modeling
+architecture used for transform coefficient coding within the AOMedia
+Video 1 (AV1) entropy engine. AV1 replaces traditional binary arithmetic
+coding (such as CABAC) with a symbol-adaptive multi-symbol arithmetic
+coding engine. To balance coding efficiency and hardware complexity, the
+codec maintains a carefully restricted set of context models—represented
+as Cumulative Distribution Functions (CDFs)—to code coefficient
+magnitudes, signs, and the end-of-block position.</p>
+<h3 id="multi-symbol-coefficient-representation">Multi-Symbol
+Coefficient Representation</h3>
+<p>Transform coefficient coding in AV1 decomposes the absolute magnitude
+and sign of each coefficient into several distinct syntax elements:</p>
+<ol type="1">
+<li><strong>End-of-Block (EOB):</strong> Identifies the position of the
+last non-zero coefficient in a transform block.</li>
+<li><strong>Base Level (<code>coeff_base</code>):</strong> Multi-symbol
+tokens representing whether a coefficient value is 0, 1, 2, or exceeds
+2.</li>
+<li><strong>Base Level at EOB (<code>coeff_base_eob</code>):</strong>
+Similar to the base level, but constrained because an EOB coefficient
+cannot be zero.</li>
+<li><strong>Bracket/Remainder Levels (<code>coeff_br</code>):</strong>
+Encodes magnitudes from 3 to 14 in increments using multi-symbol
+alphabets.</li>
+<li><strong>Residual Magnitude:</strong> Large values beyond 14 are
+coded using Exp-Golomb codes in bypass mode.</li>
+<li><strong>Sign Values:</strong> AC coefficient signs are coded without
+context (equiprobable), while DC sign coding uses neighboring spatial
+information.</li>
+</ol>
+<h3 id="exact-context-model-allocations">Exact Context Model
+Allocations</h3>
+<p>For coefficient magnitudes and signs, the AV1 entropy engine
+maintains a total of <strong>87 primary context models</strong> per
+plane and transform class:</p>
+<ul>
+<li><strong>Base Level Contexts (<code>coeff_base</code>): 42
+models</strong><br />
+The probability distribution for the first three magnitude levels
+depends on a 5-point local neighborhood template (the magnitude sum of
+adjacent already-decoded coefficients). This neighborhood metric maps to
+one of 42 distinct context states.</li>
+<li><strong>EOB Base Level Contexts (<code>coeff_base_eob</code>): 21
+models</strong><br />
+Because the coefficient at the EOB position is guaranteed to be
+non-zero, it utilizes a reduced set of 21 specialized context
+models.</li>
+<li><strong>Bracket Level Contexts (<code>coeff_br</code>): 21
+models</strong><br />
+For coefficients with magnitudes between 3 and 14, the engine computes
+context from the same neighborhood template, mapping to 21 distinct
+context distributions.</li>
+<li><strong>DC Sign Contexts (<code>dc_sign</code>): 3
+models</strong><br />
+While AC signs are coded as bypass bits, the DC sign uses 3 context
+models determined by the sign of the DC coefficients from the top and
+left adjacent transform blocks (negative, neutral/unavailable, or
+positive).</li>
+</ul>
+<h3 id="end-of-block-eob-context-models">End-of-Block (EOB) Context
+Models</h3>
+<p>Locating the last non-zero transform coefficient requires additional
+context models:</p>
+<ul>
+<li><strong>EOB Flag Contexts:</strong> Determine whether a block
+contains any non-zero coefficients.</li>
+<li><strong>EOB Position Category Models:</strong> 16 context models map
+the coordinate range of the EOB across different transform dimensions
+(such as 4x4, 8x8, up to 64x64).</li>
+<li><strong>EOB Extra Bit Models:</strong> Refine the exact position
+within an EOB category range.</li>
+</ul>
+<h3 id="context-adaptivity-and-memory-footprint">Context Adaptivity and
+Memory Footprint</h3>
+<p>Instead of maintaining separate tables for every permutation of
+transform block size and plane, AV1 shares these 87 primary coefficient
+contexts across multiple transform sizes, differentiating primarily
+between luma and chroma planes and transform types (e.g., DCT vs.
+ADST).</p>
+<p>During frame processing, each context model updates its symbol
+probabilities dynamically using an exponential adaptation rate without
+storing large transition tables, keeping the active entropy coder memory
+footprint substantially smaller than preceding standards.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

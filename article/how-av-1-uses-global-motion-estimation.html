@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How AV1 Uses Global Motion Estimation - av1</title>
+    <meta name="description" content="The AV1 video codec leverages Global Motion Estimation (GME) to detect and compensate for whole-frame movement, such as camera panning, tilting, rotation, and zooming, across adjacent video frames. Instead of encoding redundant motion vectors for hundred">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-av-1-uses-global-motion-estimation">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How AV1 Uses Global Motion Estimation - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-av-1-uses-global-motion-estimation" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The AV1 video codec leverages Global Motion Estimation (GME) to detect and compensate for whole-frame movement, such as camera panning, tilting, rotation, and zooming, across adjacent video frames. Instead of encoding redundant motion vectors for hundred" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-av1-uses-global-motion-estimation">How AV1 Uses Global
+Motion Estimation</h1>
+<p>The AV1 video codec leverages Global Motion Estimation (GME) to
+detect and compensate for whole-frame movement, such as camera panning,
+tilting, rotation, and zooming, across adjacent video frames. Instead of
+encoding redundant motion vectors for hundreds of individual blocks, AV1
+calculates a unified mathematical model that describes the background
+movement of the scene. By signaling these global transformation
+parameters once at the frame level, AV1 allows individual blocks to
+inherit the camera trajectory, drastically cutting down motion vector
+data and improving overall compression efficiency.</p>
+<h3 id="the-purpose-of-global-motion-estimation">The Purpose of Global
+Motion Estimation</h3>
+<p>In conventional video coding, motion compensation divides a frame
+into blocks and calculates a motion vector for each block relative to a
+reference frame. When a camera moves across a scene, nearly every
+background block shifts in a uniform or mathematically predictable
+direction. Transmitting individual motion vectors for all of these
+blocks wastes significant bitrate.</p>
+<p>AV1 solves this by using GME to model the global movement caused by
+camera motion across adjacent frames, separating the background movement
+from independently moving foreground objects.</p>
+<h3 id="transformation-models-in-av1">Transformation Models in AV1</h3>
+<p>AV1 implements four mathematical models of increasing complexity to
+capture various types of camera trajectories between frames:</p>
+<ol type="1">
+<li><strong>Identity:</strong> Represents no global motion between the
+reference and the current frame.</li>
+<li><strong>Translation:</strong> Uses two parameters to represent
+simple two-dimensional horizontal and vertical shifts (panning and
+tilting).</li>
+<li><strong>Affine:</strong> Uses six parameters to capture translation,
+rotation, isotropic zooming, and non-isotropic stretching (shear).</li>
+<li><strong>Projective (Perspective):</strong> Uses eight parameters to
+model full perspective shifts, such as when a camera tilts at an angle
+relative to a flat plane, causing 3D perspective distortion.</li>
+</ol>
+<p>By supporting affine and projective models, AV1 can accurately track
+complex physical camera movements that older codecs could only
+approximate with local block translations.</p>
+<h3 id="how-av1-computes-global-motion">How AV1 Computes Global
+Motion</h3>
+<p>To determine the global motion parameters across adjacent frames, the
+AV1 encoder follows a multi-step estimation pipeline:</p>
+<ol type="1">
+<li><strong>Feature Detection and Matching:</strong> The encoder detects
+salient keypoints across adjacent frames or relies on pre-calculated
+block-level motion vectors to find corresponding point pairs between the
+current frame and the reference frame.</li>
+<li><strong>Outlier Rejection (RANSAC):</strong> Real-world scenes often
+feature moving foreground objects (e.g., people, vehicles) moving
+independently of the camera. AV1 uses algorithms like Random Sample
+Consensus (RANSAC) to discard these foreground vectors and isolate the
+dominant, coherent motion of the background.</li>
+<li><strong>Parameter Optimization:</strong> The remaining inlier points
+are fitted into the translation, affine, or projective equations. The
+encoder refines the transformation matrices to minimize the prediction
+error over the entire frame.</li>
+<li><strong>Rate-Distortion Optimization (RDO):</strong> The encoder
+evaluates the cost of transmitting the model against the quality gain it
+provides. If a higher-order model (like projective) does not provide
+enough coding gain over a simpler model (like translation or identity),
+the simpler model is chosen to save bitstream overhead.</li>
+</ol>
+<h3 id="signaling-and-block-level-application">Signaling and Block-Level
+Application</h3>
+<p>Once calculated, the global motion parameters are encoded in the
+frame header for each active reference frame.</p>
+<p>During block-level prediction, the encoder can set a block's motion
+mode to <code>GLOBALMV</code>. When this mode is flagged, the decoder
+derives the block’s motion vector directly from the frame's global
+transformation matrix rather than reading unique motion vector
+coordinates from the bitstream. If a block belongs to an independently
+moving object, the encoder bypasses the global model and transmits
+standard local motion vectors.</p>
+<h3 id="efficiency-gains">Efficiency Gains</h3>
+<p>By delegating predictable camera paths to global mathematical
+transforms, AV1 eliminates massive amounts of motion vector overhead in
+sequences with sweeping camera sweeps, aerial drone footage, and sports
+broadcasts. The bits saved from motion signaling are directly
+reallocated to preserving fine textures and high-frequency details.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

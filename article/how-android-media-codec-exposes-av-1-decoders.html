@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Android MediaCodec Exposes AV1 Decoders - av1</title>
+    <meta name="description" content="This article provides an overview of how the Android MediaCodec framework identifies, prioritizes, and exposes both hardware and software AV1 video decoders to applications. It covers the underlying Codec 2.0 (C2) architecture, the standard component nam">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/how-android-media-codec-exposes-av-1-decoders">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How Android MediaCodec Exposes AV1 Decoders - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/how-android-media-codec-exposes-av-1-decoders" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article provides an overview of how the Android MediaCodec framework identifies, prioritizes, and exposes both hardware and software AV1 video decoders to applications. It covers the underlying Codec 2.0 (C2) architecture, the standard component nam" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="how-android-mediacodec-exposes-av1-decoders">How Android
+MediaCodec Exposes AV1 Decoders</h1>
+<p>This article provides an overview of how the Android MediaCodec
+framework identifies, prioritizes, and exposes both hardware and
+software AV1 video decoders to applications. It covers the underlying
+Codec 2.0 (C2) architecture, the standard component naming conventions,
+how developers query decoder capabilities via system APIs, and how
+Android manages fallback behavior between vendor hardware
+implementations and built-in software decoders like libgav1 and
+dav1d.</p>
+<h3 id="the-unified-mime-type-architecture">The Unified MIME Type
+Architecture</h3>
+<p>Android handles all AV1 decoding under a single standardized media
+type: <code>video/av01</code>. When an application requests an AV1
+decoder, the <code>MediaCodec</code> framework does not initially
+require the app to know whether the processing will occur on a dedicated
+hardware chip or through the CPU.</p>
+<p>Instead, the framework acts as an abstraction layer over Android’s
+Codec 2.0 (C2) framework (or the legacy OpenMAX IL layer on older
+versions). The system maintains an internal media codec registry parsed
+from system XML configuration files (such as
+<code>/vendor/etc/media_codecs.xml</code> and
+<code>/system/etc/media_codecs.xml</code>). When initialized,
+<code>MediaCodec</code> reads these registries to index all available
+AV1 decoder components, their performance ratings, and their supported
+profiles.</p>
+<h3 id="hardware-vs-software-naming-conventions">Hardware vs. Software
+Naming Conventions</h3>
+<p>The MediaCodec framework distinguishes hardware and software decoders
+using standardized component names:</p>
+<ul>
+<li><strong>Software Decoders:</strong> Typically prefixed with
+<code>c2.android.</code> (for Codec 2.0) or <code>OMX.google.</code>
+(for OpenMAX). Android originally introduced AV1 software decoding via
+<code>c2.android.av1.decoder</code> using <code>libgav1</code>. In
+modern Android updates, Google has integrated VideoLAN’s
+<code>dav1d</code> software decoder, exposing it via the Mainline Media
+modular system update framework under names such as
+<code>c2.android.av1-dav1d.decoder</code>.</li>
+<li><strong>Hardware Decoders:</strong> Prefixed by device
+system-on-chip (SoC) vendors. Common examples include
+<code>c2.qti.av1.decoder</code> (Qualcomm),
+<code>c2.exynos.av1.decoder</code> (Samsung), or
+<code>c2.mtk.av1.decoder</code> (MediaTek). Hardware implementations
+interact directly with dedicated visual processing units (VPUs) to
+minimize CPU usage and power consumption.</li>
+</ul>
+<h3 id="discovery-and-enumeration-via-mediacodeclist">Discovery and
+Enumeration via MediaCodecList</h3>
+<p>Applications discover which AV1 decoders are present on a device
+through the <code>MediaCodecList</code> class. Android exposes decoder
+properties through <code>MediaCodecInfo</code>, allowing developers to
+programmatic inspect the hardware status:</p>
+<ol type="1">
+<li><strong><code>MediaCodecInfo.isHardwareAccelerated()</code>:</strong>
+Returns <code>true</code> if the underlying component is a
+vendor-supplied hardware implementation.</li>
+<li><strong><code>MediaCodecInfo.isSoftwareOnly()</code>:</strong>
+Returns <code>true</code> if the component executes entirely on the CPU
+(e.g., standard Android C2 software fallbacks).</li>
+<li><strong><code>MediaCodecInfo.isVendor()</code>:</strong>
+Distinguishes OEM/SoC implementations from default Android open-source
+components.</li>
+</ol>
+<p>When calling
+<code>MediaCodec.createDecoderByType("video/av01")</code>, Android
+automatically resolves the call by returning the component with the
+highest internal ranking that supports the requested MIME type. The
+framework systematically ranks hardware decoders higher than software
+fallbacks, ensuring efficient decoding whenever dedicated hardware
+support exists.</p>
+<h3 id="profile-level-and-capability-negotiation">Profile, Level, and
+Capability Negotiation</h3>
+<p>AV1 decoders exposed via MediaCodec specify exact format limits
+through <code>MediaCodecInfo.CodecCapabilities</code>. Android maps AV1
+standard profiles (Main Profile, High Profile, and Professional Profile)
+to integer constants defined within
+<code>MediaCodecInfo.CodecProfileLevel</code>:</p>
+<ul>
+<li><code>AV1ProfileMain8</code>: 8-bit 4:2:0 content.</li>
+<li><code>AV1ProfileMain10</code>: 10-bit 4:2:0 content, required for
+AV1-based High Dynamic Range (HDR) workflows including HDR10, HDR10+,
+and HLG.</li>
+</ul>
+<p>Hardware decoders advertise specific performance constraints, such as
+maximum supported resolution (e.g., 4K or 8K) and maximum frame rates,
+through <code>VideoCapabilities</code>. If a requested video stream
+exceeds the capabilities of a hardware decoder (such as a 4K 10-bit
+stream on a chip that only supports 1080p AV1 hardware decoding),
+<code>MediaCodecList.findDecoderForFormat()</code> allows an application
+to selectively fall back to a software decoder capable of handling the
+target configuration.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact of Temporal Sub-Sampling in AV1 Archives - av1</title>
+    <meta name="description" content="This article examines how temporal sub-sampling affects compression efficiency, file sizes, and visual quality in AV1 video archives. It explores the mechanics of AV1 inter-frame prediction, explains why halving frame rates does not equate to halving fil">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/impact-of-temporal-sub-sampling-in-av-1-archives">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Impact of Temporal Sub-Sampling in AV1 Archives - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/impact-of-temporal-sub-sampling-in-av-1-archives" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="This article examines how temporal sub-sampling affects compression efficiency, file sizes, and visual quality in AV1 video archives. It explores the mechanics of AV1 inter-frame prediction, explains why halving frame rates does not equate to halving fil" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="impact-of-temporal-sub-sampling-in-av1-archives">Impact of
+Temporal Sub-Sampling in AV1 Archives</h1>
+<p>This article examines how temporal sub-sampling affects compression
+efficiency, file sizes, and visual quality in AV1 video archives. It
+explores the mechanics of AV1 inter-frame prediction, explains why
+halving frame rates does not equate to halving file size, and evaluates
+the trade-offs between storage reduction and preservation quality.
+Readers will gain actionable insight into optimizing archival encoding
+pipelines without degrading original footage fidelity.</p>
+<h2 id="understanding-temporal-sub-sampling-in-av1">Understanding
+Temporal Sub-Sampling in AV1</h2>
+<p>Temporal sub-sampling refers to reducing the frame rate of a video
+stream before encoding—for instance, downsampling native 60 frames per
+second (fps) capture to 30 fps, or 24 fps to 12 fps. In archival
+preservation, reducing the frame count is often considered as a method
+to lower bitrates and save long-term storage costs. However, in modern
+codecs like AV1, temporal frequency directly interacts with
+motion-compensated prediction algorithms, leading to complex trade-offs
+in coding efficiency.</p>
+<h2 id="the-cost-to-motion-compensation">The Cost to Motion
+Compensation</h2>
+<p>AV1 achieves high compression ratios primarily through advanced
+inter-frame prediction tools, such as Overlapped Block Motion
+Compensation (OBMC), warped motion (affine transformation models), and
+compound inter-intra prediction. These mechanisms rely on small temporal
+distances between successive frames.</p>
+<p>When a video is temporally sub-sampled:</p>
+<ul>
+<li><strong>Motion Displacements Increase:</strong> Increasing the
+temporal gap between frames forces motion vectors to span larger spatial
+distances.</li>
+<li><strong>Non-Linear Motion Increases:</strong> Complex real-world
+movement, camera pans, and occlusions become harder to track linearly,
+increasing the prediction residual.</li>
+<li><strong>Higher Residual Energy:</strong> Because the reference
+frames are further apart in time, the encoder can no longer rely on
+simple translations. It must allocate significantly more bits to encode
+high-frequency residual errors via DCT or asymmetric discrete sine
+transforms (ADST).</li>
+</ul>
+<p>Consequently, while there are fewer total frames to encode, the cost
+in bits to encode each remaining P-frame or B-frame rises sharply.</p>
+<h2 id="diminishing-returns-on-file-size">Diminishing Returns on File
+Size</h2>
+<p>A common misconception in video archival is that cutting the frame
+rate by 50% cuts the storage footprint in half. In AV1 encoding under
+constant quality modes (such as Constant Rate Factor or CRF):</p>
+<ol type="1">
+<li><strong>Intra-Frames (Keyframes):</strong> Keyframes remain
+essentially unaffected in size, as they do not reference neighboring
+frames.</li>
+<li><strong>Inter-Frames:</strong> P- and B-frames grow substantially
+larger due to the degraded efficiency of the motion estimation
+pipeline.</li>
+<li><strong>Net Storage Savings:</strong> The actual reduction in
+storage typically ranges between 15% and 30%, far below the 50% frame
+reduction. In scenes with erratic motion, the efficiency penalty can be
+even more severe, yielding negligible storage gains.</li>
+</ol>
+<h2 id="impact-on-perceptual-quality-and-archival-value">Impact on
+Perceptual Quality and Archival Value</h2>
+<p>Archival preservation aims to retain original signal integrity for
+future retrieval or restoration. Applying temporal sub-sampling creates
+irreversible artifacts:</p>
+<ul>
+<li><strong>Stroboscopic Motion and Judder:</strong> High-motion
+sequences lose temporal smoothness, producing visual judder that cannot
+be corrected later.</li>
+<li><strong>Encoder Artifacts:</strong> Because AV1 must distribute its
+bit budget to handle larger prediction errors across fewer frames,
+scenes with rapid motion may exhibit blocking, ringing, or texture
+blurring on high-contrast edges.</li>
+<li><strong>Synthetic Film Grain Disruption:</strong> AV1 features
+built-in film grain synthesis, which models and strips noise before
+re-applying it at playback. Sub-sampling changes the temporal
+consistency of grain across frames, impairing the encoder’s ability to
+separate true motion from grain structure.</li>
+</ul>
+<h2 id="practical-recommendations-for-av1-archiving">Practical
+Recommendations for AV1 Archiving</h2>
+<p>To maximize compression efficiency while safeguarding long-term
+usability, adhere to the following principles:</p>
+<ul>
+<li><strong>Retain Native Frame Rates for Master Archives:</strong> Do
+not downsample frame rates for long-term preservation masters. Instead
+of temporal sub-sampling, increase the CRF value or leverage AV1's
+multi-reference frame capabilities to achieve storage targets without
+discarding temporal data.</li>
+<li><strong>Reserve Sub-Sampling for Static Content:</strong> Temporal
+sub-sampling is viable only for content categories with minimal motion,
+such as slides, desktop recordings, security feeds, or talking-head
+interviews where motion vectors remain small even across dropped
+frames.</li>
+<li><strong>Tune Motion Estimation Settings:</strong> If temporal
+sub-sampling is mandatory due to strict bandwidth or hardware playback
+constraints, configure the AV1 encoder to use broader motion estimation
+search ranges (<code>--motion-mode</code> and deeper lookahead buffers)
+to mitigate prediction loss across larger temporal intervals.</li>
+</ul></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

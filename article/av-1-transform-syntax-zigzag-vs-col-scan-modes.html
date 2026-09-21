@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV1 Transform Syntax: Zigzag vs Col-Scan Modes - av1</title>
+    <meta name="description" content="In the AV1 video codec, scanning orders determine how two-dimensional arrays of quantized transform coefficients are linearized into a one-dimensional sequence for entropy coding. This article examines the primary differences between the Zigzag and Col-S">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/av-1-transform-syntax-zigzag-vs-col-scan-modes">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AV1 Transform Syntax: Zigzag vs Col-Scan Modes - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/av-1-transform-syntax-zigzag-vs-col-scan-modes" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="In the AV1 video codec, scanning orders determine how two-dimensional arrays of quantized transform coefficients are linearized into a one-dimensional sequence for entropy coding. This article examines the primary differences between the Zigzag and Col-S" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="av1-transform-syntax-zigzag-vs-col-scan-modes">AV1 Transform
+Syntax: Zigzag vs Col-Scan Modes</h1>
+<p>In the AV1 video codec, scanning orders determine how two-dimensional
+arrays of quantized transform coefficients are linearized into a
+one-dimensional sequence for entropy coding. This article examines the
+primary differences between the Zigzag and Col-Scan modes within AV1
+transform syntax, detailing how their distinct coefficient traversal
+paths optimize coding efficiency based on the directional
+characteristics of the residual signal.</p>
+<p>The primary difference between Zigzag and Col-Scan modes lies in the
+geometric path used to read coefficients from the transform matrix,
+which directly affects the clustering of non-zero values and the
+placement of the End-of-Block (EOB) marker during entropy coding.</p>
+<h3 id="traversal-direction-and-pattern">Traversal Direction and
+Pattern</h3>
+<ul>
+<li><strong>Zigzag Scan:</strong> Traverses the coefficient block
+diagonally, moving back and forth between rows and columns from the
+top-left (DC component) toward the bottom-right (high-frequency AC
+components). It assumes that energy decreases roughly symmetrically
+along both the horizontal and vertical frequency axes.</li>
+<li><strong>Col-Scan (Column Scan):</strong> Traverses the transform
+block primarily along the vertical axis, reading coefficients column by
+column (or in column-oriented bands) before advancing horizontally. This
+prioritizes vertical frequency components over horizontal ones.</li>
+</ul>
+<h3 id="energy-distribution-and-transform-pairing">Energy Distribution
+and Transform Pairing</h3>
+<p>AV1 adapts its scan order to match the selected 2D transform type
+(<code>tx_type</code>) and the underlying intra prediction
+direction:</p>
+<ul>
+<li><strong>Zigzag Suitability:</strong> Zigzag is the standard default
+for symmetric transforms, such as 2D Discrete Cosine Transform
+(DCT_DCT), where the prediction residual has no strong directional bias.
+Because spatial correlation is isotropic, the highest-energy non-zero
+coefficients naturally cluster near the DC coordinate and taper off
+diagonally.</li>
+<li><strong>Col-Scan Suitability:</strong> Col-Scan is deployed when the
+residual exhibits strong anisotropic energy distribution—frequently
+occurring with asymmetric transform pairs (such as combinations of DCT,
+Asymmetric Discrete Sine Transform [ADST], or Identity transforms) or
+horizontal intra prediction modes. When spatial patterns vary heavily
+across vertical rows while remaining uniform horizontally, energy
+concentrates deeper along the vertical frequency axis.</li>
+</ul>
+<h3 id="impact-on-entropy-coding-efficiency">Impact on Entropy Coding
+Efficiency</h3>
+<p>The AV1 syntax relies on grouping non-zero coefficients as early as
+possible in the 1D scan array. By matching the scan order to the
+coefficient energy distribution:</p>
+<ol type="1">
+<li><strong>Earlier EOB Signaling:</strong> Col-Scan groups non-zero
+vertical frequencies ahead of zeroed horizontal frequencies. This
+ensures that trailing zeros appear earlier in the stream, allowing the
+encoder to signal the EOB marker sooner and truncate the coefficient
+stream.</li>
+<li><strong>Context Modeling:</strong> AV1’s arithmetic coder uses
+neighbor-based context models that depend on previously coded
+coefficients in scan order. Using Col-Scan for vertically dominant
+residuals ensures probability models accurately reflect the likelihood
+of consecutive non-zero coefficients along columns.</li>
+</ol></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

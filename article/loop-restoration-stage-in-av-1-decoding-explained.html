@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loop Restoration Stage in AV1 Decoding Explained - av1</title>
+    <meta name="description" content="The Loop Restoration stage in the AV1 video codec is an advanced in-loop filtering tool designed to reverse the blur, ringing, and loss of fidelity introduced during block-based compression and earlier filtering stages. By applying mathematically driven">
+    <link rel="canonical" href="https://salivity.github.io/av1/article/loop-restoration-stage-in-av-1-decoding-explained">
+    <link rel="search" type="application/opensearchdescription+xml" title="av1" href="/av1/opensearch.xml">
+    <link rel="icon" href="/av1/favicon.ico">
+    <link rel="stylesheet" href="/av1/css/style.css">
+    <link media="print" rel="stylesheet" href="/av1/css/print.css">
+    <script src="/av1/js/fuse.min.js"></script>
+    <script src="/av1/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Loop Restoration Stage in AV1 Decoding Explained - av1" />
+    <meta property="og:url" content="https://salivity.github.io/av1/article/loop-restoration-stage-in-av-1-decoding-explained" />
+    <meta property="og:image" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/av1/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The Loop Restoration stage in the AV1 video codec is an advanced in-loop filtering tool designed to reverse the blur, ringing, and loss of fidelity introduced during block-based compression and earlier filtering stages. By applying mathematically driven" />
+    <link rel="manifest" href="/av1/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/av1/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>av1</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/av1/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="loop-restoration-stage-in-av1-decoding-explained">Loop
+Restoration Stage in AV1 Decoding Explained</h1>
+<p>The Loop Restoration stage in the AV1 video codec is an advanced
+in-loop filtering tool designed to reverse the blur, ringing, and loss
+of fidelity introduced during block-based compression and earlier
+filtering stages. By applying mathematically driven restoration
+algorithms to reconstructed frames, this stage recovers high-frequency
+details and edge sharpness, significantly improving the visual quality
+of the output and providing cleaner reference frames for future
+inter-frame prediction.</p>
+<h3 id="position-within-the-av1-decoding-pipeline">Position Within the
+AV1 Decoding Pipeline</h3>
+<p>AV1 utilizes a multi-stage in-loop filtering architecture to
+reconstruct video frames before they are stored in the decoded picture
+buffer. The decoding process applies filters in the following strict
+order:</p>
+<ol type="1">
+<li><strong>Inverse Quantization and Transform:</strong> Reconstructs
+the raw prediction and residual data.</li>
+<li><strong>Deblocking Filter:</strong> Smooths grid-like
+discontinuities across transform block boundaries.</li>
+<li><strong>Constrained Directional Enhancement Filter (CDEF):</strong>
+Identifies directional edges to suppress ringing artifacts while
+preserving structural lines.</li>
+<li><strong>Loop Restoration:</strong> Applies mathematical deblurring
+to restore fine textures and edges lost in previous steps.</li>
+<li><strong>Film Grain Synthesis:</strong> An optional post-processing
+step applied outside the reference frame loop to reintroduce natural
+film texture.</li>
+</ol>
+<p>Because Loop Restoration operates as the final in-loop filter, its
+output directly forms the reference frames that subsequent predictive
+frames rely on.</p>
+<h3 id="primary-functions-of-loop-restoration">Primary Functions of Loop
+Restoration</h3>
+<p>While Deblocking and CDEF remove unwanted high-frequency artifacts
+(such as block borders and ringing noise), they also unavoidably blur
+authentic textures and soften sharp edges. The Loop Restoration filter
+counters this degradation by acting as an inverse filter.</p>
+<p>During the encoding process, the encoder compares the degraded,
+pre-filtered frame to the pristine original source frame. It calculates
+correction parameters (filter coefficients) that bring the reconstructed
+frame mathematically closer to the original. These parameters are
+signaled in the bitstream, allowing the AV1 decoder to apply precise
+restorations with minimal computational overhead.</p>
+<h3 id="restoration-methods-in-av1">Restoration Methods in AV1</h3>
+<p>The AV1 specification defines two primary filter algorithms for the
+Loop Restoration stage, alongside a bypass option:</p>
+<ul>
+<li><strong>Separable Symmetric Wiener Filter:</strong> This is a 2D
+separable linear filter (using horizontal and vertical taps) that
+mathematically approximates the inverse of blur. The encoder calculates
+Wiener coefficients that minimize the mean squared error between the
+original image and the reconstructed image. The decoder applies these
+coefficients to restore lost sharpness.</li>
+<li><strong>Dual Self-Guided Filter:</strong> Based on domain transform
+and guided image filtering techniques, this algorithm performs
+edge-preserving smoothing. It uses two distinct radius and noise
+parameters to create guided projections of the image, combining them to
+boost high-frequency features without creating overshooting or "halo"
+artifacts around sharp edges.</li>
+<li><strong>None (Identity):</strong> The encoder can disable
+restoration for specific areas where processing would not yield
+noticeable visual or compression gains, conserving computational
+resources.</li>
+</ul>
+<h3 id="restoration-units">Restoration Units</h3>
+<p>Loop Restoration does not operate strictly on transform or coding
+blocks. Instead, it processes the image in larger, configurable regions
+called Restoration Units (RUs).</p>
+<p>Restoration Units are typically sized at 64x64, 128x128, or 256x256
+pixels for the luma plane, and can be configured independently for
+chroma planes. Each Restoration Unit can independently select between
+the Wiener filter, the Dual Self-Guided filter, or no filter at all.
+This unit-based structure provides a high degree of spatial adaptivity,
+allowing the decoder to apply intense sharpening to high-detail areas
+while leaving flat or smooth regions untouched.</p>
+<h3 id="impact-on-video-quality-and-compression">Impact on Video Quality
+and Compression</h3>
+<p>The Loop Restoration stage delivers substantial coding efficiency
+gains, often accounting for a significant portion of AV1’s overall
+bitrate reduction compared to older codecs like VP9 and HEVC. By
+creating higher-fidelity reference frames, subsequent motion
+compensation requires smaller residual errors, allowing the encoder to
+compress subsequent frames more aggressively without degrading final
+picture quality.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/av1'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/av1/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/av1/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>
